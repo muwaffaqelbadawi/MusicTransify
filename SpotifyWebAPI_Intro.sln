@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35913.81 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyWebAPI_Intro", "SpotifyWebAPI_Intro.csproj", "{BD5702A5-7BBA-44C6-ACEF-B3CFE4CDCD66}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BD5702A5-7BBA-44C6-ACEF-B3CFE4CDCD66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD5702A5-7BBA-44C6-ACEF-B3CFE4CDCD66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD5702A5-7BBA-44C6-ACEF-B3CFE4CDCD66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD5702A5-7BBA-44C6-ACEF-B3CFE4CDCD66}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {942CAFB6-F80D-457B-AA7B-78AE5E0E18D1}
+	EndGlobalSection
+EndGlobal
