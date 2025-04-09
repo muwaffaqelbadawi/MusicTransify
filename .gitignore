@@ -515,9 +515,6 @@ App.config
 # Legacy ASP.NET setting files
 web.config
 
-# Test folder
-test/
-
 # Auto generated Middleware files
 Middleware/bin/
 Middleware/obj/
@@ -527,6 +524,3 @@ Middleware/obj/
 wwwroot/dist/
 wwwroot/temp/
 *.min.*
-
-# Config folder
-config/
