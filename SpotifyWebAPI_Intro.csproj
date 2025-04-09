@@ -4,13 +4,21 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>b2a32b96-3622-4a7b-9b29-073ce4b721d7</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.3.0" />
-    <PackageReference Include="SpotifyAPI.Web" Version="7.2.1" />
-    <PackageReference Include="SpotifyAPI.Web.Auth" Version="7.2.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="D:\My Personal Projects\SpotifyWebAPI_Intro\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="D:\My Personal Projects\SpotifyWebAPI_Intro\.editorconfig" />
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="https://json.schemastore.org/appsettings.json" /></VisualStudio></ProjectExtensions>
 
 </Project>
