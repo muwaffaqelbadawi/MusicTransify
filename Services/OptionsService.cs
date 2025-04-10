@@ -9,8 +9,10 @@ namespace SpotifyWebAPI_Intro.Services
 {
     public class OptionsService(IOptions<ApplicationOptions> options)
     {
+        // Primary constructor
         private readonly ApplicationOptions _options = options.Value;
 
+        // Options properties
         public string SpotifyClientId => _options.SpotifyClientId;
         public string SpotifyClientSecret => _options.SpotifyClientSecret;
         public string SpotifyRedirectUri => _options.SpotifyRedirectURI;

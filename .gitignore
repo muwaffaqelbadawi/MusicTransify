@@ -506,9 +506,6 @@ appsettings.*.json
 [Pp]roperties/
 [Pp]roperties/launchSettings.json
 
-# user created files
-Important_Instructions.txt
-
 # Configuration files
 App.config
 

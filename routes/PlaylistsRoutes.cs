@@ -16,7 +16,7 @@ namespace SpotifyWebAPI_Intro.Routes
             // Set webpage content type
             context.Response.ContentType = "text/html";
 
-            // Set Redirect URI
+            // Set APIBase URI
             string APIBaseURL = _optionsService.SpotifyApiBaseUrl;
 
             // Check if access_token exists in the session and is not null
@@ -29,19 +29,21 @@ namespace SpotifyWebAPI_Intro.Routes
                 return;
             }
 
-            // Check if expires_in exists in the session and is a valid long
-            if (!long.TryParse(context.Session.GetString("expires_in"), out long expires_in))
-            {
-                // Handle missing/invalid expiry
-                throw new InvalidOperationException("No expires_in found");
-            }
 
-            // Calculate the current time
-            long current_time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-            // Check If the access_token has expired
-            if (current_time > expires_in)
+            // Set and check expires_in is not null
+            string StrExpiresIn = context.Session.GetString("expires_in") ?? throw new InvalidOperationException("No 'expires_in' found");
+
+            // Set ExpiresIn
+            long ExpiresIn = long.Parse(StrExpiresIn);
+
+            // Set current time
+            long CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+            // Check If the access_token is expired
+            if (CurrentTime > ExpiresIn)
             {
+                // Console prompt for debugging
                 Console.WriteLine("TOKEN EXPIRED. REFRESHING...");
 
                 // Redirect to refresh_token
@@ -51,8 +53,13 @@ namespace SpotifyWebAPI_Intro.Routes
                 return;
             }
 
+
+            // -----------------------------------------------------------------------------------------
+
             // Create Autorization String
             string Authorization = $"Bearer {context.Session.GetString("access_token")}";
+ 
+            // ------------------------------------------------------------------------------------------
 
             //Initiate new http class
             using var client = new HttpClient();
@@ -74,6 +81,8 @@ namespace SpotifyWebAPI_Intro.Routes
 
             // Deserialize playlist
             var playlists = JsonSerializer.Deserialize<JsonElement>(result);
+
+            // -----------------------------------------------------------------------------------------
 
             // Getting the playlists response back
             await context.Response.WriteAsJsonAsync(playlists);

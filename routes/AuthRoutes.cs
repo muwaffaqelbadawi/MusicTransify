@@ -13,7 +13,7 @@ namespace SpotifyWebAPI_Intro.Routes
 {
     public class AuthRoutes()
     {
-        // LoginRoute
+        // Login Route
         public static void Login(HttpContext context, OptionsService _options)
         {
             // Set webpage content type
@@ -50,32 +50,28 @@ namespace SpotifyWebAPI_Intro.Routes
             context.Response.Redirect(auth_url);
         }
 
-
-
-        // Callback + Refresh Token
-
-
-
         // Callback Rout
-        public static async Task Callback(HttpContext context, OptionsService _options)
+        public static async Task Callback(HttpContext context, OptionsService _options, HttpService _httpService)
         {
             // Set webpage content type
             context.Response.ContentType = "text/html";
 
-            // Check for "error" in the query string
+            // Check if "error" exists in the query string and not null
             if (context.Request.Query.ContainsKey("error"))
             {
-                // Return the JSON error message
+                // Return the JSON error message if not exists
                 await context.Response.WriteAsJsonAsync(new { error = context.Request.Query["error"] });
 
                 // Terminate the function
                 return;
             }
 
-            // Check if "code" exist in the query string
+            // --------------------------------------------------------------------------------------
+
+            // Check if "code" exists in the query string
             if (context.Request.Query.ContainsKey("code"))
             {
-                // Check if the Response Type value is not null
+                // Set and Check if the Response Type value exists in query string is not null
                 string ResponseType = context.Request.Query["code"].ToString() ?? throw new InvalidOperationException("The 'code' parameter is missing in the query string.");
 
                 // Set the Grant Type
@@ -103,51 +99,33 @@ namespace SpotifyWebAPI_Intro.Routes
                   { "client_secret", ClientSecret }
                 };
 
-                // Initiate new http class
-                using var client = new HttpClient();
+                // Set Token Info
+                var TokenInfo = await _httpService.PostFormUrlEncodedContentAsync(TokenURL, RequestBody);
 
-                // Form content
-                var FormContent = ToFormUrlEncodedContent(RequestBody);
+                // Set and check access_token is not null
+                string AccessToken = TokenInfo.GetString("access_token") ?? throw new InvalidOperationException("No 'access_token' found");
 
-                // Post Form Url Encoded Content
-                var response = await client.PostAsync(TokenURL, FormContent);
+                // Set and check refresh_token is not null
+                string RefreshToken = TokenInfo.GetString("refresh_token") ?? throw new InvalidOperationException("No 'refresh_token' found");
+                
+                // Set and check expires_in is not null
+                string StrExpiresIn = TokenInfo.GetString("expires_in") ?? throw new InvalidOperationException("No 'refresh_token' found");
 
-                // Handling response error
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Error fetching playlists: {response.StatusCode}");
-                }
+                // ------------------------------------------------------------------------------------
 
-                // Getting result as a response from Spotify server
-                var result = await response.Content.ReadAsStringAsync();
+                // Set ExpiresIn
+                string ExpiresIn = ToTimeStamp(StrExpiresIn).ToString();
 
-                // Deserialize Token Info from result
-                var TokenInfo = JsonSerializer.Deserialize<JsonElement>(result);
+                // -------------------------------------------------------------------------------------
 
-                // Extract access_token from Token Info if not null
-                string access_token = TokenInfo.GetString("access_token") ?? throw new InvalidOperationException("No 'access_token' found");
+                // Store AccessToken in the session
+                context.Session.SetString("access_token", AccessToken);
 
-                // Extract refresh_token from Token Info if not null
-                string refresh_token = TokenInfo.GetString("refresh_token") ?? throw new InvalidOperationException("No 'refresh_token' found");
+                // Store RefreshToken in the session
+                context.Session.SetString("refresh_token", RefreshToken);
 
-                // Check if expires_in exists in the session and is a valid int
-                if (int.TryParse(TokenInfo.GetString("expires_in"), out int int_expires_in))
-                {
-                    // Handle missing/invalid expiry
-                    throw new InvalidOperationException("No 'expires_in' found");
-                }
-
-                // Convert int_expires_in to time stamp as (Long) long_expires_in
-                long long_expires_in = DateTimeOffset.UtcNow.AddSeconds(int_expires_in).ToUnixTimeSeconds();
-
-                // Store access_token in session
-                context.Session.SetString("access_token", access_token);
-
-                // Store refresh_token in session
-                context.Session.SetString("refresh_token", refresh_token);
-
-                // Store expires_in in session
-                context.Session.SetString("expires_in", long_expires_in.ToString());
+                // Store ExpiresIn in the session
+                context.Session.SetString("expires_in", ExpiresIn);
 
                 // Redirect to playlists
                 context.Response.Redirect("/playlists");
@@ -166,13 +144,13 @@ namespace SpotifyWebAPI_Intro.Routes
             }
         }
 
-        // RefreshTokenRoute
-        public static async Task RefreshToken(HttpContext context, OptionsService _options)
+        // RefreshToken Route
+        public static async Task RefreshToken(HttpContext context, OptionsService _options, HttpService _httpService)
         {
             // Set webpage content type
             context.Response.ContentType = "text/html";
 
-            // Check if access_token exists in the session and is not null
+            // Set and Check if access_token exists in the session and is not null
             if (string.IsNullOrEmpty(context.Session.GetString("access_token")))
             {
                 // Redirect back to Spotify login page
@@ -182,25 +160,22 @@ namespace SpotifyWebAPI_Intro.Routes
                 return;
             }
 
-            // Check if expires_in exists in the session and is a valid long
-            if (!long.TryParse(context.Session.GetString("expires_in"), out long expires_in))
-            {
-                // Handle missing/invalid expiry
-                throw new InvalidOperationException("No 'expires_in' found");
-            }
+            // --------------------------------------------------------------------------------------
 
-            // Calculate the current time
-            long current_time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            // Set current time
+            long CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-            // Check If the access_token has expired
-            if (current_time > expires_in)
+
+            // Check If the access_token is expired
+            if (IsTokenExpired(context, CurrentTime))
             {
+                // Console prompt for debugging
                 Console.WriteLine("TOKEN EXPIRED. REFRESHING...");
 
                 // Set the grant_type
                 string GrantType = "refresh_token";
 
-                // Check if the OldRefreshToken value is not null
+                // Check refresh_token value exists in query string and is not null
                 string OldRefreshToken = context.Request.Query["refresh_token"].ToString() ?? throw new InvalidOperationException("The 'refresh_token' parameter is missing in the query string.");
 
                 // Set Client ID
@@ -221,54 +196,36 @@ namespace SpotifyWebAPI_Intro.Routes
                   { "client_secret", ClientSecret }
                 };
 
-                // Initiate new http class
-                using var client = new HttpClient();
+                // Set Token Info
+                var TokenInfo = await _httpService.PostFormUrlEncodedContentAsync(TokenURL, RequestBody);
 
-                // Form content
-                var FormContent = ToFormUrlEncodedContent(RequestBody);
+                // Set and check access_token is not null
+                string AccessToken = TokenInfo.GetString("access_token") ?? throw new InvalidOperationException("No 'access_token' found");
 
-                // Post Form Url Encoded Content
-                var response = await client.PostAsync(TokenURL, FormContent);
+                // Set and check refresh_token is not null
+                string RefreshToken = TokenInfo.GetString("refresh_token") ?? throw new InvalidOperationException("No 'refresh_token' found");
 
-                // Handling response error
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Error fetching playlists: {response.StatusCode}");
-                }
+                // Set and check expires_in is not null
+                string StrExpiresIn = TokenInfo.GetString("expires_in") ?? throw new InvalidOperationException("No 'refresh_token' found");
 
-                // Getting result as a response from Spotify Server
-                var result = await response.Content.ReadAsStringAsync();
+                // -------------------------------------------------------------------------------
 
-                // Deserialize Token Info from result
-                var TokenInfo = JsonSerializer.Deserialize<JsonElement>(result);
-
-                // Extract access_token from Token Info if not null
-                string access_token = TokenInfo.GetString("access_token") ?? throw new InvalidOperationException("No 'access_token' found");
-
-                // Extract refresh_token from Token Info if not null
-                string refresh_token = TokenInfo.GetString("refresh_token") ?? throw new InvalidOperationException("No 'refresh_token' found");
-
-                // Check if expires_in exists in the session and is a valid int
-                if (int.TryParse(TokenInfo.GetString("expires_in"), out int int_expires_in))
-                {
-                    // Handle missing/invalid expiry
-                    throw new InvalidOperationException("No 'expires_in' found");
-                }
-
-                // Convert int_expires_in to time stamp as (Long) long_expires_in
-                long long_expires_in = DateTimeOffset.UtcNow.AddSeconds(int_expires_in).ToUnixTimeSeconds();
+                // Set NewExpiresIn
+                long ExpiresIn = ToTimeStamp(StrExpiresIn);
 
                 // Calculate total expires_in
-                long new_expires_in = current_time + long_expires_in;
+                string NewExpiresIn = (CurrentTime + ExpiresIn).ToString();
+
+                // ------------------------------------------------------------------------------
 
                 // Store access_token in session
-                context.Session.SetString("access_token", access_token);
+                context.Session.SetString("access_token", AccessToken);
 
                 // Store refresh_token in session
-                context.Session.SetString("refresh_token", refresh_token);
+                context.Session.SetString("refresh_token", RefreshToken);
 
                 // Update session
-                context.Session.SetString("expires_in", new_expires_in.ToString());
+                context.Session.SetString("expires_in", NewExpiresIn);
 
                 // Redirect to playlists
                 context.Response.Redirect("/playlists");
@@ -276,9 +233,15 @@ namespace SpotifyWebAPI_Intro.Routes
                 // Terminate the function
                 return;
             }
+
+            // If the access_token is not expired, redirect to playlists
+            context.Response.Redirect("/playlists");
+
+            // Terminate function
+            return;
         }
 
-        // Helper for building query strings
+        // Helper function for building query strings
         public static string ToQueryString(object queryParameters)
         {
             return string.Join("&",
@@ -286,10 +249,25 @@ namespace SpotifyWebAPI_Intro.Routes
             .Select(prop => $"{prop.Name}={Uri.EscapeDataString(prop.GetValue(queryParameters)?.ToString() ?? string.Empty)}"));
         }
 
-        // Helper for creating request body
-        public static FormUrlEncodedContent ToFormUrlEncodedContent(Dictionary<string, string> parameters)
+        // Helper function for creating time stamp token expiration date
+        public static long ToTimeStamp(string strExpiresIn)
         {
-            return new FormUrlEncodedContent(parameters);
+            // Set ExpiresIn
+            long ExpiresIn = long.Parse(strExpiresIn);
+
+            return DateTimeOffset.UtcNow.AddSeconds(ExpiresIn).ToUnixTimeSeconds(); ;
+        }
+
+        // Helper function to check token expiry
+        private static bool IsTokenExpired(HttpContext context, long CurrentTime)
+        {
+            // Set and check expires_in is not null
+            string OldStrExpiresIn = context.Session.GetString("expires_in") ?? throw new InvalidOperationException("No 'refresh_token' found");
+
+            // Set OldExpiresIn
+            long ExpiresIn = long.Parse(OldStrExpiresIn);
+           
+            return CurrentTime > ExpiresIn;
         }
     }   
 }
