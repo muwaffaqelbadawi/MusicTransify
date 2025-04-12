@@ -7,10 +7,15 @@ using SpotifyWebAPI_Intro.Configuration;
 
 namespace SpotifyWebAPI_Intro.Services
 {
-    public class OptionsService(IOptions<ApplicationOptions> options)
+    public class OptionsService
     {
         // Primary constructor
-        private readonly ApplicationOptions _options = options.Value;
+        private readonly ApplicationOptions _options;
+
+        public OptionsService(IOptions<ApplicationOptions> options)
+        {
+            _options = options.Value;
+        }
 
         // Options properties
         public string SpotifyClientId => _options.SpotifyClientId;

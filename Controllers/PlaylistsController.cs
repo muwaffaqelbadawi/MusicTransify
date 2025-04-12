@@ -1,19 +1,27 @@
 using System;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Mvc;
 using SpotifyWebAPI_Intro.Services;
 
 
-namespace SpotifyWebAPI_Intro.Routes
+namespace SpotifyWebAPI_Intro.Controllers
 {
-    // PlaylistsRoute
-    public class PlaylistsRoutes()
+    [ApiController]
+    [Route("api/[controller]")]
+    public class PlaylistsController : ControllerBase
     {
-        public static async Task GetPlaylists(HttpContext context, OptionsService _optionsService)
+        private readonly OptionsService _optionsService;
+
+        public PlaylistsController(OptionsService optionsService)
         {
-            // Set webpage content type
+            _optionsService = optionsService;
+        }
+
+        [HttpGet("Playlists")]
+        public async Task<IActionResult> GetPlaylists(HttpContext context)
+        {
+            // Set the content type of the webpage
             context.Response.ContentType = "text/html";
 
             // Set APIBase URI
@@ -24,9 +32,9 @@ namespace SpotifyWebAPI_Intro.Routes
             {
                 // Redirect back to Spotify login page
                 context.Response.Redirect("/login");
-                
+
                 // Terminate the function
-                return;
+                return Ok("");
             }
 
 
@@ -48,9 +56,9 @@ namespace SpotifyWebAPI_Intro.Routes
 
                 // Redirect to refresh_token
                 context.Response.Redirect("/refresh_token");
-               
+
                 // Terminate the function
-                return;
+                return Ok("");
             }
 
 
@@ -58,7 +66,7 @@ namespace SpotifyWebAPI_Intro.Routes
 
             // Create Autorization String
             string Authorization = $"Bearer {context.Session.GetString("access_token")}";
- 
+
             // ------------------------------------------------------------------------------------------
 
             //Initiate new http class
@@ -86,6 +94,8 @@ namespace SpotifyWebAPI_Intro.Routes
 
             // Getting the playlists response back
             await context.Response.WriteAsJsonAsync(playlists);
+
+            return Ok("");
         }
     }
 }

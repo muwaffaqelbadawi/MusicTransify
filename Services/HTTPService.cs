@@ -6,11 +6,15 @@ using System.Threading.Tasks;
 
 namespace SpotifyWebAPI_Intro.Services
 {
-    public class HttpService(HttpClient httpClient)
+    public class HttpService
     {
-        // Primary constructor
-        private readonly HttpClient _httpClient = httpClient;
-        
+        private readonly HttpClient _httpClient;
+
+        public HttpService(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
         public async Task<JsonElement> PostFormUrlEncodedContentAsync(string url, Dictionary<string, string> requestBody)
         {
             // Form content
