@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyWebAPI_Intro.Services;
 
-
 namespace SpotifyWebAPI_Intro.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Route("auth")]
     public class AuthController : ControllerBase
     {
         private readonly OptionsService _options;
@@ -21,16 +21,9 @@ namespace SpotifyWebAPI_Intro.Controllers
 
 
 
-
-
         [HttpGet("Login")]
-        public void Login(HttpContext context)
+        public IActionResult Login()
         {
-
-            // Set the content type of the webpage
-            context.Response.ContentType = "text/html";
-
-            // Set Client ID
             string ClientID = _options.SpotifyClientId;
 
             // Set Response Type
@@ -55,16 +48,19 @@ namespace SpotifyWebAPI_Intro.Controllers
                 show_dialog = true
             };
 
+            // Build the query string from the parameters
             var queryString = ToQueryString(queryParameters);
 
+            // Form the authorization URL
             var auth_url = $"{AuthURL}?{queryString}";
-            context.Response.Redirect(auth_url);
+
+            // Redirect to the authorization URL
+            return Redirect(auth_url);
         }
 
 
 
-
-        [HttpPost("Callback")]
+        [HttpGet("Callback")]
         public async Task<IActionResult> Callback(HttpContext context)
         {
             // Set webpage content type
@@ -76,11 +72,8 @@ namespace SpotifyWebAPI_Intro.Controllers
                 // Return the JSON error message if not exists
                 await context.Response.WriteAsJsonAsync(new { error = context.Request.Query["error"] });
 
-                // Terminate the function
-                return Ok("");
+                return BadRequest("error");
             }
-
-            // -------------------------------------------------------------------------------
 
             // Check if "code" exists in the query string
             if (context.Request.Query.ContainsKey("code"))
@@ -125,12 +118,8 @@ namespace SpotifyWebAPI_Intro.Controllers
                 // Set and check expires_in is not null
                 string StrExpiresIn = TokenInfo.GetString("expires_in") ?? throw new InvalidOperationException("No 'refresh_token' found");
 
-                // --------------------------------------------------------------------------
-
                 // Set ExpiresIn
                 string ExpiresIn = ToTimeStamp(StrExpiresIn).ToString();
-
-                // ---------------------------------------------------------------------------
 
                 // Store AccessToken in the session
                 context.Session.SetString("access_token", AccessToken);
@@ -144,8 +133,7 @@ namespace SpotifyWebAPI_Intro.Controllers
                 // Redirect to playlists
                 context.Response.Redirect("/playlists");
 
-                // Terminate the function
-                return Ok("");
+                return Ok("callback route");
             }
 
             else
@@ -153,15 +141,13 @@ namespace SpotifyWebAPI_Intro.Controllers
                 // Handle the case where neither "error" nor "code" is present
                 await context.Response.WriteAsJsonAsync(new { error = "Invalid request" });
 
-                // Terminate the function
-                return Ok("");
+                return BadRequest("Invalid request");
             }
         }
 
 
 
-
-        [HttpPost("RefreshToken")]
+        [HttpGet("RefreshToken")]
         public async Task<IActionResult> RefreshToken(HttpContext context)
         {
             // Set webpage content type
@@ -170,18 +156,15 @@ namespace SpotifyWebAPI_Intro.Controllers
             // Set and Check if access_token exists in the session and is not null
             if (string.IsNullOrEmpty(context.Session.GetString("access_token")))
             {
-                // Redirect back to Spotify login page
+                // The access token is not exist
                 context.Response.Redirect("/login");
 
-                // Terminate the function
-                return Ok("");
+                // Redirect back to Spotify login page
+                return BadRequest("login route");
             }
-
-            // -------------------------------------------------------------------------------
 
             // Set current time
             long CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
 
             // Check If the access_token is expired
             if (IsTokenExpired(context, CurrentTime))
@@ -225,15 +208,11 @@ namespace SpotifyWebAPI_Intro.Controllers
                 // Set and check expires_in is not null
                 string StrExpiresIn = TokenInfo.GetString("expires_in") ?? throw new InvalidOperationException("No 'refresh_token' found");
 
-                // -------------------------------------------------------------------------------
-
                 // Set NewExpiresIn
-                long ExpiresIn = ToTimeStamp(StrExpiresIn);
+                long _ExpiresIn = ToTimeStamp(StrExpiresIn);
 
                 // Calculate total expires_in
-                string NewExpiresIn = (CurrentTime + ExpiresIn).ToString();
-
-                // ------------------------------------------------------------------------------
+                string ExpiresIn = (CurrentTime + _ExpiresIn).ToString();
 
                 // Store access_token in session
                 context.Session.SetString("access_token", AccessToken);
@@ -241,25 +220,22 @@ namespace SpotifyWebAPI_Intro.Controllers
                 // Store refresh_token in session
                 context.Session.SetString("refresh_token", RefreshToken);
 
-                // Update session
-                context.Session.SetString("expires_in", NewExpiresIn);
+                // Update session with the new expiration date
+                context.Session.SetString("expires_in", ExpiresIn);
 
                 // Redirect to playlists
                 context.Response.Redirect("/playlists");
 
-                // Terminate the function
-                return Ok("");
+                // Redirect back to playlists route
+                return Ok("playlists route");
             }
 
-            // If the access_token is not expired, redirect to playlists
+            // Access token is not expired
             context.Response.Redirect("/playlists");
 
-            // Terminate function
-            return Ok("");
+            // Redirect back to playlists route
+            return Ok("playlists route");
         }
-
-
-
 
         // Helper function for building query strings
         public static string ToQueryString(object queryParameters)
@@ -269,18 +245,15 @@ namespace SpotifyWebAPI_Intro.Controllers
             .Select(prop => $"{prop.Name}={Uri.EscapeDataString(prop.GetValue(queryParameters)?.ToString() ?? string.Empty)}"));
         }
 
-
-
         // Helper function for creating time stamp token expiration date
         public static long ToTimeStamp(string strExpiresIn)
         {
             // Set ExpiresIn
             long ExpiresIn = long.Parse(strExpiresIn);
 
+            // Converting expiration date to Unix time stamp
             return DateTimeOffset.UtcNow.AddSeconds(ExpiresIn).ToUnixTimeSeconds(); ;
         }
-
-
 
         // Helper function to check token expiry
         private static bool IsTokenExpired(HttpContext context, long CurrentTime)
@@ -291,6 +264,7 @@ namespace SpotifyWebAPI_Intro.Controllers
             // Set OldExpiresIn
             long ExpiresIn = long.Parse(OldStrExpiresIn);
 
+            // Check if the token is expired
             return CurrentTime > ExpiresIn;
         }
     }

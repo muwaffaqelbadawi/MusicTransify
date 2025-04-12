@@ -1,9 +1,7 @@
 using System;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using SpotifyWebAPI_Intro.Configuration;
-using SpotifyWebAPI_Intro.Controllers;
 using SpotifyWebAPI_Intro.Services;
 
 namespace SpotifyWebAPI_Intro
@@ -12,31 +10,42 @@ namespace SpotifyWebAPI_Intro
     {
         static async Task Main(string[] args)
         {
+            // Create a new WebApplicationBuilder instance
             var builder = WebApplication.CreateBuilder(args);
 
+            // Add the Required Services
+            // Add controllers to the DI container
+            builder.Services.AddControllers();
+
+            // Add the Application Options configuration to the DI container
             builder.Services.ConfigureOptions<ApplicationOptions>();
+
+            // Add the ApplicationOptionsSetup singleton to the DI container
             builder.Services.AddSingleton<ApplicationOptionsSetup>();
+
+            // Add HttpClient to the DI container
             builder.Services.AddHttpClient<HttpService>();
+
+            // Add session support
+            builder.Services.AddDistributedMemoryCache();
 
             var app = builder.Build();
 
-            // Congigure the HTTP request pipline.
-            if (!app.Environment.IsDevelopment())
-            {
-                // use session middleware
-                app.UseSession();
+            // Configure the HTTP Request Pipeline
+            // Enable session
+            app.UseSession();
 
-                // Map routes
-                // app.MapGet("/", HomeController.Index);
+            // Enable authorization middleware
+            app.UseAuthorization();
 
-                // app.MapGet("/login", AuthController.Login);
-                // app.MapGet("/callback", AuthController.Callback);
-                // app.MapGet("/playlists", PlaylistsController.GetPlaylists);
-                // app.MapGet("/refresh_token", AuthController.RefreshToken);
+            // Configure routing for controllers
+            app.UseRouting();
 
-                // Start app
-                await app.RunAsync("http://localhost:5543");
-            }
+            // Map routes to controllers
+            app.MapControllers();
+
+            // Start app
+            await app.RunAsync("http://localhost:5543");
         }
     }
 }
