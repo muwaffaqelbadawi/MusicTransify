@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using SpotifyWebAPI_Intro.Configuration;
 using SpotifyWebAPI_Intro.Controllers;
-using SpotifyWebAPI_Intro.Routes;
 using SpotifyWebAPI_Intro.Services;
 
 namespace SpotifyWebAPI_Intro
@@ -28,12 +27,12 @@ namespace SpotifyWebAPI_Intro
                 app.UseSession();
 
                 // Map routes
-                app.MapGet("/", HomeController.Index);
+                // app.MapGet("/", HomeController.Index);
 
-                app.MapGet("/login", AuthController.Login);
-                app.MapGet("/callback", AuthController.Callback);
-                app.MapGet("/playlists", PlaylistsController.GetPlaylists);
-                app.MapGet("/refresh_token", AuthController.RefreshToken);
+                // app.MapGet("/login", AuthController.Login);
+                // app.MapGet("/callback", AuthController.Callback);
+                // app.MapGet("/playlists", PlaylistsController.GetPlaylists);
+                // app.MapGet("/refresh_token", AuthController.RefreshToken);
 
                 // Start app
                 await app.RunAsync("http://localhost:5543");
