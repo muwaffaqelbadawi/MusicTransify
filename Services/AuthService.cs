@@ -5,9 +5,11 @@ using System.Threading.Tasks;
 
 namespace SpotifyWebAPI_Intro.Services
 {
-    // This class will be responsible for handling token generation and management.`
-    public class TokenService
+    public class AuthService
     {
-        
+        public AuthService()
+        {
+            
+        }
     }
 }

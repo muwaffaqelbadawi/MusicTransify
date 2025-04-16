@@ -1,7 +1,8 @@
 using System;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
 using SpotifyWebAPI_Intro.Services;
+using SpotifyWebAPI_Intro.utilities;
 
 namespace SpotifyWebAPI_Intro.Controllers
 {
@@ -10,21 +11,25 @@ namespace SpotifyWebAPI_Intro.Controllers
     [Route("auth")]
     public class AuthController : ControllerBase
     {
-        private readonly OptionsService _options;
+        private readonly HttpContext _context;
+        private readonly OptionsService _optionsService;
+        private readonly SessionService _sessionService;
         private readonly HttpService _httpService;
+        private readonly AuthHelper _authHelper;
 
-        public AuthController(OptionsService options, HttpService httpService)
+        public AuthController(HttpContext context, OptionsService optionsService, SessionService sessionService, HttpService httpService, AuthHelper authHelper)
         {
-            _options = options;
+            _context = context;
+            _optionsService = optionsService;
+            _sessionService = sessionService;
             _httpService = httpService;
+            _authHelper = authHelper;
         }
-
-
 
         [HttpGet("Login")]
         public IActionResult Login()
         {
-            string ClientID = _options.SpotifyClientId;
+            string ClientID = _optionsService.SpotifyClientId;
 
             // Set Response Type
             const string ResponseType = "code";
@@ -33,141 +38,103 @@ namespace SpotifyWebAPI_Intro.Controllers
             const string SCOPE = "user-read-private user-read-email";
 
             // Set Redirect URI
-            string RedirectURI = _options.SpotifyRedirectUri;
+            string RedirectURI = _optionsService.SpotifyRedirectUri;
 
             // Set Auth URL
-            string AuthURL = _options.SpotifyAuthUrl;
+            string AuthURL = _optionsService.SpotifyAuthUrl;
 
             // Querry Parameters
-            var queryParameters = new
+            var queryParameters = new Dictionary<string, string>
             {
-                client_id = ClientID,
-                response_type = ResponseType,
-                scope = SCOPE,
-                redirect_uri = RedirectURI,
-                show_dialog = true
+                { "client_id", ClientID },
+                { "response_type", ResponseType },
+                { "scope", SCOPE },
+                { "redirect_uri", RedirectURI },
+                { "show_dialog", "true" }
             };
 
             // Build the query string from the parameters
-            var queryString = ToQueryString(queryParameters);
+            var queryString = _authHelper.ToQueryString(queryParameters);
 
             // Form the authorization URL
             var auth_url = $"{AuthURL}?{queryString}";
 
             // Redirect to the authorization URL
-            return Redirect(auth_url);
+            Redirect(auth_url);
+
+            // Successful redirection to auth_url
+            return Ok(auth_url);
         }
-
-
 
         [HttpGet("Callback")]
-        public async Task<IActionResult> Callback(HttpContext context)
+        public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string error)
         {
-            // Set webpage content type
-            context.Response.ContentType = "text/html";
-
             // Check if "error" exists in the query string and not null
-            if (context.Request.Query.ContainsKey("error"))
+            if (!string.IsNullOrEmpty(error))
             {
                 // Return the JSON error message if not exists
-                await context.Response.WriteAsJsonAsync(new { error = context.Request.Query["error"] });
-
-                return BadRequest("error");
+                return BadRequest(new { error });
             }
 
-            // Check if "code" exists in the query string
-            if (context.Request.Query.ContainsKey("code"))
+            // Set the Grant Type
+            string GrantType = "authorization_code";
+
+            // Set Redirect URI
+            string RedirectURI = _optionsService.SpotifyRedirectUri;
+
+            // Set Client ID
+            string ClientID = _optionsService.SpotifyClientId;
+
+            // Set Client Secret
+            string ClientSecret = _optionsService.SpotifyClientSecret;
+
+            // Set Token URL
+            string TokenURL = _optionsService.SpotifyTokenUrl;
+
+            // Build the rquest body
+            var RequestBody = new Dictionary<string, string>
             {
-                // Set and Check if the Response Type value exists in query string is not null
-                string ResponseType = context.Request.Query["code"].ToString() ?? throw new InvalidOperationException("The 'code' parameter is missing in the query string.");
+                { "code", code },
+                { "grant_type", GrantType },
+                { "redirect_url", RedirectURI },
+                { "client_id", ClientID },
+                { "client_secret", ClientSecret }
+            };
 
-                // Set the Grant Type
-                string GrantType = "authorization_code";
+            // Set Token Info
+            var TokenInfo = await _httpService.PostFormUrlEncodedContentAsync(TokenURL, RequestBody);
 
-                // Set Redirect URI
-                string RedirectURI = _options.SpotifyRedirectUri;
+            // Check existence of token assets
+            var Assets = _sessionService.CheckAssets(TokenInfo);
 
-                // Set Client ID
-                string ClientID = _options.SpotifyClientId;
+            // Calculate token expiration date
+            string ExpiresIn = _sessionService.CalculateTokenExpirationDate(Assets.ExpiresIn);
 
-                // Set Client Secret
-                string ClientSecret = _options.SpotifyClientSecret;
+            // Store token assets in session
+            _sessionService.StoreAssetes(Assets.AccessToken, Assets.RefreshToken, ExpiresIn);
 
-                // Set Token URL
-                string TokenURL = _options.SpotifyTokenUrl;
+            // Redirect back to playlists
+            Redirect("/playlists");
 
-                // Initialize the rquest body
-                var RequestBody = new Dictionary<string, string>
-                {
-                  { "code", ResponseType },
-                  { "grant_type", GrantType },
-                  { "redirect_url", RedirectURI },
-                  { "client_id", ClientID },
-                  { "client_secret", ClientSecret }
-                };
-
-                // Set Token Info
-                var TokenInfo = await _httpService.PostFormUrlEncodedContentAsync(TokenURL, RequestBody);
-
-                // Set and check access_token is not null
-                string AccessToken = TokenInfo.GetString("access_token") ?? throw new InvalidOperationException("No 'access_token' found");
-
-                // Set and check refresh_token is not null
-                string RefreshToken = TokenInfo.GetString("refresh_token") ?? throw new InvalidOperationException("No 'refresh_token' found");
-
-                // Set and check expires_in is not null
-                string StrExpiresIn = TokenInfo.GetString("expires_in") ?? throw new InvalidOperationException("No 'refresh_token' found");
-
-                // Set ExpiresIn
-                string ExpiresIn = ToTimeStamp(StrExpiresIn).ToString();
-
-                // Store AccessToken in the session
-                context.Session.SetString("access_token", AccessToken);
-
-                // Store RefreshToken in the session
-                context.Session.SetString("refresh_token", RefreshToken);
-
-                // Store ExpiresIn in the session
-                context.Session.SetString("expires_in", ExpiresIn);
-
-                // Redirect to playlists
-                context.Response.Redirect("/playlists");
-
-                return Ok("callback route");
-            }
-
-            else
-            {
-                // Handle the case where neither "error" nor "code" is present
-                await context.Response.WriteAsJsonAsync(new { error = "Invalid request" });
-
-                return BadRequest("Invalid request");
-            }
+            // Successfuly redirect to playlists
+            return Ok("Redirect to playlists");
         }
 
-
-
         [HttpGet("RefreshToken")]
-        public async Task<IActionResult> RefreshToken(HttpContext context)
+        public async Task<IActionResult> RefreshToken()
         {
-            // Set webpage content type
-            context.Response.ContentType = "text/html";
-
             // Set and Check if access_token exists in the session and is not null
-            if (string.IsNullOrEmpty(context.Session.GetString("access_token")))
+            if (string.IsNullOrEmpty(_context.Session.GetString("access_token")))
             {
                 // The access token is not exist
-                context.Response.Redirect("/login");
+                Redirect("/login");
 
                 // Redirect back to Spotify login page
-                return BadRequest("login route");
+                return BadRequest("Redirect to login route");
             }
 
-            // Set current time
-            long CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
             // Check If the access_token is expired
-            if (IsTokenExpired(context, CurrentTime))
+            if (_authHelper.IsTokenExpired())
             {
                 // Console prompt for debugging
                 Console.WriteLine("TOKEN EXPIRED. REFRESHING...");
@@ -176,16 +143,16 @@ namespace SpotifyWebAPI_Intro.Controllers
                 string GrantType = "refresh_token";
 
                 // Check refresh_token value exists in query string and is not null
-                string OldRefreshToken = context.Request.Query["refresh_token"].ToString() ?? throw new InvalidOperationException("The 'refresh_token' parameter is missing in the query string.");
+                string OldRefreshToken = _context.Request.Query["refresh_token"].ToString() ?? throw new InvalidOperationException("The 'refresh_token' parameter is missing in the query string.");
 
                 // Set Client ID
-                string ClientID = _options.SpotifyClientId;
+                string ClientID = _optionsService.SpotifyClientId;
 
                 // Set Client Secret
-                string ClientSecret = _options.SpotifyClientSecret;
+                string ClientSecret = _optionsService.SpotifyClientSecret;
 
                 // Set Token URL
-                string TokenURL = _options.SpotifyTokenUrl;
+                string TokenURL = _optionsService.SpotifyTokenUrl;
 
                 // Initialize request body
                 var RequestBody = new Dictionary<string, string>
@@ -199,73 +166,27 @@ namespace SpotifyWebAPI_Intro.Controllers
                 // Set Token Info
                 var TokenInfo = await _httpService.PostFormUrlEncodedContentAsync(TokenURL, RequestBody);
 
-                // Set and check access_token is not null
-                string AccessToken = TokenInfo.GetString("access_token") ?? throw new InvalidOperationException("No 'access_token' found");
+                // Check existence of Token Assets
+                var Assets = _sessionService.CheckAssets(TokenInfo);
 
-                // Set and check refresh_token is not null
-                string RefreshToken = TokenInfo.GetString("refresh_token") ?? throw new InvalidOperationException("No 'refresh_token' found");
+                // Calculate refresh token expiration date
+                string ExpiresIn = _sessionService.CalculateRefreshTokenExpirationDate(Assets.ExpiresIn);
 
-                // Set and check expires_in is not null
-                string StrExpiresIn = TokenInfo.GetString("expires_in") ?? throw new InvalidOperationException("No 'refresh_token' found");
-
-                // Set NewExpiresIn
-                long _ExpiresIn = ToTimeStamp(StrExpiresIn);
-
-                // Calculate total expires_in
-                string ExpiresIn = (CurrentTime + _ExpiresIn).ToString();
-
-                // Store access_token in session
-                context.Session.SetString("access_token", AccessToken);
-
-                // Store refresh_token in session
-                context.Session.SetString("refresh_token", RefreshToken);
-
-                // Update session with the new expiration date
-                context.Session.SetString("expires_in", ExpiresIn);
-
-                // Redirect to playlists
-                context.Response.Redirect("/playlists");
+                // Store token assets
+                _sessionService.StoreAssetes(Assets.AccessToken, Assets.RefreshToken, ExpiresIn);
 
                 // Redirect back to playlists route
-                return Ok("playlists route");
+                Redirect("/playlists");
+
+                // Successfully redirect back to playlists route
+                return Ok("Redirect to playlists route");
             }
 
-            // Access token is not expired
-            context.Response.Redirect("/playlists");
-
             // Redirect back to playlists route
-            return Ok("playlists route");
-        }
+            Redirect("/playlists");
 
-        // Helper function for building query strings
-        public static string ToQueryString(object queryParameters)
-        {
-            return string.Join("&",
-            queryParameters.GetType().GetProperties()
-            .Select(prop => $"{prop.Name}={Uri.EscapeDataString(prop.GetValue(queryParameters)?.ToString() ?? string.Empty)}"));
-        }
-
-        // Helper function for creating time stamp token expiration date
-        public static long ToTimeStamp(string strExpiresIn)
-        {
-            // Set ExpiresIn
-            long ExpiresIn = long.Parse(strExpiresIn);
-
-            // Converting expiration date to Unix time stamp
-            return DateTimeOffset.UtcNow.AddSeconds(ExpiresIn).ToUnixTimeSeconds(); ;
-        }
-
-        // Helper function to check token expiry
-        private static bool IsTokenExpired(HttpContext context, long CurrentTime)
-        {
-            // Set and check expires_in is not null
-            string OldStrExpiresIn = context.Session.GetString("expires_in") ?? throw new InvalidOperationException("No 'refresh_token' found");
-
-            // Set OldExpiresIn
-            long ExpiresIn = long.Parse(OldStrExpiresIn);
-
-            // Check if the token is expired
-            return CurrentTime > ExpiresIn;
+            // Succssful redirection to playlists route
+            return Ok("Redirect to playlists route");
         }
     }
 }

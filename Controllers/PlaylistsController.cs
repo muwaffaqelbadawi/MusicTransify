@@ -37,8 +37,6 @@ namespace SpotifyWebAPI_Intro.Controllers
                 return Ok("");
             }
 
-
-
             // Set and check expires_in is not null
             string StrExpiresIn = context.Session.GetString("expires_in") ?? throw new InvalidOperationException("No 'expires_in' found");
 
@@ -61,13 +59,8 @@ namespace SpotifyWebAPI_Intro.Controllers
                 return Ok("");
             }
 
-
-            // -----------------------------------------------------------------------------------------
-
             // Create Autorization String
             string Authorization = $"Bearer {context.Session.GetString("access_token")}";
-
-            // ------------------------------------------------------------------------------------------
 
             //Initiate new http class
             using var client = new HttpClient();
@@ -90,12 +83,10 @@ namespace SpotifyWebAPI_Intro.Controllers
             // Deserialize playlist
             var playlists = JsonSerializer.Deserialize<JsonElement>(result);
 
-            // -----------------------------------------------------------------------------------------
-
             // Getting the playlists response back
             await context.Response.WriteAsJsonAsync(playlists);
 
-            return Ok("");
+            return Ok("playlists route");
         }
     }
 }
