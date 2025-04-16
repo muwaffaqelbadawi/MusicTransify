@@ -11,15 +11,15 @@ namespace SpotifyWebAPI_Intro.Controllers
     [Route("auth")]
     public class AuthController : ControllerBase
     {
-        private readonly HttpContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly OptionsService _optionsService;
         private readonly SessionService _sessionService;
         private readonly HttpService _httpService;
         private readonly AuthHelper _authHelper;
 
-        public AuthController(HttpContext context, OptionsService optionsService, SessionService sessionService, HttpService httpService, AuthHelper authHelper)
+        public AuthController(IHttpContextAccessor httpContextAccessor, OptionsService optionsService, SessionService sessionService, HttpService httpService, AuthHelper authHelper)
         {
-            _context = context;
+            _httpContextAccessor = httpContextAccessor;
             _optionsService = optionsService;
             _sessionService = sessionService;
             _httpService = httpService;
@@ -123,8 +123,11 @@ namespace SpotifyWebAPI_Intro.Controllers
         [HttpGet("RefreshToken")]
         public async Task<IActionResult> RefreshToken()
         {
+            var AccessToken = _sessionService.RevealAssete("AccessToken");
+            var OldExpiresIn = _sessionService.RevealAssete("ExpiresIn");
+
             // Set and Check if access_token exists in the session and is not null
-            if (string.IsNullOrEmpty(_context.Session.GetString("access_token")))
+            if (string.IsNullOrEmpty(AccessToken))
             {
                 // The access token is not exist
                 Redirect("/login");
@@ -134,7 +137,7 @@ namespace SpotifyWebAPI_Intro.Controllers
             }
 
             // Check If the access_token is expired
-            if (_authHelper.IsTokenExpired())
+            if (_authHelper.IsExpired(OldExpiresIn))
             {
                 // Console prompt for debugging
                 Console.WriteLine("TOKEN EXPIRED. REFRESHING...");
@@ -143,7 +146,7 @@ namespace SpotifyWebAPI_Intro.Controllers
                 string GrantType = "refresh_token";
 
                 // Check refresh_token value exists in query string and is not null
-                string OldRefreshToken = _context.Request.Query["refresh_token"].ToString() ?? throw new InvalidOperationException("The 'refresh_token' parameter is missing in the query string.");
+                string OldRefreshToken = _httpContextAccessor.HttpContext?.Request.Query["refresh_token"].ToString() ?? throw new InvalidOperationException("The 'refresh_token' parameter is missing in the query string.");
 
                 // Set Client ID
                 string ClientID = _optionsService.SpotifyClientId;
@@ -166,11 +169,11 @@ namespace SpotifyWebAPI_Intro.Controllers
                 // Set Token Info
                 var TokenInfo = await _httpService.PostFormUrlEncodedContentAsync(TokenURL, RequestBody);
 
-                // Check existence of Token Assets
+                // Check existence of Token Assets and return thier values
                 var Assets = _sessionService.CheckAssets(TokenInfo);
 
                 // Calculate refresh token expiration date
-                string ExpiresIn = _sessionService.CalculateRefreshTokenExpirationDate(Assets.ExpiresIn);
+                string ExpiresIn = _sessionService.CalculateTokenExpirationDate(Assets.ExpiresIn);
 
                 // Store token assets
                 _sessionService.StoreAssetes(Assets.AccessToken, Assets.RefreshToken, ExpiresIn);

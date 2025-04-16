@@ -2,19 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SpotifyWebAPI_Intro.Services;
 
 namespace SpotifyWebAPI_Intro.utilities
 {
     public class AuthHelper
     {
-        readonly HttpContext _context;
-
-        public AuthHelper(HttpContext context)
+        public AuthHelper()
         {
-            _context = context;
+
         }
-
-
 
         // Helper function for building query strings
         public string ToQueryString(object queryParameters)
@@ -31,17 +28,14 @@ namespace SpotifyWebAPI_Intro.utilities
             long ExpiresIn = long.Parse(strExpiresIn);
 
             // Converting expiration date to Unix time stamp
-            return DateTimeOffset.UtcNow.AddSeconds(ExpiresIn).ToUnixTimeSeconds(); ;
+            return DateTimeOffset.UtcNow.AddSeconds(ExpiresIn).ToUnixTimeSeconds();
         }
 
         // Helper function to check token expiry
-        public bool IsTokenExpired()
+        public bool IsExpired(string OldExpiresIn)
         {
-            // Set and check expires_in is not null
-            string OldStrExpiresIn = _context.Session.GetString("expires_in") ?? throw new InvalidOperationException("No 'refresh_token' found");
-
             // Set OldExpiresIn
-            long ExpiresIn = long.Parse(OldStrExpiresIn);
+            long ExpiresIn = long.Parse(OldExpiresIn);
 
             // Set the current time
             long CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();

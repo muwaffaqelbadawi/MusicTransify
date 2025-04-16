@@ -10,13 +10,13 @@ namespace SpotifyWebAPI_Intro.Services
 {
     public class SessionService
     {
-        readonly HttpContext _context;
         private readonly AuthHelper _authHelper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public SessionService(HttpContext context, AuthHelper authHelper)
+        public SessionService(AuthHelper authHelper, IHttpContextAccessor httpContextAccessor)
         {
-            _context = context;
             _authHelper = authHelper;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         // Check query string existence
@@ -39,39 +39,53 @@ namespace SpotifyWebAPI_Intro.Services
             // Set token expiration date
             long ExpiresIn = _authHelper.ToTimeStamp(StrExpiresIn);
 
-            // returning token expiration data as a string
-            return ExpiresIn.ToString();
-        }
+            // Check if the token is expired
+            if(_authHelper.IsExpired(StrExpiresIn))
+            {
+                // Set Current time
+                long CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
+                // Calculate token expiration date
+                long NewExpiresIn = CurrentTime + ExpiresIn;
 
+                // return new token expiration date as a string
+                return NewExpiresIn.ToString();
+            }
 
-        // Calculate refresh token expiration date
-        public string CalculateRefreshTokenExpirationDate(string StrExpiresIn)
-        {
-            // Set NewExpiresIn
-            long OldExpiresIn = _authHelper.ToTimeStamp(StrExpiresIn);
-
-            // Set Current time
-            long CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-            // Calculate token expiration date
-            long ExpiresIn = CurrentTime + OldExpiresIn;
-
-            // returning token expiration data as a string
+            // return token expiration data as a string
             return ExpiresIn.ToString();
         }
 
         // Store Token Info in session
         public void StoreAssetes(string AccessToken, string RefreshToken, string ExpiresIn)
         {
+            var Session = _httpContextAccessor.HttpContext?.Session
+            ?? throw new InvalidOperationException("HttpContext or Session is null.");
+
             // Store access token in session
-            _context.Session.SetString("access_token", AccessToken);
+            Session.SetString("access_token", AccessToken);
 
             // Store refresh token in session
-            _context.Session.SetString("refresh_token", RefreshToken);
+            Session.SetString("refresh_token", RefreshToken);
 
             // Store expiration date in session
-            _context.Session.SetString("expires_in", ExpiresIn);
+            Session.SetString("expires_in", ExpiresIn);
+        }
+
+        // Expose token information from session
+        public string RevealAssete(string asset)
+        {
+            var Session = _httpContextAccessor.HttpContext?.Session 
+            ?? throw new InvalidOperationException("HttpContext or Session is null.");
+
+            // Check the requested asset and return the appropriate session value
+            return asset switch
+            {
+                "AccessToken" => Session.GetString("access_token") ?? "Access token not found.",
+                "RefreshToken" => Session.GetString("refresh_token") ?? "Refresh token not found.",
+                "ExpiresIn" => Session.GetString("expires_in") ?? "Expiration time not found.",
+                _ => throw new ArgumentException($"Invalid asset: {asset}", nameof(asset))
+            };
         }
     }
 }

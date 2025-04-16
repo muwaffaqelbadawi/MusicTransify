@@ -3,64 +3,62 @@ using System.Text.Json;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyWebAPI_Intro.Services;
+using SpotifyWebAPI_Intro.utilities;
 
 
 namespace SpotifyWebAPI_Intro.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Route("playlists")]
     public class PlaylistsController : ControllerBase
     {
         private readonly OptionsService _optionsService;
+        private readonly SessionService _sessionService;
+        private readonly AuthHelper _authHelper;
 
-        public PlaylistsController(OptionsService optionsService)
+        public PlaylistsController(OptionsService optionsService, SessionService sessionService, AuthHelper authHelper)
         {
             _optionsService = optionsService;
+            _sessionService = sessionService;
+            _authHelper = authHelper;
         }
 
         [HttpGet("Playlists")]
-        public async Task<IActionResult> GetPlaylists(HttpContext context)
+        public async Task<IActionResult> GetPlaylists()
         {
-            // Set the content type of the webpage
-            context.Response.ContentType = "text/html";
+            var AccessToken = _sessionService.RevealAssete("AccessToken");
 
             // Set APIBase URI
             string APIBaseURL = _optionsService.SpotifyApiBaseUrl;
 
             // Check if access_token exists in the session and is not null
-            if (string.IsNullOrEmpty(context.Session.GetString("access_token")))
+            if (string.IsNullOrEmpty(AccessToken))
             {
                 // Redirect back to Spotify login page
-                context.Response.Redirect("/login");
+                Redirect("/login");
 
-                // Terminate the function
-                return Ok("");
+                // Redirect back to loging
+                return BadRequest("Redirect back to login");
             }
 
-            // Set and check expires_in is not null
-            string StrExpiresIn = context.Session.GetString("expires_in") ?? throw new InvalidOperationException("No 'expires_in' found");
-
-            // Set ExpiresIn
-            long ExpiresIn = long.Parse(StrExpiresIn);
-
-            // Set current time
-            long CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var ExpiresIn = _sessionService.RevealAssete("ExpiresIn");
 
             // Check If the access_token is expired
-            if (CurrentTime > ExpiresIn)
+            if (_authHelper.IsExpired(ExpiresIn))
             {
                 // Console prompt for debugging
                 Console.WriteLine("TOKEN EXPIRED. REFRESHING...");
 
-                // Redirect to refresh_token
-                context.Response.Redirect("/refresh_token");
+                // Redirect to refresh token
+                Redirect("/refresh_token");
 
-                // Terminate the function
-                return Ok("");
+                // Successful redirection to auth_url
+                return Ok("Redirect to refresh token");
             }
 
             // Create Autorization String
-            string Authorization = $"Bearer {context.Session.GetString("access_token")}";
+            string Authorization = $"Bearer {AccessToken}";
 
             //Initiate new http class
             using var client = new HttpClient();
@@ -84,8 +82,9 @@ namespace SpotifyWebAPI_Intro.Controllers
             var playlists = JsonSerializer.Deserialize<JsonElement>(result);
 
             // Getting the playlists response back
-            await context.Response.WriteAsJsonAsync(playlists);
+            await Response.WriteAsJsonAsync(playlists);
 
+            // Successfully redirecting to playlists route
             return Ok("playlists route");
         }
     }
