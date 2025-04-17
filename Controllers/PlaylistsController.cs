@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using SpotifyWebAPI_Intro.Services;
 using SpotifyWebAPI_Intro.utilities;
 
-
 namespace SpotifyWebAPI_Intro.Controllers
 {
     [ApiController]

@@ -7,20 +7,21 @@ using Microsoft.AspNetCore.Mvc;
 namespace SpotifyWebAPI_Intro.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("/")] // Handle the root URL
     public class HomeController : ControllerBase
     {
-        [HttpGet("Home")]
-        public async Task<IActionResult> Index(HttpContext context)
+        [HttpGet] // Handle GET requests to "/"
+        public IActionResult Index()
         {
-            // Set the content type of the webpage
-            context.Response.ContentType = "text/html";
+            // Return a welcome message with a login link
+            string htmlContent = "<html>" +
+            "<body>" +
+            "<h1>Welcome to Spotify App</h1>" +
+            "<a href='/login'>Login with Spotify</a>" +
+            "</body>" +
+            "</html>";
 
-            // Welcome message
-            await context.Response.WriteAsync("Welcome to Spotify App <a href='/login'>Login with Spotify</a>");
-
-            // Welcome message
-            return Ok("Welcome to Spotify App <a href='/login'>Login with Spotify</a>");
+            return Content(htmlContent, "text/html");
         }
     }
 

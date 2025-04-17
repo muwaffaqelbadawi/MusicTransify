@@ -10,12 +10,10 @@ namespace SpotifyWebAPI_Intro.Services
 {
     public class SessionService
     {
-        private readonly AuthHelper _authHelper;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public SessionService(AuthHelper authHelper, IHttpContextAccessor httpContextAccessor)
+        public SessionService(IHttpContextAccessor httpContextAccessor)
         {
-            _authHelper = authHelper;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -32,28 +30,6 @@ namespace SpotifyWebAPI_Intro.Services
             string ExpiresIn = TokenInfo.GetString("expires_in") ?? throw new InvalidOperationException("No 'refresh_token' found");
 
             return (AccessToken, RefreshToken, ExpiresIn);
-        }
-
-        public string CalculateTokenExpirationDate(string StrExpiresIn)
-        {
-            // Set token expiration date
-            long ExpiresIn = _authHelper.ToTimeStamp(StrExpiresIn);
-
-            // Check if the token is expired
-            if(_authHelper.IsExpired(StrExpiresIn))
-            {
-                // Set Current time
-                long CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-                // Calculate token expiration date
-                long NewExpiresIn = CurrentTime + ExpiresIn;
-
-                // return new token expiration date as a string
-                return NewExpiresIn.ToString();
-            }
-
-            // return token expiration data as a string
-            return ExpiresIn.ToString();
         }
 
         // Store Token Info in session
@@ -75,7 +51,7 @@ namespace SpotifyWebAPI_Intro.Services
         // Expose token information from session
         public string RevealAssete(string asset)
         {
-            var Session = _httpContextAccessor.HttpContext?.Session 
+            var Session = _httpContextAccessor.HttpContext?.Session
             ?? throw new InvalidOperationException("HttpContext or Session is null.");
 
             // Check the requested asset and return the appropriate session value

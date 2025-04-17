@@ -1,6 +1,5 @@
 using System;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using SpotifyWebAPI_Intro.Configuration;
 using SpotifyWebAPI_Intro.Services;
 using SpotifyWebAPI_Intro.utilities;
@@ -21,11 +20,11 @@ namespace SpotifyWebAPI_Intro
             // Add AddHttpContextAccessor to the DI container
             builder.Services.AddHttpContextAccessor();
 
-            // Add the Application Options configuration to the DI container
-            builder.Services.ConfigureOptions<ApplicationOptions>();
-
             // Add the ApplicationOptionsSetup singleton to the DI container
-            builder.Services.AddSingleton<ApplicationOptionsSetup>();
+            builder.Services.AddSingleton<IConfigureOptions<ApplicationOptions>, ApplicationOptionsSetup>();
+
+            // Add Data Protection (fix for session middleware issue)
+            builder.Services.AddDataProtection();
 
             // Add the SessionService singleton to the DI container
             builder.Services.AddSingleton<SessionService>();
@@ -38,12 +37,16 @@ namespace SpotifyWebAPI_Intro
 
             // Add session support
             builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession();
 
             var app = builder.Build();
 
             // Configure the HTTP Request Pipeline
             // Enable session
             app.UseSession();
+
+            // Serve default files
+            app.UseDefaultFiles();
 
             // Enable static files middleware
             app.UseStaticFiles();

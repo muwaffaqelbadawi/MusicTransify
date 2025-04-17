@@ -31,6 +31,28 @@ namespace SpotifyWebAPI_Intro.utilities
             return DateTimeOffset.UtcNow.AddSeconds(ExpiresIn).ToUnixTimeSeconds();
         }
 
+        public string CalculateTokenExpirationDate(string StrExpiresIn)
+        {
+            // Set token expiration date
+            long ExpiresIn = ToTimeStamp(StrExpiresIn);
+
+            // Check if the token is expired
+            if (IsExpired(StrExpiresIn))
+            {
+                // Set Current time
+                long CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+                // Calculate token expiration date
+                long NewExpiresIn = CurrentTime + ExpiresIn;
+
+                // return new token expiration date as a string
+                return NewExpiresIn.ToString();
+            }
+
+            // return token expiration data as a string
+            return ExpiresIn.ToString();
+        }
+
         // Helper function to check token expiry
         public bool IsExpired(string OldExpiresIn)
         {

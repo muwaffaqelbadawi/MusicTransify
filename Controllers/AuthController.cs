@@ -108,7 +108,7 @@ namespace SpotifyWebAPI_Intro.Controllers
             var Assets = _sessionService.CheckAssets(TokenInfo);
 
             // Calculate token expiration date
-            string ExpiresIn = _sessionService.CalculateTokenExpirationDate(Assets.ExpiresIn);
+            string ExpiresIn = _authHelper.CalculateTokenExpirationDate(Assets.ExpiresIn);
 
             // Store token assets in session
             _sessionService.StoreAssetes(Assets.AccessToken, Assets.RefreshToken, ExpiresIn);
@@ -173,7 +173,7 @@ namespace SpotifyWebAPI_Intro.Controllers
                 var Assets = _sessionService.CheckAssets(TokenInfo);
 
                 // Calculate refresh token expiration date
-                string ExpiresIn = _sessionService.CalculateTokenExpirationDate(Assets.ExpiresIn);
+                string ExpiresIn = _authHelper.CalculateTokenExpirationDate(Assets.ExpiresIn);
 
                 // Store token assets
                 _sessionService.StoreAssetes(Assets.AccessToken, Assets.RefreshToken, ExpiresIn);
