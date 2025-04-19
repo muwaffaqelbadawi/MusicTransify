@@ -4,28 +4,34 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyWebAPI_Intro.Services;
 using SpotifyWebAPI_Intro.utilities;
+using Microsoft.Extensions.Logging;
 
 namespace SpotifyWebAPI_Intro.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    [Route("playlists")]
+    [Route("playlists")] // Route: "/playlists"
     public class PlaylistsController : ControllerBase
     {
         private readonly OptionsService _optionsService;
         private readonly SessionService _sessionService;
         private readonly AuthHelper _authHelper;
+        private readonly ILogger<PlaylistsController> _logger;
 
-        public PlaylistsController(OptionsService optionsService, SessionService sessionService, AuthHelper authHelper)
+        public PlaylistsController(OptionsService optionsService, SessionService sessionService, AuthHelper authHelper, ILogger<PlaylistsController> logger)
         {
             _optionsService = optionsService;
             _sessionService = sessionService;
             _authHelper = authHelper;
+            _logger = logger;
         }
 
-        [HttpGet("Playlists")]
+        [HttpGet] // Route: "/playlists"
         public async Task<IActionResult> GetPlaylists()
         {
+            // Use the log information
+            _logger.LogInformation("This is the playlist page");
+
+
             var AccessToken = _sessionService.RevealAssete("AccessToken");
 
             // Set APIBase URI
@@ -35,7 +41,7 @@ namespace SpotifyWebAPI_Intro.Controllers
             if (string.IsNullOrEmpty(AccessToken))
             {
                 // Redirect back to Spotify login page
-                Redirect("/login");
+                Redirect("/auth/login");
 
                 // Redirect back to loging
                 return BadRequest("Redirect back to login");
@@ -50,10 +56,7 @@ namespace SpotifyWebAPI_Intro.Controllers
                 Console.WriteLine("TOKEN EXPIRED. REFRESHING...");
 
                 // Redirect to refresh token
-                Redirect("/refresh_token");
-
-                // Successful redirection to auth_url
-                return Ok("Redirect to refresh token");
+                return Redirect("/auth/refresh_token");
             }
 
             // Create Autorization String
@@ -80,11 +83,8 @@ namespace SpotifyWebAPI_Intro.Controllers
             // Deserialize playlist
             var playlists = JsonSerializer.Deserialize<JsonElement>(result);
 
-            // Getting the playlists response back
-            await Response.WriteAsJsonAsync(playlists);
-
-            // Successfully redirecting to playlists route
-            return Ok("playlists route");
+            // Returning the playlists
+            return Ok(playlists);
         }
     }
 }

@@ -1,74 +1,54 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
 using SpotifyWebAPI_Intro.Services;
 using SpotifyWebAPI_Intro.utilities;
 
 namespace SpotifyWebAPI_Intro.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    [Route("auth")]
+    [Route("auth")] // Base route "/auth"
     public class AuthController : ControllerBase
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly AuthService _authService;
         private readonly OptionsService _optionsService;
         private readonly SessionService _sessionService;
         private readonly HttpService _httpService;
         private readonly AuthHelper _authHelper;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IHttpContextAccessor httpContextAccessor, OptionsService optionsService, SessionService sessionService, HttpService httpService, AuthHelper authHelper)
+        public AuthController(IHttpContextAccessor httpContextAccessor, AuthService authService, OptionsService optionsService, SessionService sessionService, HttpService httpService, AuthHelper authHelper, ILogger<AuthController> logger)
         {
             _httpContextAccessor = httpContextAccessor;
+            _authService = authService;
             _optionsService = optionsService;
             _sessionService = sessionService;
             _httpService = httpService;
             _authHelper = authHelper;
+            _logger = logger;
         }
 
-        [HttpGet("Login")]
+        [HttpGet("login")] // Route: "/auth/login"
         public IActionResult Login()
         {
-            string ClientID = _optionsService.SpotifyClientId;
+            // Use the log information
+            _logger.LogInformation("This is the loging page");
 
-            // Set Response Type
-            const string ResponseType = "code";
-
-            // Set the scope value
-            const string SCOPE = "user-read-private user-read-email";
-
-            // Set Redirect URI
-            string RedirectURI = _optionsService.SpotifyRedirectUri;
-
-            // Set Auth URL
-            string AuthURL = _optionsService.SpotifyAuthUrl;
-
-            // Querry Parameters
-            var queryParameters = new Dictionary<string, string>
-            {
-                { "client_id", ClientID },
-                { "response_type", ResponseType },
-                { "scope", SCOPE },
-                { "redirect_uri", RedirectURI },
-                { "show_dialog", "true" }
-            };
-
-            // Build the query string from the parameters
-            var queryString = _authHelper.ToQueryString(queryParameters);
-
-            // Form the authorization URL
-            var auth_url = $"{AuthURL}?{queryString}";
-
-            // Redirect to the authorization URL
-            Redirect(auth_url);
-
-            // Successful redirection to auth_url
-            return Ok(auth_url);
+            string redirectUrl = _authService.GetLogInURL();
+            return Redirect(redirectUrl);
         }
 
-        [HttpGet("Callback")]
-        public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string error)
+
+
+        [HttpGet("Callback")] // Route: "/auth/callback"
+        public async Task<IActionResult> Callback([FromQuery]string code, [FromQuery]string error)
         {
+            // Use the log information
+            _logger.LogInformation("This is the callback page");
+
+
             // Check if "error" exists in the query string and not null
             if (!string.IsNullOrEmpty(error))
             {
@@ -114,15 +94,16 @@ namespace SpotifyWebAPI_Intro.Controllers
             _sessionService.StoreAssetes(Assets.AccessToken, Assets.RefreshToken, ExpiresIn);
 
             // Redirect back to playlists
-            Redirect("/playlists");
-
-            // Successfuly redirect to playlists
-            return Ok("Redirect to playlists");
+            return Redirect("/playlists");
         }
 
-        [HttpGet("RefreshToken")]
+        [HttpGet("refresh_token")] // Route: "/auth/refresh_token"
         public async Task<IActionResult> RefreshToken()
         {
+            // Use the log information
+            _logger.LogInformation("This is the refresh token page");
+
+
             var AccessToken = _sessionService.RevealAssete("AccessToken");
             var OldExpiresIn = _sessionService.RevealAssete("ExpiresIn");
 
@@ -179,17 +160,11 @@ namespace SpotifyWebAPI_Intro.Controllers
                 _sessionService.StoreAssetes(Assets.AccessToken, Assets.RefreshToken, ExpiresIn);
 
                 // Redirect back to playlists route
-                Redirect("/playlists");
-
-                // Successfully redirect back to playlists route
-                return Ok("Redirect to playlists route");
+                return Redirect("/playlists");
             }
 
             // Redirect back to playlists route
-            Redirect("/playlists");
-
-            // Succssful redirection to playlists route
-            return Ok("Redirect to playlists route");
+            return Redirect("/playlists");
         }
     }
 }

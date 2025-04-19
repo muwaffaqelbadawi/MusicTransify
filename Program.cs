@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using SpotifyWebAPI_Intro.Configuration;
 using SpotifyWebAPI_Intro.Services;
 using SpotifyWebAPI_Intro.utilities;
+using SpotifyWebAPI_Intro.Middlewares;
 
 namespace SpotifyWebAPI_Intro
 {
@@ -26,8 +27,14 @@ namespace SpotifyWebAPI_Intro
             // Add Data Protection (fix for session middleware issue)
             builder.Services.AddDataProtection();
 
+            // Add the OptionsService singleton to the DI container
+            builder.Services.AddSingleton<OptionsService>();
+            
             // Add the SessionService singleton to the DI container
             builder.Services.AddSingleton<SessionService>();
+
+            // Add the AuthService singleton to the DI container
+            builder.Services.AddSingleton<AuthService>();
 
             // Add HttpClient to the DI container
             builder.Services.AddHttpClient<HttpService>();
@@ -37,28 +44,29 @@ namespace SpotifyWebAPI_Intro
 
             // Add session support
             builder.Services.AddDistributedMemoryCache();
+
+            // Add session service to DI container
             builder.Services.AddSession();
 
             var app = builder.Build();
 
-            // Configure the HTTP Request Pipeline
             // Enable session
             app.UseSession();
 
             // Serve default files
-            app.UseDefaultFiles();
+            // app.UseDefaultFiles();
 
             // Enable static files middleware
-            app.UseStaticFiles();
+            // app.UseStaticFiles();
 
             // Configure routing for controllers
             app.UseRouting();
 
+            // Add the custom request logging middleware
+            app.UseMiddleware<RequestLoggingMiddleware>();
+
             // Map routes to controllers
             app.MapControllers();
-
-            // Fallback to index.html for client-side routing
-            app.MapFallbackToFile("index.html");
 
             // Start app
             await app.RunAsync("http://localhost:5543");
