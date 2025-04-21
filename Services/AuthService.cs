@@ -1,18 +1,24 @@
 using System;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using SpotifyWebAPI_Intro.Models;
 using SpotifyWebAPI_Intro.utilities;
+
 
 namespace SpotifyWebAPI_Intro.Services
 {
     public class AuthService
     {
         private readonly OptionsService _optionsService;
+        private readonly HttpService _httpService;
         private readonly AuthHelper _authHelper;
-        public AuthService(OptionsService optionsService, AuthHelper authHelper)
+        public AuthService(OptionsService optionsService, HttpService httpService, AuthHelper authHelper)
         {
             _optionsService = optionsService;
+            _httpService = httpService;
             _authHelper = authHelper;
         }
 
@@ -47,6 +53,38 @@ namespace SpotifyWebAPI_Intro.Services
 
             // Returning the authorization URL
             return $"{AuthURL}?{queryString}";
+        }
+
+        public async Task<JsonElement> ExchangeAuthorizationCodeAsync(string Code)
+        {
+            // Set the Grant Type
+            string GrantType = "authorization_code";
+
+            // Set Redirect URI
+            string RedirectURI = _optionsService.SpotifyRedirectUri;
+
+            // Set Client ID
+            string ClientID = _optionsService.SpotifyClientId;
+
+            // Set Client Secret
+            string ClientSecret = _optionsService.SpotifyClientSecret;
+
+            // Set Token URL
+            string TokenURL = _optionsService.SpotifyTokenUrl;
+
+            // Build the rquest body
+            var RequestBody = new Dictionary<string, string>
+            {
+                { "code", Code },
+                { "grant_type", GrantType },
+                { "redirect_url", RedirectURI },
+                { "client_id", ClientID },
+                { "client_secret", ClientSecret }
+            };
+
+            var TokenInfo = await _httpService.PostFormUrlEncodedContentAsync(TokenURL, RequestBody);
+
+            return TokenInfo;
         }
     }
 }

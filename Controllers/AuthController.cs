@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
+using SpotifyWebAPI_Intro.Models;
 using SpotifyWebAPI_Intro.Services;
 using SpotifyWebAPI_Intro.utilities;
 
@@ -40,49 +41,22 @@ namespace SpotifyWebAPI_Intro.Controllers
             return Redirect(redirectUrl);
         }
 
-
-
         [HttpGet("Callback")] // Route: "/auth/callback"
-        public async Task<IActionResult> Callback([FromQuery]string code, [FromQuery]string error)
+        public async Task<IActionResult> Callback([FromQuery] CallbackRequest request)
         {
             // Use the log information
             _logger.LogInformation("This is the callback page");
 
 
             // Check if "error" exists in the query string and not null
-            if (!string.IsNullOrEmpty(error))
+            if (!string.IsNullOrEmpty(request.Error))
             {
                 // Return the JSON error message if not exists
-                return BadRequest(new { error });
+                return BadRequest(new { request.Error });
             }
 
-            // Set the Grant Type
-            string GrantType = "authorization_code";
-
-            // Set Redirect URI
-            string RedirectURI = _optionsService.SpotifyRedirectUri;
-
-            // Set Client ID
-            string ClientID = _optionsService.SpotifyClientId;
-
-            // Set Client Secret
-            string ClientSecret = _optionsService.SpotifyClientSecret;
-
-            // Set Token URL
-            string TokenURL = _optionsService.SpotifyTokenUrl;
-
-            // Build the rquest body
-            var RequestBody = new Dictionary<string, string>
-            {
-                { "code", code },
-                { "grant_type", GrantType },
-                { "redirect_url", RedirectURI },
-                { "client_id", ClientID },
-                { "client_secret", ClientSecret }
-            };
-
-            // Set Token Info
-            var TokenInfo = await _httpService.PostFormUrlEncodedContentAsync(TokenURL, RequestBody);
+            // Recieve the Token Info
+            var TokenInfo = await _authService.ExchangeAuthorizationCodeAsync(request.Code ?? throw new InvalidCastException("Code parameter is not found"));
 
             // Check existence of token assets
             var Assets = _sessionService.CheckAssets(TokenInfo);
@@ -96,6 +70,16 @@ namespace SpotifyWebAPI_Intro.Controllers
             // Redirect back to playlists
             return Redirect("/playlists");
         }
+
+
+
+
+
+
+
+
+
+
 
         [HttpGet("refresh_token")] // Route: "/auth/refresh_token"
         public async Task<IActionResult> RefreshToken()
