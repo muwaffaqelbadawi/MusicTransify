@@ -71,16 +71,6 @@ namespace SpotifyWebAPI_Intro.Controllers
             return Redirect("/playlists");
         }
 
-
-
-
-
-
-
-
-
-
-
         [HttpGet("refresh_token")] // Route: "/auth/refresh_token"
         public async Task<IActionResult> RefreshToken()
         {
