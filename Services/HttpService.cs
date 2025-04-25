@@ -1,18 +1,22 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Net.Http.Headers;
 
 namespace SpotifyWebAPI_Intro.Services
 {
     public class HttpService
     {
         private readonly HttpClient _httpClient;
+        private readonly OptionsService _optionsService;
+        private readonly SessionService _sessionService;
 
-        public HttpService(HttpClient httpClient)
+        public HttpService(HttpClient httpClient, OptionsService optionsService, SessionService sessionService)
         {
             _httpClient = httpClient;
+            _optionsService = optionsService;
+            _sessionService = sessionService;
         }
 
         public async Task<JsonElement> PostFormUrlEncodedContentAsync(string url, Dictionary<string, string> requestBody)
@@ -34,6 +38,25 @@ namespace SpotifyWebAPI_Intro.Services
 
             // return Token Info
             return JsonSerializer.Deserialize<JsonElement>(result);
+        }
+        public async Task<HttpResponseMessage> GetHttpResponseAsync(string EndPoint)
+        {
+            // Set access token
+            string AccessToken = _sessionService.GetTokenInfo("AccessToken");
+
+            // Set APIBase URI
+            string APIBaseURL = _optionsService.SpotifyApiBaseUrl;
+
+            // Create Autorization String
+            string Authorization = $"Bearer {AccessToken}";
+
+            // Authorization Header
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Authorization);
+
+            // Get playlists info
+            var response = await _httpClient.GetAsync($"{APIBaseURL}{EndPoint}");
+
+            return response;
         }
     }
 }

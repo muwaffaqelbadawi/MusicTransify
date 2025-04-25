@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using SpotifyWebAPI_Intro.Models;
 using SpotifyWebAPI_Intro.utilities;
 
-
 namespace SpotifyWebAPI_Intro.Services
 {
     public class AuthService

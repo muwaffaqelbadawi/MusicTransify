@@ -11,14 +11,18 @@ namespace SpotifyWebAPI_Intro.Services
     public class SessionService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly AuthHelper _authHelper;
+        private readonly TokenHelper _tokenHelper;
 
-        public SessionService(IHttpContextAccessor httpContextAccessor)
+        public SessionService(IHttpContextAccessor httpContextAccessor, AuthHelper authHelper, TokenHelper tokenHelper)
         {
             _httpContextAccessor = httpContextAccessor;
+            _authHelper = authHelper;
+            _tokenHelper = tokenHelper;
         }
 
         // Check query string existence
-        public (string AccessToken, string RefreshToken, string ExpiresIn) CheckAssets(JsonElement TokenInfo)
+        public (string AccessToken, string RefreshToken, string ExpiresIn) Check(JsonElement TokenInfo)
         {
             // Set and check access_token is not null
             string AccessToken = TokenInfo.GetString("access_token") ?? throw new InvalidOperationException("No 'access_token' found");
@@ -33,8 +37,19 @@ namespace SpotifyWebAPI_Intro.Services
         }
 
         // Store Token Info in session
-        public void StoreAssetes(string AccessToken, string RefreshToken, string ExpiresIn)
+        public void Store(JsonElement TokenInfo)
         {
+            // Check existence of token assets
+            var Assets = Check(TokenInfo);
+
+            string AccessToken = Assets.AccessToken;
+            string RefreshToken = Assets.RefreshToken;
+            string _ExpiresIn = Assets.ExpiresIn;
+
+            // Calculate token expiration date
+            string ExpiresIn = _tokenHelper.CalculateExpirationDate(_ExpiresIn);
+
+            // Initialize session storage
             var Session = _httpContextAccessor.HttpContext?.Session
             ?? throw new InvalidOperationException("HttpContext or Session is null.");
 
@@ -49,19 +64,24 @@ namespace SpotifyWebAPI_Intro.Services
         }
 
         // Expose token information from session
-        public string RevealAssete(string asset)
+        public string GetTokenInfo(string TokenInfo)
         {
             var Session = _httpContextAccessor.HttpContext?.Session
             ?? throw new InvalidOperationException("HttpContext or Session is null.");
 
-            // Check the requested asset and return the appropriate session value
-            return asset switch
+            // Check the requested TokenInfo and return the appropriate session value
+            return TokenInfo switch
             {
                 "AccessToken" => Session.GetString("access_token") ?? "Access token not found.",
                 "RefreshToken" => Session.GetString("refresh_token") ?? "Refresh token not found.",
                 "ExpiresIn" => Session.GetString("expires_in") ?? "Expiration time not found.",
-                _ => throw new ArgumentException($"Invalid asset: {asset}", nameof(asset))
+                _ => throw new ArgumentException($"Invalid TokenInfo: {TokenInfo}", nameof(TokenInfo))
             };
+        }
+
+        public static implicit operator SessionService(SessionOptions v)
+        {
+            throw new NotImplementedException();
         }
     }
 }

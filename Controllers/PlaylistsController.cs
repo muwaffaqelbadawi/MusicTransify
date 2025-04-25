@@ -1,10 +1,8 @@
 using System;
 using System.Text.Json;
-using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyWebAPI_Intro.Services;
 using SpotifyWebAPI_Intro.utilities;
-using Microsoft.Extensions.Logging;
 
 namespace SpotifyWebAPI_Intro.Controllers
 {
@@ -12,16 +10,17 @@ namespace SpotifyWebAPI_Intro.Controllers
     [Route("playlists")] // Route: "/playlists"
     public class PlaylistsController : ControllerBase
     {
-        private readonly OptionsService _optionsService;
         private readonly SessionService _sessionService;
-        private readonly AuthHelper _authHelper;
+        private readonly HttpService _httpService;
+        private readonly TokenHelper _tokenHelper;
         private readonly ILogger<PlaylistsController> _logger;
 
-        public PlaylistsController(OptionsService optionsService, SessionService sessionService, AuthHelper authHelper, ILogger<PlaylistsController> logger)
+        public PlaylistsController(SessionService sessionService, HttpService httpService, TokenHelper tokenHelper, ILogger<PlaylistsController> logger)
         {
-            _optionsService = optionsService;
             _sessionService = sessionService;
-            _authHelper = authHelper;
+            _httpService = httpService;
+            _tokenHelper = tokenHelper;
+
             _logger = logger;
         }
 
@@ -31,14 +30,8 @@ namespace SpotifyWebAPI_Intro.Controllers
             // Use the log information
             _logger.LogInformation("This is the playlist page");
 
-
-            var AccessToken = _sessionService.RevealAssete("AccessToken");
-
-            // Set APIBase URI
-            string APIBaseURL = _optionsService.SpotifyApiBaseUrl;
-
-            // Check if access_token exists in the session and is not null
-            if (string.IsNullOrEmpty(AccessToken))
+            // Check if access token exists in the session and is not null
+            if (string.IsNullOrEmpty(_sessionService.GetTokenInfo("AccessToken")))
             {
                 // Redirect back to Spotify login page
                 Redirect("/auth/login");
@@ -47,29 +40,15 @@ namespace SpotifyWebAPI_Intro.Controllers
                 return BadRequest("Redirect back to login");
             }
 
-            var ExpiresIn = _sessionService.RevealAssete("ExpiresIn");
-
             // Check If the access_token is expired
-            if (_authHelper.IsExpired(ExpiresIn))
+            if (_tokenHelper.IsExpired())
             {
-                // Console prompt for debugging
-                Console.WriteLine("TOKEN EXPIRED. REFRESHING...");
-
                 // Redirect to refresh token
                 return Redirect("/auth/refresh_token");
             }
 
-            // Create Autorization String
-            string Authorization = $"Bearer {AccessToken}";
-
-            //Initiate new http class
-            using var client = new HttpClient();
-
-            // Authorization Header
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Authorization);
-
-            // Post Form Url Encoded Content
-            var response = await client.GetAsync($"{APIBaseURL}me/playlists");
+            // Get playlists info
+            var response = await _httpService.GetHttpResponseAsync("me/playlists");
 
             // Handling response error
             if (!response.IsSuccessStatusCode)
