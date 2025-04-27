@@ -1,35 +1,26 @@
 using System;
-using System.Reflection;
-using System.Threading.Tasks;
-using SpotifyWebAPI_Intro.Services;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Collections.Generic;
 
 namespace SpotifyWebAPI_Intro.utilities
 {
     public class AuthHelper
     {
-        public AuthHelper()
-        {
-
-        }
-
         // Helper function for building query strings
-        public string ToQueryString(object queryParameters)
+        public string ToQueryString(Dictionary<string, string> QueryParameters)
         {
-            if (queryParameters == null)
-            {
-                return string.Empty;
-            }
+            if (QueryParameters == null || QueryParameters.Count == 0) return string.Empty;
 
-            return string.Join("&",
-            queryParameters.GetType()
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(prop => prop.GetIndexParameters().Length == 0)
-            .Select(prop =>
-            {
-                var key = Uri.EscapeDataString(prop.Name); // Encode property name
-                var value = Uri.EscapeDataString(prop.GetValue(queryParameters)?.ToString() ?? string.Empty); // Encode property value
-                return $"{key}={value}";
-            }));
+            var EncodedParams = QueryParameters
+            .Where(kvp => !string.IsNullOrEmpty(kvp.Value))
+            .Select(kvp =>
+            $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}");
+
+            return EncodedParams.Any()
+            ? "?" + string.Join("&", EncodedParams)
+            : string.Empty;
         }
     }
 }

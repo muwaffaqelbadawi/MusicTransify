@@ -41,7 +41,7 @@ namespace SpotifyWebAPI_Intro.Controllers
             }
 
             // Check If the access_token is expired
-            if (_tokenHelper.IsExpired())
+            if (_tokenHelper.IsExpired(_sessionService.GetTokenInfo("ExpiresIn")))
             {
                 // Redirect to refresh token
                 return Redirect("/auth/refresh_token");

@@ -7,11 +7,11 @@ namespace SpotifyWebAPI_Intro.Configuration
 {
     public class ApplicationOptions
     {
-        public string SpotifyClientId { get; init;} = string.Empty;
-        public string SpotifyClientSecret { get; init;} = string.Empty;
-        public string SpotifyRedirectURI { get; init;} = string.Empty;
-        public string SpotifyAauthURL { get; init;} = string.Empty;
-        public string SpotifyTokenURL { get; init;} = string.Empty;
-        public string SpotifyAPIBaseURL { get; init;} = string.Empty;
+        public string SpotifyClientId { get; set; } = string.Empty;
+        public string SpotifyClientSecret { get; set; } = string.Empty;
+        public string SpotifyRedirectURI { get; set; } = string.Empty;
+        public string SpotifyAauthURL { get; set; } = string.Empty;
+        public string SpotifyTokenURL { get; set; } = string.Empty;
+        public string SpotifyAPIBaseURL { get; set; } = string.Empty;
     }
 }

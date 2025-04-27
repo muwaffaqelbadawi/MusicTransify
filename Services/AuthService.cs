@@ -1,10 +1,5 @@
 using System;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using SpotifyWebAPI_Intro.Models;
 using SpotifyWebAPI_Intro.utilities;
 
 namespace SpotifyWebAPI_Intro.Services
@@ -21,7 +16,7 @@ namespace SpotifyWebAPI_Intro.Services
             _authHelper = authHelper;
         }
 
-        public string GetLogInURL()
+        public string GetLogInURI()
         {
             string ClientID = _optionsService.SpotifyClientId;
 
@@ -37,8 +32,8 @@ namespace SpotifyWebAPI_Intro.Services
             // Set Auth URL
             string AuthURL = _optionsService.SpotifyAuthUrl;
 
-            // Querry Parameters
-            var queryParameters = new Dictionary<string, string>
+            // Query Parameters
+            var QueryParameters = new Dictionary<string, string>
             {
                 { "client_id", ClientID },
                 { "response_type", ResponseType },
@@ -48,10 +43,10 @@ namespace SpotifyWebAPI_Intro.Services
             };
 
             // Build the query string from the parameters
-            var queryString = _authHelper.ToQueryString(queryParameters);
+            var QueryString = _authHelper.ToQueryString(QueryParameters);
 
             // Returning the authorization URL
-            return $"{AuthURL}?{queryString}";
+            return $"{AuthURL}?{QueryString}";
         }
 
         public async Task<JsonElement> ExchangeAuthorizationCodeAsync(string Code)
@@ -74,13 +69,42 @@ namespace SpotifyWebAPI_Intro.Services
             // Build the rquest body
             var RequestBody = new Dictionary<string, string>
             {
-                { "code", Code },
-                { "grant_type", GrantType },
-                { "redirect_url", RedirectURI },
-                { "client_id", ClientID },
-                { "client_secret", ClientSecret }
+              { "code", Code },
+              { "grant_type", GrantType },
+              { "redirect_uri", RedirectURI },
+              { "client_id", ClientID },
+              { "client_secret", ClientSecret }
             };
 
+            var TokenInfo = await _httpService.PostFormUrlEncodedContentAsync(TokenURL, RequestBody);
+
+            return TokenInfo;
+        }
+
+        public async Task<JsonElement> GetNewTokenAsync(string RefreshToken)
+        {
+            // Set the grant_type
+            string GrantType = "refresh_token";
+
+            // Set Client ID
+            string ClientID = _optionsService.SpotifyClientId;
+
+            // Set Client Secret
+            string ClientSecret = _optionsService.SpotifyClientSecret;
+
+            // Set Token URL
+            string TokenURL = _optionsService.SpotifyTokenUrl;
+
+            // Initialize request body
+            var RequestBody = new Dictionary<string, string>
+            {
+              { "grant_type", GrantType },
+              { "refresh_token", RefreshToken },
+              { "client_id", ClientID },
+              { "client_secret", ClientSecret }
+            };
+
+            // Set Token Info
             var TokenInfo = await _httpService.PostFormUrlEncodedContentAsync(TokenURL, RequestBody);
 
             return TokenInfo;

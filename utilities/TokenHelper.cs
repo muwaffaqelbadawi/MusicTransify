@@ -2,62 +2,48 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SpotifyWebAPI_Intro.Services;
 
 namespace SpotifyWebAPI_Intro.utilities
 {
     public class TokenHelper
     {
-        private readonly SessionService _sessionService;
-        public TokenHelper(SessionOptions sessionService)
-        {
-            _sessionService = sessionService;
-        }
-
         // Helper function for creating time stamp token expiration date
-        public long ToTimeStamp(string _ExpiresIn)
+        public long ToTimeStamp(string ExpiresIn)
         {
             // Set ExpiresIn
-            long ExpiresIn = long.Parse(_ExpiresIn);
+            long Seconds = long.Parse(ExpiresIn);
 
             // Converting expiration date to Unix time stamp
-            return DateTimeOffset.UtcNow.AddSeconds(ExpiresIn).ToUnixTimeSeconds();
+            return DateTimeOffset.UtcNow.AddSeconds(Seconds).ToUnixTimeSeconds();
         }
 
-        public string CalculateExpirationDate(string _ExpiresIn)
+        public string CalculateExpirationDate(string ExpiresIn, string? OldExpiresIn = null)
         {
             // Set token expiration date
-            long __ExpiresIn = ToTimeStamp(_ExpiresIn);
+            long NewExpiresIn = ToTimeStamp(ExpiresIn);
 
-            // Check if the token is expired
-            if (IsExpired())
+            // Optionally check for old expiration date
+            if (!string.IsNullOrEmpty(OldExpiresIn) && IsExpired(OldExpiresIn))
             {
-                // Set Current time
-                long CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-                // Calculate token expiration date
-                long ExpiresIn = CurrentTime + __ExpiresIn;
-
-                // return new token expiration date as a string
-                return ExpiresIn.ToString();
+                long currentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                long expiresInValue = currentTime + NewExpiresIn;
+                return expiresInValue.ToString();
             }
 
             // return token expiration data as a string
-            return _ExpiresIn.ToString();
+            return ExpiresIn.ToString();
         }
 
         // Helper function to check token expiry
-        public bool IsExpired()
+        public bool IsExpired(string ExpiresIn)
         {
-            // Set OldExpiresIn
-            string _ExpiresIn = _sessionService.GetTokenInfo("ExpiresIn");
-            long ExpiresIn = long.Parse(_ExpiresIn);
+            long Expiration = long.Parse(ExpiresIn);
 
             // Set the current time
-            long CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            long currentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             // Check if the token is expired
-            return CurrentTime > ExpiresIn;
+            return currentTime > Expiration;
         }
     }
 }

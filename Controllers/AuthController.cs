@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyWebAPI_Intro.Models;
@@ -13,18 +12,14 @@ namespace SpotifyWebAPI_Intro.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AuthService _authService;
-        private readonly OptionsService _optionsService;
         private readonly SessionService _sessionService;
-        private readonly HttpService _httpService;
         private readonly TokenHelper _tokenHelper;
         private readonly ILogger<AuthController> _logger;
 
-        public AuthController(AuthService authService, OptionsService optionsService, SessionService sessionService, HttpService httpService, TokenHelper tokenHelper, ILogger<AuthController> logger)
+        public AuthController(AuthService authService, SessionService sessionService, TokenHelper tokenHelper, ILogger<AuthController> logger)
         {
             _authService = authService;
-            _optionsService = optionsService;
             _sessionService = sessionService;
-            _httpService = httpService;
             _tokenHelper = tokenHelper;
             _logger = logger;
         }
@@ -33,17 +28,17 @@ namespace SpotifyWebAPI_Intro.Controllers
         public IActionResult Login()
         {
             // Use the log information
-            _logger.LogInformation("This is the loging page");
+            _logger.LogInformation("This is the LogIn route");
 
-            string redirectUrl = _authService.GetLogInURL();
-            return Redirect(redirectUrl);
+            string redirectUri = _authService.GetLogInURI();
+            return Redirect(redirectUri);
         }
 
         [HttpGet("Callback")] // Route: "/auth/callback"
         public async Task<IActionResult> Callback([FromQuery] CallbackRequest request)
         {
             // Use the log information
-            _logger.LogInformation("This is the callback page");
+            _logger.LogInformation("This is the Callback roue");
 
             // Check if "error" exists in the query string and not null
             if (!string.IsNullOrEmpty(request.Error))
@@ -78,7 +73,7 @@ namespace SpotifyWebAPI_Intro.Controllers
         public async Task<IActionResult> RefreshToken([FromQuery] CallbackRequest request)
         {
             // Use the log information
-            _logger.LogInformation("This is the refresh token page");
+            _logger.LogInformation("This is the Refresh Token route");
 
             var AccessToken = _sessionService.GetTokenInfo("AccessToken");
 
@@ -88,16 +83,13 @@ namespace SpotifyWebAPI_Intro.Controllers
                 // The access token is not exist
                 Redirect("/login");
 
-                // Redirect back to Spotify login page
+                // Redirect back to Spotify login route
                 return BadRequest("Redirect to login route");
             }
 
             // Check If the access_token is expired
-            if (_tokenHelper.IsExpired())
+            if (_tokenHelper.IsExpired(_sessionService.GetTokenInfo("ExpiresIn")))
             {
-                // Set the grant_type
-                string GrantType = "refresh_token";
-
                 // Check if "refresh_token" does not exists in the query string and not null
                 if (string.IsNullOrEmpty(request.RefreshToken))
                 {
@@ -105,32 +97,13 @@ namespace SpotifyWebAPI_Intro.Controllers
                     return BadRequest("The 'refresh_token' parameter is missing in the query string.");
                 }
 
-                // Set Client ID
-                string ClientID = _optionsService.SpotifyClientId;
+                // Receive the Token Info
+                var TokenInfo = await _authService.GetNewTokenAsync(request.RefreshToken);
 
-                // Set Client Secret
-                string ClientSecret = _optionsService.SpotifyClientSecret;
-
-                // Set Token URL
-                string TokenURL = _optionsService.SpotifyTokenUrl;
-
-                // Initialize request body
-                var RequestBody = new Dictionary<string, string>
+                if (TokenInfo.ValueKind == JsonValueKind.Undefined)
                 {
-                  { "grant_type", GrantType },
-                  { "refresh_token", request.RefreshToken },
-                  { "client_id", ClientID },
-                  { "client_secret", ClientSecret }
-                };
-
-                // Set Token Info
-                var TokenInfo = await _httpService.PostFormUrlEncodedContentAsync(TokenURL, RequestBody);
-
-                // Check existence of Token Assets and return thier values
-                var Assets = _sessionService.Check(TokenInfo);
-
-                // Calculate refresh token expiration date
-                string ExpiresIn = _tokenHelper.CalculateExpirationDate(Assets.ExpiresIn);
+                    return BadRequest("Failed to get new token");
+                }
 
                 // Store token assets
                 _sessionService.Store(TokenInfo);

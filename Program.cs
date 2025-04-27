@@ -14,46 +14,60 @@ namespace SpotifyWebAPI_Intro
             // Create a new WebApplicationBuilder instance
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container
-
-            // Add the Required Services
+            // Controllers
             // Add controllers to the DI container
             builder.Services.AddControllers();
 
+            // Http Context Accessor
             // Add AddHttpContextAccessor to the DI container
             builder.Services.AddHttpContextAccessor();
 
+            //  Data Protection
+            // Add Data Protection (fix for session middleware issue)
+            builder.Services.AddDataProtection();
+
+            // Scoped
+            // Add the SessionService singleton to the DI container
+            builder.Services.AddScoped<SessionService>();
+
+            // Scoped
+            // Add TokenHelper to the DI container
+            builder.Services.AddScoped<TokenHelper>();
+
+            // Scoped
+            // Add the AuthService singleton to the DI container
+            builder.Services.AddScoped<AuthService>();
+
+            // Scoped
+            // Add AuthHelper to the DI container
+            builder.Services.AddScoped<AuthHelper>();
+
+            //  Singleton
             // Add the ApplicationOptionsSetup singleton to the DI container
             builder.Services.AddSingleton<IConfigureOptions<ApplicationOptions>,
             ApplicationOptionsSetup>();
 
-            // Add Data Protection (fix for session middleware issue)
-            builder.Services.AddDataProtection();
-
+            // Singleton
             // Add the OptionsService singleton to the DI container
             builder.Services.AddSingleton<OptionsService>();
 
-            // Add the SessionService singleton to the DI container
-            builder.Services.AddSingleton<SessionService>();
-
-            // Add the AuthService singleton to the DI container
-            builder.Services.AddSingleton<AuthService>();
-
+            //  HttpClient
             // Add HttpClient to the DI container
             builder.Services.AddHttpClient<HttpService>();
 
-            // Add AuthHelper to the DI container
-            builder.Services.AddSingleton<AuthHelper>();
-
+            // Distributed Memory Cach
             // Add session support
             builder.Services.AddDistributedMemoryCache();
 
+            // Session
             // Add session service to DI container
             builder.Services.AddSession();
 
+            // Routing
             // Enforcing url lower case
             builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
+            // Initialize the app
             var app = builder.Build();
 
             // Enable session
@@ -74,7 +88,7 @@ namespace SpotifyWebAPI_Intro
             // Map routes to controllers
             app.MapControllers();
 
-            // Start app
+            // Start the app
             await app.RunAsync("http://localhost:5543");
         }
     }

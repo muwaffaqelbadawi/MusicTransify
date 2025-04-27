@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace SpotifyWebAPI_Intro.Controllers
 {
@@ -14,15 +12,14 @@ namespace SpotifyWebAPI_Intro.Controllers
         private readonly ILogger<HomeController> _logger;
         public HomeController(ILogger<HomeController> logger)
         {
-          _logger = logger;  
+            _logger = logger;
         }
 
         [HttpGet] // Route: "/"
         public IActionResult Index()
         {
             // Use the log information
-            _logger.LogInformation("This is the home page");
-
+            _logger.LogInformation("This is the Home rout");
 
             // Return a welcome message with a login link
             string htmlContent = "<html>" +
