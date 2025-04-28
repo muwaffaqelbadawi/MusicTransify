@@ -19,7 +19,7 @@ namespace SpotifyWebAPI_Intro.Controllers
         public IActionResult Index()
         {
             // Use the log information
-            _logger.LogInformation("This is the Home rout");
+            _logger.LogInformation("This is the Home route");
 
             // Return a welcome message with a login link
             string htmlContent = "<html>" +

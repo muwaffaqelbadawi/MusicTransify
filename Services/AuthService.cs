@@ -29,24 +29,34 @@ namespace SpotifyWebAPI_Intro.Services
             // Set Redirect URI
             string RedirectURI = _optionsService.SpotifyRedirectUri;
 
-            // Set Auth URL
+            // Show dialog flag
+            string ShowDialog = "true";
+
+            // Set OAuth state
+            string state = _authHelper.GenerateRandomString(16);
+
+            // Append cookies to the response
+            _httpService.AppendCookies(state);
+
+            // Set Auth URL (base URL)
             string AuthURL = _optionsService.SpotifyAuthUrl;
 
             // Query Parameters
-            var QueryParameters = new Dictionary<string, string>
+            var queryParameters = new Dictionary<string, string>
             {
-                { "client_id", ClientID },
                 { "response_type", ResponseType },
+                { "client_id", ClientID },
                 { "scope", SCOPE },
                 { "redirect_uri", RedirectURI },
-                { "show_dialog", "true" }
+                { "show_dialog", ShowDialog },
+                { "state", state }
             };
 
             // Build the query string from the parameters
-            var QueryString = _authHelper.ToQueryString(QueryParameters);
+            var queryString = _authHelper.ToQueryString(queryParameters);
 
             // Returning the authorization URL
-            return $"{AuthURL}?{QueryString}";
+            return $"{AuthURL}?{queryString}";
         }
 
         public async Task<JsonElement> ExchangeAuthorizationCodeAsync(string Code)
@@ -66,7 +76,7 @@ namespace SpotifyWebAPI_Intro.Services
             // Set Token URL
             string TokenURL = _optionsService.SpotifyTokenUrl;
 
-            // Build the rquest body
+            // Build the request body
             var RequestBody = new Dictionary<string, string>
             {
               { "code", Code },

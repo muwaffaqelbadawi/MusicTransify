@@ -30,7 +30,9 @@ namespace SpotifyWebAPI_Intro.Controllers
             // Use the log information
             _logger.LogInformation("This is the LogIn route");
 
+            // Set redirect URI
             string redirectUri = _authService.GetLogInURI();
+
             return Redirect(redirectUri);
         }
 
@@ -38,7 +40,7 @@ namespace SpotifyWebAPI_Intro.Controllers
         public async Task<IActionResult> Callback([FromQuery] CallbackRequest request)
         {
             // Use the log information
-            _logger.LogInformation("This is the Callback roue");
+            _logger.LogInformation("This is the callback route");
 
             // Check if "error" exists in the query string and not null
             if (!string.IsNullOrEmpty(request.Error))
@@ -73,7 +75,7 @@ namespace SpotifyWebAPI_Intro.Controllers
         public async Task<IActionResult> RefreshToken([FromQuery] CallbackRequest request)
         {
             // Use the log information
-            _logger.LogInformation("This is the Refresh Token route");
+            _logger.LogInformation("This is the refresh_token route");
 
             var AccessToken = _sessionService.GetTokenInfo("AccessToken");
 
@@ -81,7 +83,7 @@ namespace SpotifyWebAPI_Intro.Controllers
             if (string.IsNullOrEmpty(AccessToken))
             {
                 // The access token is not exist
-                Redirect("/login");
+                Redirect("/auth/login");
 
                 // Redirect back to Spotify login route
                 return BadRequest("Redirect to login route");
@@ -90,7 +92,7 @@ namespace SpotifyWebAPI_Intro.Controllers
             // Check If the access_token is expired
             if (_tokenHelper.IsExpired(_sessionService.GetTokenInfo("ExpiresIn")))
             {
-                // Check if "refresh_token" does not exists in the query string and not null
+                // Check if refresh token does not exists in the query string and not null
                 if (string.IsNullOrEmpty(request.RefreshToken))
                 {
                     // Return the JSON code message if not exists

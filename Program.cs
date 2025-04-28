@@ -63,12 +63,11 @@ namespace SpotifyWebAPI_Intro
             // Add session service to DI container
             builder.Services.AddSession();
 
-            // Routing
-            // Enforcing url lower case
-            builder.Services.AddRouting(options => options.LowercaseUrls = true);
-
             // Initialize the app
             var app = builder.Build();
+
+            // Enable Cookie policy
+            app.UseCookiePolicy();
 
             // Enable session
             app.UseSession();

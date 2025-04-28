@@ -21,7 +21,7 @@ namespace SpotifyWebAPI_Intro.Services
         public string SpotifyClientId => _options.SpotifyClientId;
         public string SpotifyClientSecret => _options.SpotifyClientSecret;
         public string SpotifyRedirectUri => _options.SpotifyRedirectURI;
-        public string SpotifyAuthUrl => _options.SpotifyAauthURL;
+        public string SpotifyAuthUrl => _options.SpotifyAuthURL;
         public string SpotifyTokenUrl => _options.SpotifyTokenURL;
         public string SpotifyApiBaseUrl => _options.SpotifyAPIBaseURL;
     }

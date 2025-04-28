@@ -20,7 +20,6 @@ namespace SpotifyWebAPI_Intro.Controllers
             _sessionService = sessionService;
             _httpService = httpService;
             _tokenHelper = tokenHelper;
-
             _logger = logger;
         }
 
@@ -28,7 +27,7 @@ namespace SpotifyWebAPI_Intro.Controllers
         public async Task<IActionResult> GetPlaylists()
         {
             // Use the log information
-            _logger.LogInformation("This is the playlist page");
+            _logger.LogInformation("This is the playlist route");
 
             // Check if access token exists in the session and is not null
             if (string.IsNullOrEmpty(_sessionService.GetTokenInfo("AccessToken")))
@@ -36,7 +35,7 @@ namespace SpotifyWebAPI_Intro.Controllers
                 // Redirect back to Spotify login page
                 Redirect("/auth/login");
 
-                // Redirect back to loging
+                // Redirect back to login
                 return BadRequest("Redirect back to login");
             }
 
