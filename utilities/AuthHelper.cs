@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace SpotifyWebAPI_Intro.utilities
 {
@@ -23,12 +24,21 @@ namespace SpotifyWebAPI_Intro.utilities
         }
 
         // Helper function to generate random string
-        public string GenerateRandomString(int length)
+        public string GenerateSecureRandomString(int length)
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var random = new Random();
-            return new string(Enumerable.Repeat(chars, length)
-            .Select(s => s[random.Next(s.Length)]).ToArray());
+            const string validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                var byteBuffer = new byte[length];
+                rng.GetBytes(byteBuffer);
+
+                var chars = new char[length];
+                for (int i = 0; i < length; i++)
+                {
+                    chars[i] = validChars[byteBuffer[i] % validChars.Length];
+                }
+                return new string(chars);
+            }
         }
     }
 }

@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using SpotifyWebAPI_Intro.utilities;
 
@@ -70,11 +68,6 @@ namespace SpotifyWebAPI_Intro.Services
                 "ExpiresIn" => Session.GetString("expires_in") ?? "Expiration time not found.",
                 _ => throw new ArgumentException($"Invalid TokenInfo: {TokenInfo}", nameof(TokenInfo))
             };
-        }
-
-        public static implicit operator SessionService(SessionOptions v)
-        {
-            throw new NotImplementedException();
         }
     }
 }
