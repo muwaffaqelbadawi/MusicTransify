@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Net.Http.Headers;
 
@@ -12,13 +10,15 @@ namespace SpotifyWebAPI_Intro.Services
         private readonly HttpClient _httpClient;
         private readonly OptionsService _optionsService;
         private readonly SessionService _sessionService;
+        private readonly ILogger<HttpService> _logger;
 
-        public HttpService(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, OptionsService optionsService, SessionService sessionService)
+        public HttpService(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, OptionsService optionsService, SessionService sessionService, ILogger<HttpService> logger)
         {
             _httpContextAccessor = httpContextAccessor;
             _httpClient = httpClient;
             _optionsService = optionsService;
             _sessionService = sessionService;
+            _logger = logger;
         }
 
         public async Task<JsonElement> PostFormUrlEncodedContentAsync(string url, Dictionary<string, string> requestBody)
@@ -35,11 +35,20 @@ namespace SpotifyWebAPI_Intro.Services
                 throw new Exception($"HTTP Request failed with status code: {response.StatusCode}");
             }
 
-            // Getting result as a response
+            // Getting the result as a response
             var result = await response.Content.ReadAsStringAsync();
 
-            // return Token Info
-            return JsonSerializer.Deserialize<JsonElement>(result);
+            try
+            {
+                // return Token Info
+                return JsonSerializer.Deserialize<JsonElement>(result);
+            }
+            catch (JsonException ex)
+            {
+                // Optionally log
+                _logger.LogError(ex, "Failed to deserialize response from {Url}. Raw: {Raw}", url, result);
+                throw new Exception("Failed to deserialize response from Spotify.", ex);
+            }
         }
         public async Task<HttpResponseMessage> GetHttpResponseAsync(string endPoint)
         {
@@ -47,30 +56,45 @@ namespace SpotifyWebAPI_Intro.Services
             var accessToken = _sessionService.GetTokenInfo("access_token");
 
             // Set APIBase URI
-            string APIBaseURL = _optionsService.SpotifyApiBaseUrl;
+            string apiBaseURL = _optionsService.SpotifyApiBaseUrl;
 
             if (string.IsNullOrEmpty(accessToken))
             {
+                _logger.LogWarning("Access token is null or empty for GET {Endpoint}", endPoint);
                 throw new InvalidOperationException("access_token in is null or empty");
             }
 
-            // Create authorization String
-            string Authorization = $"Bearer {accessToken}";
+            var url = $"{apiBaseURL}{endPoint}";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            // Authorization Header
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Authorization);
+            _logger.LogDebug("Sending GET request to {Url}", url);
 
-            // Get playlists info
-            var response = await _httpClient.GetAsync($"{APIBaseURL}{endPoint}");
+            var response = await _httpClient.SendAsync(request);
+            // Do not dispose response here; caller is responsible.
 
-            // Return the response
+            if (!response.IsSuccessStatusCode)
+            {
+                string errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("GET {Url} failed: {StatusCode} {ErrorContent}", url, response.StatusCode, errorContent);
+            }
+
             return response;
         }
 
         public void AppendCookies(string state)
         {
-            _httpContextAccessor?.HttpContext?.Response.Cookies.Append("spotify_auth_state",
-            state, new CookieOptions { HttpOnly = true, Secure = true });
+            if (string.IsNullOrEmpty(state))
+            {
+                _logger.LogWarning("Attempted to append empty state cookie.");
+                return;
+            }
+
+            _httpContextAccessor?.HttpContext?.Response.Cookies.Append(
+            "spotify_auth_state",
+            state,
+            new CookieOptions { HttpOnly = true, Secure = true }
+            );
         }
     }
 }
