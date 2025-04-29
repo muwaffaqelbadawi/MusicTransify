@@ -8,15 +8,15 @@ namespace SpotifyWebAPI_Intro.Services
 {
     public class HttpService
     {
-        private readonly HttpContext _context;
-        private readonly HttpClient _client;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly HttpClient _httpClient;
         private readonly OptionsService _optionsService;
         private readonly SessionService _sessionService;
 
-        public HttpService(HttpContext context, HttpClient client, OptionsService optionsService, SessionService sessionService)
+        public HttpService(IHttpContextAccessor httpContextAccessor, HttpClient httpClient, OptionsService optionsService, SessionService sessionService)
         {
-            _client = client;
-            _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            _httpClient = httpClient;
             _optionsService = optionsService;
             _sessionService = sessionService;
         }
@@ -27,7 +27,7 @@ namespace SpotifyWebAPI_Intro.Services
             var formContent = new FormUrlEncodedContent(requestBody);
 
             // Post Form Url Encoded Content
-            var response = await _client.PostAsync(url, formContent);
+            var response = await _httpClient.PostAsync(url, formContent);
 
             // Handling response error
             if (!response.IsSuccessStatusCode)
@@ -41,29 +41,35 @@ namespace SpotifyWebAPI_Intro.Services
             // return Token Info
             return JsonSerializer.Deserialize<JsonElement>(result);
         }
-        public async Task<HttpResponseMessage> GetHttpResponseAsync(string EndPoint)
+        public async Task<HttpResponseMessage> GetHttpResponseAsync(string endPoint)
         {
             // Set access token
-            string AccessToken = _sessionService.GetTokenInfo("AccessToken");
+            var accessToken = _sessionService.GetTokenInfo("access_token");
 
             // Set APIBase URI
             string APIBaseURL = _optionsService.SpotifyApiBaseUrl;
 
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                throw new InvalidOperationException("access_token in is null or empty");
+            }
+
             // Create authorization String
-            string Authorization = $"Bearer {AccessToken}";
+            string Authorization = $"Bearer {accessToken}";
 
             // Authorization Header
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Authorization);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Authorization);
 
             // Get playlists info
-            var response = await _client.GetAsync($"{APIBaseURL}{EndPoint}");
+            var response = await _httpClient.GetAsync($"{APIBaseURL}{endPoint}");
 
+            // Return the response
             return response;
         }
 
         public void AppendCookies(string state)
         {
-            _context.Response.Cookies.Append("spotify_auth_state",
+            _httpContextAccessor?.HttpContext?.Response.Cookies.Append("spotify_auth_state",
             state, new CookieOptions { HttpOnly = true, Secure = true });
         }
     }

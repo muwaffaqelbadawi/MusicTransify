@@ -2,7 +2,7 @@ using System;
 using Microsoft.Extensions.Options;
 using SpotifyWebAPI_Intro.Configuration;
 using SpotifyWebAPI_Intro.Services;
-using SpotifyWebAPI_Intro.utilities;
+using SpotifyWebAPI_Intro.Utilities;
 using SpotifyWebAPI_Intro.Middlewares;
 
 namespace SpotifyWebAPI_Intro
@@ -55,7 +55,7 @@ namespace SpotifyWebAPI_Intro
             // Add HttpClient to the DI container
             builder.Services.AddHttpClient<HttpService>();
 
-            // Distributed Memory Cach
+            // Distributed Memory Cache
             // Add session support
             builder.Services.AddDistributedMemoryCache();
 

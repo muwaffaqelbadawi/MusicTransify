@@ -5,7 +5,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace SpotifyWebAPI_Intro.utilities
+namespace SpotifyWebAPI_Intro.Utilities
 {
     public class AuthHelper
     {

@@ -1,6 +1,6 @@
 using System;
 using System.Text.Json;
-using SpotifyWebAPI_Intro.utilities;
+using SpotifyWebAPI_Intro.Utilities;
 
 namespace SpotifyWebAPI_Intro.Services
 {

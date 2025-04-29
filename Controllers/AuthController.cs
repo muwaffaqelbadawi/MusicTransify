@@ -3,7 +3,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyWebAPI_Intro.Models;
 using SpotifyWebAPI_Intro.Services;
-using SpotifyWebAPI_Intro.utilities;
+using SpotifyWebAPI_Intro.Utilities;
 
 namespace SpotifyWebAPI_Intro.Controllers
 {
@@ -13,22 +13,21 @@ namespace SpotifyWebAPI_Intro.Controllers
     {
         private readonly AuthService _authService;
         private readonly SessionService _sessionService;
-        private readonly TokenHelper _tokenHelper;
+        private readonly TokenHelper _token;
         private readonly ILogger<AuthController> _logger;
 
-        public AuthController(AuthService authService, SessionService sessionService, TokenHelper tokenHelper, ILogger<AuthController> logger)
+        public AuthController(AuthService authService, SessionService sessionService, TokenHelper token, ILogger<AuthController> logger)
         {
             _authService = authService;
             _sessionService = sessionService;
-            _tokenHelper = tokenHelper;
+            _token = token;
             _logger = logger;
         }
 
         [HttpGet("login")] // Route: "/auth/login"
         public IActionResult Login()
         {
-            // Use the log information
-            _logger.LogInformation("This is the LogIn route");
+            _logger.LogInformation("This is the Login route");
 
             // Set redirect URI
             string redirectUri = _authService.GetLogInURI();
@@ -36,15 +35,16 @@ namespace SpotifyWebAPI_Intro.Controllers
             return Redirect(redirectUri);
         }
 
-        [HttpGet("Callback")] // Route: "/auth/callback"
-        public async Task<IActionResult> Callback([FromQuery] CallbackRequest request)
+        [HttpGet("callback")] // Route: "/auth/callback"
+        public async Task<IActionResult> CallbackAsync([FromQuery] CallbackRequest request)
         {
-            // Use the log information
             _logger.LogInformation("This is the callback route");
 
             // Check if "error" exists in the query string and not null
             if (!string.IsNullOrEmpty(request.Error))
             {
+                _logger.LogWarning("OAuth callback error: {Error}", request.Error);
+
                 // Return the JSON error message if not exists
                 return BadRequest(new { request.Error });
             }
@@ -52,63 +52,87 @@ namespace SpotifyWebAPI_Intro.Controllers
             // Check if "code" does not exists in the query string and not null
             if (string.IsNullOrEmpty(request.Code))
             {
+                _logger.LogWarning("Missing 'code' parameter in the callback request.");
+
                 // Return the JSON code message if not exists
                 return BadRequest("Missing 'code' parameter in the callback request.");
             }
 
             // Receive the Token Info
-            var TokenInfo = await _authService.ExchangeAuthorizationCodeAsync(request.Code);
+            var tokenInfo = await _authService.ExchangeAuthorizationCodeAsync(request.Code);
 
-            if (TokenInfo.ValueKind == JsonValueKind.Undefined)
+            if (tokenInfo.ValueKind == JsonValueKind.Undefined)
             {
+                _logger.LogError("Failed to exchange authorization code for token.");
+
                 return BadRequest("Failed to exchange authorization code.");
             }
 
             // Store token assets in session
-            _sessionService.Store(TokenInfo);
+            _sessionService.Store(tokenInfo);
+
+            _logger.LogInformation("tokenInfo successfully stored in session. Redirecting to /playlists.");
 
             // Redirect back to playlists
             return Redirect("/playlists");
         }
 
         [HttpGet("refresh_token")] // Route: "/auth/refresh_token"
-        public async Task<IActionResult> RefreshToken([FromQuery] CallbackRequest request)
+        public async Task<IActionResult> RefreshTokenAsync()
         {
-            // Use the log information
             _logger.LogInformation("This is the refresh_token route");
 
-            var AccessToken = _sessionService.GetTokenInfo("AccessToken");
+            // Set access token
+            var accessToken = _sessionService.GetTokenInfo("access_token");
 
-            // Set and Check if access_token exists in the session and is not null
-            if (string.IsNullOrEmpty(AccessToken))
+            // Set expiresIn
+            var strExpiresIn = _sessionService.GetTokenInfo("expires_in");
+
+            // Set refresh_token
+            var refreshToken = _sessionService.GetTokenInfo("refresh_token");
+
+            if (string.IsNullOrEmpty(strExpiresIn))
             {
-                // The access token is not exist
-                Redirect("/auth/login");
+                _logger.LogWarning("The 'expires_in' parameter is missing or invalid in the session.");
+                return BadRequest("The 'expires_in' parameter is missing or invalid in the session.");
+            }
 
-                // Redirect back to Spotify login route
-                return BadRequest("Redirect to login route");
+            long expiresIn = _token.ParseToLong(strExpiresIn);
+
+            // Check if access_token exists in the session and is not null
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                _logger.LogWarning("Access token missing from session; redirecting to login.");
+                // Redirect back to login route
+                return Redirect("/auth/login");
             }
 
             // Check If the access_token is expired
-            if (_tokenHelper.IsExpired(_sessionService.GetTokenInfo("ExpiresIn")))
+            if (_token.IsExpired(expiresIn))
             {
-                // Check if refresh token does not exists in the query string and not null
-                if (string.IsNullOrEmpty(request.RefreshToken))
+                // Check if refresh token does not exist or invalid in the session
+                if (string.IsNullOrEmpty(refreshToken))
                 {
+                    _logger.LogWarning("Refresh token missing from session.");
+
                     // Return the JSON code message if not exists
-                    return BadRequest("The 'refresh_token' parameter is missing in the query string.");
+                    return BadRequest("The 'refresh_token' parameter is missing or invalid in the session.");
                 }
 
                 // Receive the Token Info
-                var TokenInfo = await _authService.GetNewTokenAsync(request.RefreshToken);
+                var TokenInfo = await _authService.GetNewTokenAsync(refreshToken);
 
                 if (TokenInfo.ValueKind == JsonValueKind.Undefined)
                 {
+                    _logger.LogError("Failed to get new token using refresh token.");
+
                     return BadRequest("Failed to get new token");
                 }
 
-                // Store token assets
+                // Store token info in session
                 _sessionService.Store(TokenInfo);
+
+                _logger.LogInformation("Token successfully refreshed and stored in session. Redirecting to /playlists.");
 
                 // Redirect back to playlists route
                 return Redirect("/playlists");
