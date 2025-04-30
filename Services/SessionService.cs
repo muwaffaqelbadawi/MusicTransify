@@ -55,33 +55,45 @@ namespace SpotifyWebAPI_Intro.Services
             var (accessToken, tokenType, expiresIn, refreshToken, scope) = Check(tokenInfo);
 
             // Initialize session storage
-            var Session = _httpContextAccessor.HttpContext?.Session
-            ?? throw new InvalidOperationException("HttpContext or Session is null.");
+            var session = _httpContextAccessor.HttpContext?.Session;
+
+            if (session is null)
+            {
+                _logger.LogError("Session is not available");
+                throw new InvalidOperationException("Session is not available");
+            }
 
             // Optionally, pass the old expiration date if you want to update it only if expired
             string newExpiresIn = _token.CalculateExpirationDate(expiresIn);
 
             // Store access token in session
-            Session.SetString("access_token", accessToken);
+            session.SetString("access_token", accessToken);
 
             // Store token type in session
-            Session.SetString("token_type", tokenType);
+            session.SetString("token_type", tokenType);
 
             // Store refresh token in session
-            Session.SetString("refresh_token", refreshToken);
+            session.SetString("refresh_token", refreshToken);
 
             // Store expiration date in session
-            Session.SetString("expires_in", newExpiresIn);
+            session.SetString("expires_in", newExpiresIn);
 
             // Store expiration date in session
-            Session.SetString("scope", scope);
+            session.SetString("scope", scope);
+
+            _logger.LogInformation("Successfully stored token info in session");
         }
 
         // Gets token information from session. Returns null if the value is not found.
         public string? GetTokenInfo(string tokenInfo)
         {
-            var session = _httpContextAccessor.HttpContext?.Session
-            ?? throw new InvalidOperationException("HttpContext or Session is null.");
+            var session = _httpContextAccessor.HttpContext?.Session;
+
+            if (session is null)
+            {
+                _logger.LogError("Session is not available");
+                throw new InvalidOperationException("Session is not available");
+            }
 
             return tokenInfo switch
             {

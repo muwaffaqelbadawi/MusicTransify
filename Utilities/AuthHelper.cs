@@ -12,8 +12,7 @@ namespace SpotifyWebAPI_Intro.Utilities
         // Helper function for building query strings from dictionary
         public string ToQueryString(Dictionary<string, string> queryParameters)
         {
-            if (queryParameters == null || queryParameters.Count == 0)
-                return string.Empty;
+            if (queryParameters is null || queryParameters.Count == 0) return string.Empty;
 
             var encodedParams = queryParameters
             .Where(kvp => !string.IsNullOrEmpty(kvp.Value))

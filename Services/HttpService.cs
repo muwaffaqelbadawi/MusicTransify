@@ -23,33 +23,50 @@ namespace SpotifyWebAPI_Intro.Services
 
         public async Task<JsonElement> PostFormUrlEncodedContentAsync(string url, Dictionary<string, string> requestBody)
         {
-            // Form content
-            var formContent = new FormUrlEncodedContent(requestBody);
-
-            // Post Form Url Encoded Content
-            var response = await _httpClient.PostAsync(url, formContent);
-
-            // Handling response error
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception($"HTTP Request failed with status code: {response.StatusCode}");
-            }
-
-            // Getting the result as a response
-            var result = await response.Content.ReadAsStringAsync();
-
             try
             {
-                // return Token Info
-                return JsonSerializer.Deserialize<JsonElement>(result);
+                // Form content
+                var formContent = new FormUrlEncodedContent(requestBody);
+
+                // Post Form Url Encoded Content
+                var response = await _httpClient.PostAsync(url, formContent);
+
+                if (response is null)
+                {
+                    _logger.LogError("No response received from Spotify for POST {Url}", url);
+                    throw new HttpRequestException("No response received from Spotify");
+                }
+
+                // Read the response
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                // Handling response error
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("POST {Url} failed: {StatusCode} {Content}",
+                    url, response.StatusCode, responseContent);
+
+                    throw new HttpRequestException($"HTTP Request failed with status: {response.StatusCode}");
+                }
+
+                try
+                {
+                    // return Token Info
+                    return JsonSerializer.Deserialize<JsonElement>(responseContent);
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogError(ex, "Failed to deserialize response: {Content}", responseContent);
+                    throw new JsonException("Failed to parse Spotify response", ex);
+                }
             }
-            catch (JsonException ex)
+            catch (Exception ex) when (ex is not HttpRequestException && ex is not JsonException)
             {
-                // Optionally log
-                _logger.LogError(ex, "Failed to deserialize response from {Url}. Raw: {Raw}", url, result);
-                throw new Exception("Failed to deserialize response from Spotify.", ex);
+                _logger.LogError(ex, "Unexpected error during POST to {Url}", url);
+                throw;
             }
         }
+
         public async Task<HttpResponseMessage> GetHttpResponseAsync(string endPoint)
         {
             // Set access token
@@ -68,18 +85,23 @@ namespace SpotifyWebAPI_Intro.Services
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            _logger.LogDebug("Sending GET request to {Url}", url);
-
-            var response = await _httpClient.SendAsync(request);
-            // Do not dispose response here; caller is responsible.
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                string errorContent = await response.Content.ReadAsStringAsync();
-                _logger.LogWarning("GET {Url} failed: {StatusCode} {ErrorContent}", url, response.StatusCode, errorContent);
-            }
+                var response = await _httpClient.SendAsync(request);
 
-            return response;
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning("GET {Url} failed: {StatusCode} {ErrorContent}", url, response.StatusCode, errorContent);
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send GET request to {Url}", url);
+                throw;
+            }
         }
 
         public void AppendCookies(string state)

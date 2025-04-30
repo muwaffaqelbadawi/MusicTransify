@@ -81,7 +81,7 @@ namespace SpotifyWebAPI_Intro.Controllers
         public async Task<IActionResult> RefreshTokenAsync()
         {
             _logger.LogInformation("This is the refresh_token route");
-
+ 
             // Set access token
             var accessToken = _sessionService.GetTokenInfo("access_token");
 

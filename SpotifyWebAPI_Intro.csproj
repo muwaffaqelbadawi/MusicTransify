@@ -5,6 +5,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>b2a32b96-3622-4a7b-9b29-073ce4b721d7</UserSecretsId>
+
+    <!-- XML Documentation Configuration -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>bin\Debug\net8.0\SpotifyWebAPI_Intro.xml</DocumentationFile>
+
+    <!-- Suppresses missing XML doc warnings -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +26,10 @@
     <None Include="D:\My Personal Projects\SpotifyWebAPI_Intro\.editorconfig" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="https://json.schemastore.org/appsettings.json" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties appsettings_1json__JsonSchema="https://json.schemastore.org/appsettings.json" />
+    </VisualStudio>
+  </ProjectExtensions>
 
 </Project>
