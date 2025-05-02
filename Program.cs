@@ -61,7 +61,11 @@ namespace SpotifyWebAPI_Intro
 
             // Session
             // Add session service to DI container
-            builder.Services.AddSession();
+            builder.Services.AddSession(options =>
+               {
+                   options.IdleTimeout = TimeSpan.FromMinutes(30);
+               }
+            );
 
             // Initialize the app
             var app = builder.Build();
