@@ -14,14 +14,12 @@ namespace SpotifyWebAPI_Intro.src.Controllers.Spotify
 
     public class SpotifyAuthController : BaseApiController
     {
-        private readonly SpotifyAuthService _spotifyAuthService;
         private readonly AuthService _authService;
         private readonly SessionService _sessionService;
         private readonly TokenHelper _token;
         private readonly new ILogger<SpotifyAuthController> _logger;
 
         public SpotifyAuthController(
-            SpotifyAuthService spotifyAuthService,
             AuthService authService,
             SessionService sessionService,
             TokenHelper token,
@@ -29,7 +27,6 @@ namespace SpotifyWebAPI_Intro.src.Controllers.Spotify
             ILogger<BaseApiController> baseLogger
         ) : base(baseLogger)
         {
-            _spotifyAuthService = spotifyAuthService;
             _authService = authService;
             _sessionService = sessionService;
             _token = token;
@@ -48,7 +45,7 @@ namespace SpotifyWebAPI_Intro.src.Controllers.Spotify
         }
 
         [HttpGet("callback")] // Route: "/auth/callback"
-        public async Task<IActionResult> CallbackAsync([FromQuery] SpotifyCallbackRequest request)
+        public async Task<IActionResult> CallbackAsync([FromQuery] SpotifyCallback request)
         {
             _logger.LogInformation("This is the callback route");
 
