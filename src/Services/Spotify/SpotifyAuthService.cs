@@ -116,6 +116,8 @@ namespace SpotifyWebAPI_Intro.Services.Spotify
               { "grant_type", grantType },
               { "refresh_token", refreshToken },
               { "client_id", clientID },
+              
+              // client_secret detected
               { "client_secret", clientSecret }
             };
 
