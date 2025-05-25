@@ -479,14 +479,13 @@ project.nuget.cache
 .idea/workspace.xml
 
 # All apsettings json files
-# appsettings.Production.json
-# appsettings.Pre-production.json
-# appsettings.Staging.json
-# appsettings.Development.json
-# appsettings.Test.json
-# appsettings.local.json
+appsettings.Production.json
+appsettings.Pre-production.json
+appsettings.Staging.json
+appsettings.Development.json
+appsettings.Test.json
+appsettings.local.json
 appsettings.json
-appsettings.*.json
 *.envrc
 
 # Dlls folder

@@ -1,23 +1,23 @@
 name: Deploy .NET 8 App to Azure
 
 on:
-  push:
-    branches: ["main"]
-  workflow_dispatch: # Allow manual trigger
+    push:
+        branches: ["main"]
+    workflow_dispatch: # Allow manual trigger
 
 env:
-  AZURE_WEBAPP_NAME: "your-app-name" # Replace with your Azure Web App name
-  DOTNET_VERSION: "8.0.x"
-  PUBLISH_PATH: "./publish"
+    AZURE_WEBAPP_NAME: "your-app-name" # Replace with your Azure Web App name
+    DOTNET_VERSION: "8.0.x"
+    PUBLISH_PATH: "./publish"
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+    build-and-deploy:
+        runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v3
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}

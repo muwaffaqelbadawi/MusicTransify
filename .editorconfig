@@ -10,9 +10,13 @@ root = true
 indent_size = 4
 indent_style = space
 tab_width = 4
+charset = utf-8
+
 
 # New line preferences
-end_of_line = crlf
+
+* text=auto  # Let Git decide (default)
+*.cs text eol=lf  # Force LF for C# files
 insert_final_newline = false
 
 #### .NET Code Actions ####
