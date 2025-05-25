@@ -1,2 +1,12 @@
-* text=auto eol=lf
-*.sh text eol=lf
+# Set default behavior to automatically normalize line endings.
+* text=auto
+
+# Explicitly declare text files you want to always normalize
+*.cs      text
+*.yml     text
+*.json    text
+
+# Binary files should be treated as binary, never modified.
+*.png     binary
+*.jpg     binary
+*.gif     binary

@@ -8,15 +8,15 @@ on:
 
 jobs:
     build:
-        runs-on: ubuntu-latest # or windows-latest
+        runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v4 # Check out the code
-
-            - name: Setup .NET
-              uses: actions/setup-dotnet@v3
+            - uses: actions/checkout@v3
+            - uses: actions/setup-dotnet@v3
               with:
-                  dotnet-version: "8.0.x" # Specify .NET version
+                  dotnet-version: 8.0.410
+                  cache: true
+            - run: dotnet build 
 
             - name: Restore dependencies
               run: dotnet restore
@@ -27,8 +27,5 @@ jobs:
             - name: Test
               run: dotnet test --no-build --verbosity normal
 
-            - name: Check for secrets
-              run: |
-                  if grep -r "client_secret" ./src/; then
-                    echo "🚨 Secrets detected in code!" && exit 1
-                  fi
+            - name: TruffleHog OSS
+              uses: trufflesecurity/trufflehog@v3.88.34
