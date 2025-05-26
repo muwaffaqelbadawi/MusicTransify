@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyWebAPI_Intro.Services.Spotify;
 using SpotifyWebAPI_Intro.src.Controllers.Common;
-using SpotifyWebAPI_Intro.src.Models.DTOs;
+using SpotifyWebAPI_Intro.src.Dtos;
 using SpotifyWebAPI_Intro.src.Models.Spotify;
 
 
@@ -22,12 +22,6 @@ namespace SpotifyWebAPI_Intro.src.Controllers.Transfer
 
 
 
-        public ActionResult<List<SpotifyApiClientService>> GetTrackDetails()
-        {
-            var spotifyDTO = new TransferTrackDto();
-
-
-            return TrackDetails;
-        }
+        
     }
 }
