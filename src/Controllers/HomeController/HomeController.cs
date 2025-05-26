@@ -2,15 +2,17 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using SpotifyWebAPI_Intro.src.Controllers.Common;
 
 namespace SpotifyWebAPI_Intro.src.Controllers.HomeController
 {
     [ApiController]
     [Route("/")] // Base route "/"
-    public class HomeController : ControllerBase
+    public class HomeController : BaseApiController
     {
-        private readonly ILogger<HomeController> _logger;
-        public HomeController(ILogger<HomeController> logger)
+        private readonly new ILogger<HomeController> _logger;
+
+        public HomeController(ILogger<HomeController> logger) : base(logger)
         {
             _logger = logger;
         }

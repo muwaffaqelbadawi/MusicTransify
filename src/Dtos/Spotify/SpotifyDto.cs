@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SpotifyWebAPI_Intro.src.Models.DTOs.YouTubeMusic
+namespace SpotifyWebAPI_Intro.src.Dtos.Spotify
 {
-    public class YouTubeMusicPlaylistDto
+    public class SpotifyDto
     {
         
     }

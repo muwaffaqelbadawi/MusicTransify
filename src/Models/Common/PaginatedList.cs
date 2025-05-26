@@ -7,6 +7,5 @@ namespace SpotifyWebAPI_Intro.src.Models.Common
 {
     public class PaginatedList
     {
-        
     }
 }
