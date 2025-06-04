@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SpotifyWebAPI_Intro.src.Services.Cookies
+namespace MusicTransify.src.Services.Cookies
 {
     public class CookiesService
     {

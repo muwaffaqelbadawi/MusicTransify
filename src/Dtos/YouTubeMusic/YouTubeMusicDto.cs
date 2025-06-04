@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SpotifyWebAPI_Intro.src.Dtos.YouTubeMusic
+namespace MusicTransify.src.Dtos.YouTubeMusic
 {
     public class YouTubeMusicDto
     {

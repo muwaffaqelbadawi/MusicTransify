@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace SpotifyWebAPI_Intro.src.Middlewares
+namespace MusicTransify.src.Middlewares
 {
     public class RequestLoggingMiddleware
     {

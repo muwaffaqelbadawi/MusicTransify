@@ -2,12 +2,12 @@ using System;
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using SpotifyWebAPI_Intro.src.Configurations.Spotify;
-using SpotifyWebAPI_Intro.src.Controllers.Common;
-using SpotifyWebAPI_Intro.src.Services.Common;
-using SpotifyWebAPI_Intro.src.Utilities.Common;
+using MusicTransify.src.Configurations.Spotify;
+using MusicTransify.src.Controllers.Common;
+using MusicTransify.src.Services.Common;
+using MusicTransify.src.Utilities.Common;
 
-namespace SpotifyWebAPI_Intro.src.Controllers.Spotify
+namespace MusicTransify.src.Controllers.Spotify
 {
     [ApiController]
     [Route("playlists")] // Route: "/playlists"
@@ -24,10 +24,10 @@ namespace SpotifyWebAPI_Intro.src.Controllers.Spotify
             SessionService sessionService,
             HttpService httpService,
             TokenHelper token,
- 
 
 
- 
+
+
             ILogger<PlaylistsController> logger
         ) : base(logger)
         {
@@ -67,7 +67,7 @@ namespace SpotifyWebAPI_Intro.src.Controllers.Spotify
 
             // Set expiresIn
             long expiresIn = _token.ParseToLong(strExpiresIn);
- 
+
             // Check If the token is expired
             if (_token.IsExpired(expiresIn))
             {

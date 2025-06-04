@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SpotifyWebAPI_Intro.src.Contracts
+namespace MusicTransify.src.Contracts
 {
     public interface IAuthService
     {
-        
+
     }
 }

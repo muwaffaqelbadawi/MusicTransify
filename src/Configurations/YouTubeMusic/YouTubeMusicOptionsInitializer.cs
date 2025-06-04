@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SpotifyWebAPI_Intro.src.Configurations.YouTubeMusic
+namespace MusicTransify.src.Configurations.YouTubeMusic
 {
     public class YouTubeMusicOptionsInitializer
     {

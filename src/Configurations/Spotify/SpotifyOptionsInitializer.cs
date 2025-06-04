@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SpotifyWebAPI_Intro.src.Configurations.Spotify
+namespace MusicTransify.src.Configurations.Spotify
 {
     public class SpotifyOptionsInitializer
     {

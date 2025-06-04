@@ -1,14 +1,14 @@
-using SpotifyWebAPI_Intro.src.Middlewares;
-using SpotifyWebAPI_Intro.src.Services.Common;
-using SpotifyWebAPI_Intro.src.Configurations.Spotify;
-using SpotifyWebAPI_Intro.src.Configurations.YouTubeMusic;
-using SpotifyWebAPI_Intro.src.Configurations.Common;
-using SpotifyWebAPI_Intro.src.Utilities.Common;
-using SpotifyWebAPI_Intro.src.Services.Transfer;
-using SpotifyWebAPI_Intro.src.Utilities.Security;
-using SpotifyWebAPI_Intro.src.Contracts;
+using MusicTransify.src.Middlewares;
+using MusicTransify.src.Services.Common;
+using MusicTransify.src.Configurations.Spotify;
+using MusicTransify.src.Configurations.YouTubeMusic;
+using MusicTransify.src.Configurations.Common;
+using MusicTransify.src.Utilities.Common;
+using MusicTransify.src.Services.Transfer;
+using MusicTransify.src.Utilities.Security;
+using MusicTransify.src.Contracts;
 
-namespace SpotifyWebAPI_Intro.src
+namespace MusicTransify.src
 {
     class Program
     {

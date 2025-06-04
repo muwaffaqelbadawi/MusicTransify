@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using SpotifyWebAPI_Intro.src.Controllers.Common;
+using MusicTransify.src.Controllers.Common;
 
 
-namespace SpotifyWebAPI_Intro.src.Controllers.YouTubeMusic
+namespace MusicTransify.src.Controllers.YouTubeMusic
 {
     public class YouTubeMusicAuthController : BaseApiController
     {

@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
-using SpotifyWebAPI_Intro.src.Utilities.Common;
+using MusicTransify.src.Utilities.Common;
 
-namespace SpotifyWebAPI_Intro.src.Services.Common
+namespace MusicTransify.src.Services.Common
 {
     public class SessionService
     {

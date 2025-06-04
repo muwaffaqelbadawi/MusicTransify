@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace SpotifyWebAPI_Intro.src.Configurations.Common
+namespace MusicTransify.src.Configurations.Common
 {
     public class OptionsSetup<TOptions> : IConfigureOptions<TOptions> where TOptions : class
     {

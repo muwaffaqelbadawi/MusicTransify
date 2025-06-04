@@ -1,13 +1,13 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using SpotifyWebAPI_Intro.Services.Spotify;
-using SpotifyWebAPI_Intro.src.Controllers.Common;
-using SpotifyWebAPI_Intro.src.Models.Spotify;
-using SpotifyWebAPI_Intro.src.Services.Common;
-using SpotifyWebAPI_Intro.src.Utilities.Common;
+using MusicTransify.Services.Spotify;
+using MusicTransify.src.Controllers.Common;
+using MusicTransify.src.Models.Spotify;
+using MusicTransify.src.Services.Common;
+using MusicTransify.src.Utilities.Common;
 
-namespace SpotifyWebAPI_Intro.src.Controllers.Spotify
+namespace MusicTransify.src.Controllers.Spotify
 {
     [ApiController]
     [Route("auth/spotify")] // route "/auth/spotify"
@@ -90,7 +90,7 @@ namespace SpotifyWebAPI_Intro.src.Controllers.Spotify
         public async Task<IActionResult> RefreshTokenAsync()
         {
             _logger.LogInformation("This is the refresh_token route");
- 
+
             // Set access token
             var accessToken = _sessionService.GetTokenInfo("access_token");
 

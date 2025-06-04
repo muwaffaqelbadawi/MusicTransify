@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 
-namespace SpotifyWebAPI_Intro.src.Models.Spotify
+namespace MusicTransify.src.Models.Spotify
 {
     public class SpotifyCallback
     {

@@ -1,13 +1,13 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using SpotifyWebAPI_Intro.src.Contracts;
+using MusicTransify.src.Contracts;
 
 
-namespace SpotifyWebAPI_Intro.src.Services.Transfer
+namespace MusicTransify.src.Services.Transfer
 {
     public class FuzzyMatchingService : IMatchingService
     {
-        
+
     }
 }

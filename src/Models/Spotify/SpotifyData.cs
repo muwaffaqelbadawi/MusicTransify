@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SpotifyWebAPI_Intro.src.Models.Spotify
+namespace MusicTransify.src.Models.Spotify
 {
     public class SpotifyData
     {

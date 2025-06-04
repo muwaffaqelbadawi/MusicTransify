@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace SpotifyWebAPI_Intro.src.Configurations.YouTubeMusic
+namespace MusicTransify.src.Configurations.YouTubeMusic
 {
     public class YouTubeMusicOptionsProvider
     {

@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Text.Json;
 
-namespace SpotifyWebAPI_Intro.src.Services.Common
+namespace MusicTransify.src.Services.Common
 {
     public abstract class AuthService
     {

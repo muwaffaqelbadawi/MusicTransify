@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using SpotifyWebAPI_Intro.src.Dtos.Spotify;
-using SpotifyWebAPI_Intro.src.Models.Spotify;
+using MusicTransify.src.Dtos.Spotify;
+using MusicTransify.src.Models.Spotify;
 
-namespace SpotifyWebAPI_Intro.src.Mappers.Spotify
+namespace MusicTransify.src.Mappers.Spotify
 {
     public class SpotifyMapper
     {

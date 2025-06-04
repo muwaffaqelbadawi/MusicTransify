@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace SpotifyWebAPI_Intro.src.Configurations.Spotify
+namespace MusicTransify.src.Configurations.Spotify
 {
     public class SpotifyOptionsProvider
     {

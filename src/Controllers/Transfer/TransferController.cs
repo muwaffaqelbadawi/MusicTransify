@@ -2,17 +2,17 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using SpotifyWebAPI_Intro.Services.Spotify;
-using SpotifyWebAPI_Intro.src.Controllers.Common;
-using SpotifyWebAPI_Intro.src.Dtos;
-using SpotifyWebAPI_Intro.src.Models.Spotify;
+using MusicTransify.Services.Spotify;
+using MusicTransify.src.Controllers.Common;
+using MusicTransify.src.Dtos;
+using MusicTransify.src.Models.Spotify;
 
 
-namespace SpotifyWebAPI_Intro.src.Controllers.Transfer
+namespace MusicTransify.src.Controllers.Transfer
 {
     // Auto mapper
 
-    
+
     public class TransferController : BaseApiController
     {
 
@@ -22,6 +22,6 @@ namespace SpotifyWebAPI_Intro.src.Controllers.Transfer
 
 
 
-        
+
     }
 }

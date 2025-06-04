@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SpotifyWebAPI_Intro.src.Utilities.Common
+namespace MusicTransify.src.Utilities.Common
 {
     public class TokenHelper
     {
@@ -47,6 +47,6 @@ namespace SpotifyWebAPI_Intro.src.Utilities.Common
                 throw new InvalidOperationException("The parameter expires_in is not found");
             }
             return expiresIn;
-        }       
+        }
     }
 }

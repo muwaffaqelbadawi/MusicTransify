@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using SpotifyWebAPI_Intro.src.Controllers.Common;
+using MusicTransify.src.Controllers.Common;
 
-namespace SpotifyWebAPI_Intro.src.Controllers.HomeController
+namespace MusicTransify.src.Controllers.HomeController
 {
     [ApiController]
     [Route("/")] // Base route "/"

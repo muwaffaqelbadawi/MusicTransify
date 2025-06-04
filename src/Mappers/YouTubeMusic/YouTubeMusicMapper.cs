@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using SpotifyWebAPI_Intro.src.Dtos.YouTubeMusic;
-using SpotifyWebAPI_Intro.src.Models.YouTubeMusic;
+using MusicTransify.src.Dtos.YouTubeMusic;
+using MusicTransify.src.Models.YouTubeMusic;
 
-namespace SpotifyWebAPI_Intro.src.Mappers.YouTubeMusic
+namespace MusicTransify.src.Mappers.YouTubeMusic
 {
     public class YouTubeMusicMapper
     {

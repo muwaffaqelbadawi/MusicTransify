@@ -5,13 +5,13 @@ using System.Net.Http.Headers;
 using Polly;
 using Polly.Retry;
 
-namespace SpotifyWebAPI_Intro.src.Services.Common
+namespace MusicTransify.src.Services.Common
 {
     public abstract class HttpService
     {
         protected readonly HttpClient _httpClient;
         protected readonly ILogger<HttpService> _logger;
-        
+
         private readonly AsyncRetryPolicy<HttpResponseMessage> _httpRetryPolicy;
         protected HttpService(HttpClient httpClient, ILogger<HttpService> logger)
         {
@@ -25,7 +25,7 @@ namespace SpotifyWebAPI_Intro.src.Services.Common
             retryCount: 3,
             sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(5)
             );
-        } 
+        }
 
         protected async Task<T> SendRequestAsync<T>(HttpRequestMessage request, string serviceName)
         {

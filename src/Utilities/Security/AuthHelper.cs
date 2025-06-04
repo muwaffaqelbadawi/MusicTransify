@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Security.Cryptography;
 
-namespace SpotifyWebAPI_Intro.src.Utilities.Security
+namespace MusicTransify.src.Utilities.Security
 {
     public class AuthHelper
     {

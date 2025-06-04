@@ -1,8 +1,8 @@
 using System;
-using SpotifyWebAPI_Intro.src.Configurations.Spotify;
-using SpotifyWebAPI_Intro.src.Services.Common;
+using MusicTransify.src.Configurations.Spotify;
+using MusicTransify.src.Services.Common;
 
-namespace SpotifyWebAPI_Intro.src.Services.YouTubeMusic
+namespace MusicTransify.src.Services.YouTubeMusic
 {
     public class YouTubeMusicApiClientService : HttpService
     {

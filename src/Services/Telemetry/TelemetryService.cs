@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SpotifyWebAPI_Intro.src.Services.Telemetry
+namespace MusicTransify.src.Services.Telemetry
 {
     // Track API latency/errors
     public class TelemetryService

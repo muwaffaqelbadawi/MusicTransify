@@ -1,11 +1,11 @@
 using System;
 using System.Text.Json;
-using SpotifyWebAPI_Intro.src.Configurations.Spotify;
-using SpotifyWebAPI_Intro.src.Services.Common;
-using SpotifyWebAPI_Intro.src.Services.Cookies;
-using SpotifyWebAPI_Intro.src.Utilities.Security;
+using MusicTransify.src.Configurations.Spotify;
+using MusicTransify.src.Services.Common;
+using MusicTransify.src.Services.Cookies;
+using MusicTransify.src.Utilities.Security;
 
-namespace SpotifyWebAPI_Intro.Services.Spotify
+namespace MusicTransify.Services.Spotify
 {
     public class SpotifyAuthService
     {

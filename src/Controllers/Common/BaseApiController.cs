@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace SpotifyWebAPI_Intro.src.Controllers.Common
+namespace MusicTransify.src.Controllers.Common
 {
     [ApiController]
     public abstract class BaseApiController : ControllerBase

@@ -8,7 +8,7 @@
 
     <!-- XML Documentation Configuration -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DocumentationFile>bin\Debug\net8.0\SpotifyWebAPI_Intro.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\net8.0\MusicTransify.xml</DocumentationFile>
 
     <!-- Suppresses missing XML doc warnings -->
     <NoWarn>$(NoWarn);1591</NoWarn>
@@ -20,11 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EditorConfigFiles Remove="D:\My Personal Projects\SpotifyWebAPI_Intro\.editorconfig" />
+    <EditorConfigFiles Remove="D:\My Personal Projects\MusicTransify\.editorconfig" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="D:\My Personal Projects\SpotifyWebAPI_Intro\.editorconfig" />
+    <None Include="D:\My Personal Projects\MusicTransify\.editorconfig" />
   </ItemGroup>
 
   <ProjectExtensions>

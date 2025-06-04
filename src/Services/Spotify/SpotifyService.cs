@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SpotifyWebAPI_Intro.Services.Spotify
+namespace MusicTransify.Services.Spotify
 {
     public class SpotifyService
     {
-        
+
     }
 }
