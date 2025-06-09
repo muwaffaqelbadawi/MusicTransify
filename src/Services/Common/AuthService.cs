@@ -10,7 +10,5 @@ namespace MusicTransify.src.Services.Common
 
         abstract public Task<JsonElement> ExchangeAuthorizationCodeAsync(string authorizationCode);
         abstract public Task<JsonElement> GetNewTokenAsync(string refreshToken);
-
-
     }
 }

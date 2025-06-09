@@ -11,25 +11,23 @@ namespace MusicTransify.src.Controllers.Spotify
 {
     [ApiController]
     [Route("playlists")] // Route: "/playlists"
-    public class PlaylistsController : BaseApiController
+    public class SpotifyPlaylistsController : AuthController
     {
-        private readonly SpotifyOptionsProvider _spotifyOptionsProvider;
-        private readonly SessionService _sessionService;
+        private readonly new SpotifyOptionsProvider _spotifyOptionsProvider;
+        private new readonly SessionService _sessionService;
         private readonly HttpService _httpService;
-        private readonly TokenHelper _token;
-        private readonly new ILogger<PlaylistsController> _logger;
+        private readonly new TokenHelper _token;
+        private readonly new ILogger<SpotifyPlaylistsController> _logger;
 
-        public PlaylistsController(
+        public SpotifyPlaylistsController(
             SpotifyOptionsProvider spotifyOptionsProvider,
+            AuthService authService,
             SessionService sessionService,
             HttpService httpService,
             TokenHelper token,
-
-
-
-
-            ILogger<PlaylistsController> logger
-        ) : base(logger)
+            ILogger<SpotifyPlaylistsController> logger,
+            ILogger<AuthController> baseLogger
+        ) : base(spotifyOptionsProvider, authService, sessionService, token, baseLogger)
         {
             _spotifyOptionsProvider = spotifyOptionsProvider;
             _sessionService = sessionService;
@@ -37,6 +35,7 @@ namespace MusicTransify.src.Controllers.Spotify
             _token = token;
             _logger = logger;
         }
+        
 
         [HttpGet] // Route: "/playlists"
         public async Task<IActionResult> GetPlaylistsAsync()

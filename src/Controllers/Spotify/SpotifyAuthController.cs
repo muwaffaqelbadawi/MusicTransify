@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.Services.Spotify;
+using MusicTransify.src.Configurations.Spotify;
 using MusicTransify.src.Controllers.Common;
 using MusicTransify.src.Models.Spotify;
 using MusicTransify.src.Services.Common;
@@ -12,25 +12,16 @@ namespace MusicTransify.src.Controllers.Spotify
     [ApiController]
     [Route("auth/spotify")] // route "/auth/spotify"
 
-    public class SpotifyAuthController : BaseApiController
+    public class SpotifyAuthController : AuthController
     {
-        private readonly AuthService _authService;
-        private readonly SessionService _sessionService;
-        private readonly TokenHelper _token;
-        private readonly new ILogger<SpotifyAuthController> _logger;
-
         public SpotifyAuthController(
+            SpotifyOptionsProvider spotifyOptionsProvider,
             AuthService authService,
             SessionService sessionService,
-            TokenHelper token,
-            ILogger<SpotifyAuthController> logger,
-            ILogger<BaseApiController> baseLogger
-        ) : base(baseLogger)
+            TokenHelper tokenHelper,
+            ILogger<AuthController> logger)
+            : base(spotifyOptionsProvider, authService, sessionService, tokenHelper, logger)
         {
-            _authService = authService;
-            _sessionService = sessionService;
-            _token = token;
-            _logger = logger;
         }
 
         [HttpGet("login")] // Route: "/auth/login"

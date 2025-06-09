@@ -1,14 +1,21 @@
 using System;
-using System.Linq;
-using System.Threading.Tasks;
+using MusicTransify.src.Configurations.Spotify;
 using MusicTransify.src.Controllers.Common;
+using MusicTransify.src.Services.Common;
+using MusicTransify.src.Utilities.Common;
 
 
 namespace MusicTransify.src.Controllers.YouTubeMusic
 {
-    public class YouTubeMusicPlaylistController : BaseApiController
+    public class YouTubeMusicPlaylistController : AuthController
     {
-        public YouTubeMusicPlaylistController(ILogger<BaseApiController> logger) : base(logger)
+        public YouTubeMusicPlaylistController(
+            SpotifyOptionsProvider spotifyOptionsProvider,
+            AuthService authService,
+            SessionService sessionService,
+            TokenHelper tokenHelper,
+            ILogger<AuthController> logger)
+            : base(spotifyOptionsProvider, authService, sessionService, tokenHelper, logger)
         {
         }
     }

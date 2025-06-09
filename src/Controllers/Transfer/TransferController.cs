@@ -1,27 +1,22 @@
 using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using MusicTransify.Services.Spotify;
+using MusicTransify.src.Configurations.Spotify;
 using MusicTransify.src.Controllers.Common;
-using MusicTransify.src.Dtos;
-using MusicTransify.src.Models.Spotify;
+using MusicTransify.src.Services.Common;
+using MusicTransify.src.Utilities.Common;
 
 
 namespace MusicTransify.src.Controllers.Transfer
 {
-    // Auto mapper
-
-
-    public class TransferController : BaseApiController
+    public class TransferController : AuthController
     {
-
-        public TransferController(ILogger<BaseApiController> logger) : base(logger)
+        public TransferController(
+            SpotifyOptionsProvider spotifyOptionsProvider,
+            AuthService authService,
+            SessionService sessionService,
+            TokenHelper tokenHelper,
+            ILogger<AuthController> logger
+        ) : base(spotifyOptionsProvider, authService, sessionService, tokenHelper, logger)
         {
         }
-
-
-
-
     }
 }
