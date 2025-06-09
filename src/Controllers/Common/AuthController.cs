@@ -14,8 +14,6 @@ namespace MusicTransify.src.Controllers.Common
         protected readonly SessionService _sessionService;
         protected readonly TokenHelper _token;
         protected readonly ILogger<AuthController> _logger;
-
-
         protected AuthController(SpotifyOptionsProvider spotifyOptionsProvider, AuthService authService, SessionService sessionService, TokenHelper tokenHelper, ILogger<AuthController> logger)
         {
             _spotifyOptionsProvider = spotifyOptionsProvider;

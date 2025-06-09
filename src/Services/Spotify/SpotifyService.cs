@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using MusicTransify.src.Contracts;
 
 namespace MusicTransify.Services.Spotify
 {
-    public class SpotifyService
+    public class SpotifyService : ISpotifyService
     {
 
     }

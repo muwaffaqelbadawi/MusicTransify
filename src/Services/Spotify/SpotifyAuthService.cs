@@ -5,15 +5,21 @@ using MusicTransify.src.Services.Common;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Utilities.Security;
 
-namespace MusicTransify.Services.Spotify
+namespace MusicTransify.src.Services.Spotify
 {
-    public class SpotifyAuthService
+    public class SpotifyAuthService : AuthService
     {
         private readonly SpotifyOptionsProvider _spotifyOptionsProvider;
         private readonly HttpService _httpService;
         private readonly CookiesService _cookiesService;
         private readonly AuthHelper _authHelper;
-        public SpotifyAuthService(SpotifyOptionsProvider spotifyOptionsProvider, HttpService httpService, CookiesService cookiesService, AuthHelper authHelper)
+        
+        public SpotifyAuthService(
+            SpotifyOptionsProvider spotifyOptionsProvider,
+            HttpService httpService,
+            CookiesService cookiesService,
+            AuthHelper authHelper
+        ) : base(httpService, cookiesService, authHelper)
         {
             _spotifyOptionsProvider = spotifyOptionsProvider;
             _httpService = httpService;
@@ -21,7 +27,7 @@ namespace MusicTransify.Services.Spotify
             _authHelper = authHelper;
         }
 
-        public string GetLogInURI()
+        public override string GetLogInURI()
         {
             string clientID = _spotifyOptionsProvider.ClientId;
 
@@ -64,7 +70,7 @@ namespace MusicTransify.Services.Spotify
             return $"{AuthURL}?{queryString}";
         }
 
-        public async Task<JsonElement> ExchangeAuthorizationCodeAsync(string authorizationCode)
+        public override async Task<JsonElement> ExchangeAuthorizationCodeAsync(string authorizationCode)
         {
             // Set the Grant Type
             string grantType = _spotifyOptionsProvider.GrantType;
@@ -96,7 +102,7 @@ namespace MusicTransify.Services.Spotify
             return tokenInfo;
         }
 
-        public async Task<JsonElement> GetNewTokenAsync(string refreshToken)
+        public override async Task<JsonElement> GetNewTokenAsync(string refreshToken)
         {
             // Set the grant_type
             string grantType = _spotifyOptionsProvider.GrantType;
