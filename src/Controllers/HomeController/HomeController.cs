@@ -2,17 +2,27 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using MusicTransify.src.Configurations.Spotify;
 using MusicTransify.src.Controllers.Common;
+using MusicTransify.src.Services.Common;
+using MusicTransify.src.Utilities.Common;
 
 namespace MusicTransify.src.Controllers.HomeController
 {
     [ApiController]
     [Route("/")] // Base route "/"
-    public class HomeController : BaseApiController
+    public class HomeController : AuthController
     {
         private readonly new ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger) : base(logger)
+        public HomeController(
+            SpotifyOptionsProvider spotifyOptionsProvider,
+            AuthService authService,
+            SessionService sessionService,
+            TokenHelper tokenHelper,
+            ILogger<AuthController> baseLogger,
+            ILogger<HomeController> logger
+        ) : base(spotifyOptionsProvider, authService, sessionService, tokenHelper, baseLogger)
         {
             _logger = logger;
         }
