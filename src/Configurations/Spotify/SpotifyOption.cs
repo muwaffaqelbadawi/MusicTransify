@@ -1,10 +1,8 @@
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MusicTransify.src.Configurations.Spotify
 {
-    public class SpotifyOptionsInitializer
+    public class SpotifyOption
     {
         public string ClientId { get; set; } = string.Empty;
         public string ClientSecret { get; set; } = string.Empty;

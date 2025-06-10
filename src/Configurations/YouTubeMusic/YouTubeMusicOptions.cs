@@ -1,16 +1,13 @@
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
 namespace MusicTransify.src.Configurations.YouTubeMusic
 {
-    public class YouTubeMusicOptionsProvider
+    public class YouTubeMusicOptions
     {
-        // Primary constructor
-        private readonly YouTubeMusicOptionsInitializer _options;
+        private readonly YouTubeMusicOption _options;
 
-        public YouTubeMusicOptionsProvider(IOptions<YouTubeMusicOptionsInitializer> options)
+        public YouTubeMusicOptions(IOptions<YouTubeMusicOption> options)
         {
             _options = options.Value;
         }
@@ -24,6 +21,11 @@ namespace MusicTransify.src.Configurations.YouTubeMusic
         public string RedirectUri => _options.RedirectUri;
         public string ApiBaseUri => _options.ApiBaseUri;
         public string PlaylistBaseUrl => _options.PlaylistBaseUri;
+        public string ResponseType => _options.ResponseType;
+        public string Scope => _options.Scope;
+        public string GrantType => _options.GrantType;
+        public string AccessType => _options.AccessType;
+        public string Prompt => _options.Prompt;
         public string Cookie => _options.Cookie;
 
         public Dictionary<string, string> Headers => _options.Headers;

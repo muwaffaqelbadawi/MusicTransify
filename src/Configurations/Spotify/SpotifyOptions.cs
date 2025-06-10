@@ -1,15 +1,13 @@
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
 namespace MusicTransify.src.Configurations.Spotify
 {
-    public class SpotifyOptionsProvider
+    public class SpotifyOptions
     {
-        private readonly SpotifyOptionsInitializer _options;
+        private readonly SpotifyOptions _options;
 
-        public SpotifyOptionsProvider(IOptions<SpotifyOptionsInitializer> options)
+        public SpotifyOptions(IOptions<SpotifyOptions> options)
         {
             _options = options.Value;
         }
@@ -20,7 +18,7 @@ namespace MusicTransify.src.Configurations.Spotify
         public string RedirectUri => _options.RedirectUri;
         public string AuthUri => _options.AuthUri;
         public string TokenUri => _options.TokenUri;
-        public string ApiBaseUri => _options.APIBaseUri;
+        public string ApiBaseUri => _options.ApiBaseUri;
         public string PlaylistBaseUri => _options.PlaylistBaseUri;
         public string Scope => _options.Scope;
         public string GrantType => _options.GrantType;

@@ -10,11 +10,13 @@ namespace MusicTransify.src.Services.Common
         private readonly HttpService _httpService;
         private readonly CookiesService _cookiesService;
         private readonly AuthHelper _authHelper;
-        public AuthService(HttpService httpService, CookiesService cookiesService, AuthHelper authHelper)
+        private readonly ILogger<AuthService> _logger;
+        public AuthService(HttpService httpService, CookiesService cookiesService, AuthHelper authHelper, ILogger<AuthService> logger)
         {
             _httpService = httpService;
             _cookiesService = cookiesService;
             _authHelper = authHelper;
+            _logger = logger;
         }
 
         public abstract string GetLogInURI();

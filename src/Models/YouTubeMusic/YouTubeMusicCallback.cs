@@ -1,28 +1,26 @@
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 
 namespace MusicTransify.src.Models.YouTubeMusic
 {
     public class YouTubeMusicCallback
     {
-        [JsonPropertyName("")]
+        [JsonPropertyName("code")]
         public string? Code { get; set; }
 
-        [JsonPropertyName("")]
+        [JsonPropertyName("error")]
         public string? Error { get; set; }
 
-        [JsonPropertyName("")]
+        [JsonPropertyName("grant_type")]
         public string? GrantType { get; set; }
 
-        [JsonPropertyName("")]
+        [JsonPropertyName("access_token")]
         public string? AccessToken { get; set; }
 
-        [JsonPropertyName("")]
+        [JsonPropertyName("refresh_token")]
         public string? RefreshToken { get; set; }
 
-        [JsonPropertyName("")]
+        [JsonPropertyName("expires_in")]
         public int ExpiresIn { get; set; }
 
         [JsonPropertyName("scope")]

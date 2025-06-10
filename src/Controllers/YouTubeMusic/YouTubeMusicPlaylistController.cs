@@ -10,12 +10,12 @@ namespace MusicTransify.src.Controllers.YouTubeMusic
     public class YouTubeMusicPlaylistController : AuthController
     {
         public YouTubeMusicPlaylistController(
-            SpotifyOptionsProvider spotifyOptionsProvider,
+            spotifyOptions spotifyOptions,
             AuthService authService,
             SessionService sessionService,
             TokenHelper tokenHelper,
             ILogger<AuthController> logger)
-            : base(spotifyOptionsProvider, authService, sessionService, tokenHelper, logger)
+            : base(spotifyOptions, authService, sessionService, tokenHelper, logger)
         {
         }
     }

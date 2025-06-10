@@ -7,15 +7,15 @@ namespace MusicTransify.src.Services.YouTubeMusic
     public class YouTubeMusicApiClientService : HttpService
     {
         private readonly string _serviceName = "YouTubeMusic";
-        private readonly SpotifyOptionsProvider _spotifyOptionsProvider;
-        public YouTubeMusicApiClientService(HttpClient httpClient, ILogger<HttpService> logger, SpotifyOptionsProvider spotifyOptionsProvider) : base(httpClient, logger)
+        private readonly SpotifyOptions _spotifyOptions;
+        public YouTubeMusicApiClientService(HttpClient httpClient, ILogger<HttpService> logger, spotifyOptions spotifyOptions) : base(httpClient, logger)
         {
-            _spotifyOptionsProvider = spotifyOptionsProvider;
+            _spotifyOptions = spotifyOptions;
         }
 
         public async Task<YouTubeMusicPlaylistService> GetPlaylistAsync(string id)
         {
-            string baseUri = _spotifyOptionsProvider.ApiBaseUri;
+            string baseUri = _spotifyOptions.ApiBaseUri;
             var response = new HttpRequestMessage(HttpMethod.Get, $"{baseUri}/playlists/{id}");
 
             if (response is null)

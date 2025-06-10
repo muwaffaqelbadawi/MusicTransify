@@ -15,16 +15,16 @@ namespace MusicTransify.src.Controllers.Spotify
     public class SpotifyAuthController : AuthController
     {
         public SpotifyAuthController(
-            SpotifyOptionsProvider spotifyOptionsProvider,
+            spotifyOptions spotifyOptions,
             AuthService authService,
             SessionService sessionService,
             TokenHelper tokenHelper,
             ILogger<AuthController> logger)
-            : base(spotifyOptionsProvider, authService, sessionService, tokenHelper, logger)
+            : base(spotifyOptions, authService, sessionService, tokenHelper, logger)
         {
         }
 
-        [HttpGet("login")] // Route: "/auth/login"
+        [HttpGet("login/spotify")] // Route: "/auth/login/spotify"
         public IActionResult Login()
         {
             _logger.LogInformation("This is the Login route");
@@ -134,12 +134,12 @@ namespace MusicTransify.src.Controllers.Spotify
 
                 _logger.LogInformation("Token successfully refreshed and stored in session. Redirecting to /playlists.");
 
-                // Redirect back to playlists route
-                return Redirect("/playlists");
+                // Redirect
+                return Redirect("");
             }
 
-            // Redirect back to playlists route
-            return Redirect("/playlists");
+            // Redirect
+            return Redirect("");
         }
     }
 }

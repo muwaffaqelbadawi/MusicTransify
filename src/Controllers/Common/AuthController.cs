@@ -9,14 +9,14 @@ namespace MusicTransify.src.Controllers.Common
     [ApiController]
     public abstract class AuthController : ControllerBase
     {
-        protected SpotifyOptionsProvider _spotifyOptionsProvider;
+        protected readonly SpotifyOptions _spotifyOptions;
         protected readonly AuthService _authService;
         protected readonly SessionService _sessionService;
         protected readonly TokenHelper _token;
         protected readonly ILogger<AuthController> _logger;
-        protected AuthController(SpotifyOptionsProvider spotifyOptionsProvider, AuthService authService, SessionService sessionService, TokenHelper tokenHelper, ILogger<AuthController> logger)
+        protected AuthController(SpotifyOptions spotifyOptions, AuthService authService, SessionService sessionService, TokenHelper tokenHelper, ILogger<AuthController> logger)
         {
-            _spotifyOptionsProvider = spotifyOptionsProvider;
+            _spotifyOptions = spotifyOptions;
             _authService = authService;
             _sessionService = sessionService;
             _token = tokenHelper;

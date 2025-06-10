@@ -10,12 +10,12 @@ namespace MusicTransify.src.Controllers.Transfer
     public class TransferController : AuthController
     {
         public TransferController(
-            SpotifyOptionsProvider spotifyOptionsProvider,
+            spotifyOptions spotifyOptions,
             AuthService authService,
             SessionService sessionService,
             TokenHelper tokenHelper,
             ILogger<AuthController> logger
-        ) : base(spotifyOptionsProvider, authService, sessionService, tokenHelper, logger)
+        ) : base(spotifyOptions, authService, sessionService, tokenHelper, logger)
         {
         }
     }

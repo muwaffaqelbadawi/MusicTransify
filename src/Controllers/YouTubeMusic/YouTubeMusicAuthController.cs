@@ -1,8 +1,11 @@
 using System;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using MusicTransify.src.Configurations.Spotify;
 using MusicTransify.src.Controllers.Common;
+using MusicTransify.src.Models.YouTubeMusic;
 using MusicTransify.src.Services.Common;
+using MusicTransify.src.Services.YouTubeMusic;
 using MusicTransify.src.Utilities.Common;
 
 
@@ -13,12 +16,12 @@ namespace MusicTransify.src.Controllers.YouTubeMusic
     public class YouTubeMusicAuthController : AuthController
     {
         public YouTubeMusicAuthController(
-            SpotifyOptionsProvider spotifyOptionsProvider,
-            AuthService authService,
+            spotifyOptions spotifyOptions,
+            YouTubeMusicAuthService youTubeMusicAuthService,
             SessionService sessionService,
             TokenHelper tokenHelper,
             ILogger<AuthController> logger)
-            : base(spotifyOptionsProvider, authService, sessionService, tokenHelper, logger)
+            : base(spotifyOptions, youTubeMusicAuthService, sessionService, tokenHelper, logger)
         {
         }
 
@@ -35,5 +38,35 @@ namespace MusicTransify.src.Controllers.YouTubeMusic
 
 
 
+        [HttpGet("callback")] // Route: "/auth/callback"
+        public async Task<IActionResult> CallbackAsync([FromQuery] YouTubeMusicCallback request)
+        {
+            _logger.LogInformation("This is the callback route");
+
+            // Check if "error" exists in the query string and not null
+            if (!string.IsNullOrEmpty(request.Error))
+            {
+                _logger.LogWarning("OAuth callback error: {Error}", request.Error);
+
+                // Return the JSON error message if not exists
+                return BadRequest(new { request.Error });
+            }
+
+            // Check if "code" does not exists in the query string and not null
+            if (string.IsNullOrEmpty(request.Code))
+            {
+                _logger.LogWarning("Missing 'code' parameter in the callback request.");
+
+                // Return the JSON code message if not exists
+                return BadRequest("Missing 'code' parameter in the callback request.");
+            }
+
+            // Receive the Token Info
+            var tokenInfo = await _authService.ExchangeAuthorizationCodeAsync(request.Code);
+
+
+            // Redirect
+            return Redirect("");
+        }
     }
 }

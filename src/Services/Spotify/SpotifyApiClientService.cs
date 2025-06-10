@@ -7,16 +7,16 @@ namespace MusicTransify.Services.Spotify
     public class SpotifyApiClientService : HttpService
     {
         private readonly string _serviceName = "Spotify";
-        private readonly SpotifyOptionsProvider _spotifyOptionsProvider;
+        private readonly spotifyOptions _spotifyOptions;
 
-        public SpotifyApiClientService(HttpClient httpClient, ILogger<HttpService> logger, SpotifyOptionsProvider spotifyOptionsProvider) : base(httpClient, logger)
+        public SpotifyApiClientService(HttpClient httpClient, ILogger<HttpService> logger, spotifyOptions spotifyOptions) : base(httpClient, logger)
         {
-            _spotifyOptionsProvider = spotifyOptionsProvider;
+            _spotifyOptions = spotifyOptions;
         }
 
         public async Task<SpotifyService> GetPlaylistAsync(string id)
         {
-            string baseUri = _spotifyOptionsProvider.ApiBaseUri;
+            string baseUri = _spotifyOptions.ApiBaseUri;
             var response = new HttpRequestMessage(HttpMethod.Get, $"{baseUri}/playlists/{id}");
 
             if (response is null)

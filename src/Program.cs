@@ -1,3 +1,4 @@
+using System;
 using MusicTransify.src.Middlewares;
 using MusicTransify.src.Services.Common;
 using MusicTransify.src.Configurations.Spotify;
@@ -58,10 +59,10 @@ namespace MusicTransify.src
             builder.Services.AddScoped<AuthHelper>();
 
             // Register Spotify Options
-            builder.Services.ConfigureOptions<OptionsSetup<SpotifyOptionsProvider>>();
+            builder.Services.ConfigureOptions<OptionsSetup<SpotifyOptions>>();
 
             // Register YouTube Music Options
-            builder.Services.ConfigureOptions<OptionsSetup<YouTubeMusicOptionsProvider>>();
+            builder.Services.ConfigureOptions<OptionsSetup<YouTubeMusicOptions>>();
 
             //  HttpClient
             // Add HttpClient to the DI container

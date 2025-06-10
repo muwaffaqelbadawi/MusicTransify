@@ -9,39 +9,42 @@ namespace MusicTransify.src.Services.Spotify
 {
     public class SpotifyAuthService : AuthService
     {
-        private readonly SpotifyOptionsProvider _spotifyOptionsProvider;
+        private readonly spotifyOptions _spotifyOptions;
         private readonly HttpService _httpService;
         private readonly CookiesService _cookiesService;
         private readonly AuthHelper _authHelper;
-        
+        private readonly ILogger<SpotifyAuthService> _logger;
+
         public SpotifyAuthService(
-            SpotifyOptionsProvider spotifyOptionsProvider,
+            spotifyOptions spotifyOptions,
             HttpService httpService,
             CookiesService cookiesService,
-            AuthHelper authHelper
-        ) : base(httpService, cookiesService, authHelper)
+            AuthHelper authHelper,
+            ILogger<SpotifyAuthService> logger
+        ) : base(httpService, cookiesService, authHelper, logger)
         {
-            _spotifyOptionsProvider = spotifyOptionsProvider;
+            _spotifyOptions = spotifyOptions;
             _httpService = httpService;
             _cookiesService = cookiesService;
             _authHelper = authHelper;
+            _logger = logger;
         }
 
         public override string GetLogInURI()
         {
-            string clientID = _spotifyOptionsProvider.ClientId;
+            string clientID = _spotifyOptions.ClientId;
 
             // Set Response Type
-            string responseType = _spotifyOptionsProvider.ResponseType;
+            string responseType = _spotifyOptions.ResponseType;
 
             // Set the scope value
-            string Scope = _spotifyOptionsProvider.Scope;
+            string Scope = _spotifyOptions.Scope;
 
             // Set Redirect URI
-            string redirectURI = _spotifyOptionsProvider.RedirectUri;
+            string redirectURI = _spotifyOptions.RedirectUri;
 
             // Show dialog flag
-            string showDialog = _spotifyOptionsProvider.ShowDialog;
+            string showDialog = _spotifyOptions.ShowDialog;
 
             // Set OAuth state
             string state = _authHelper.GenerateSecureRandomString(32);
@@ -50,7 +53,7 @@ namespace MusicTransify.src.Services.Spotify
             _cookiesService.AppendCookies(state);
 
             // Set Auth URL (base URL)
-            string AuthURL = _spotifyOptionsProvider.AuthUri;
+            string AuthURL = _spotifyOptions.AuthUri;
 
             // Query Parameters
             var queryParameters = new Dictionary<string, string>
@@ -73,19 +76,19 @@ namespace MusicTransify.src.Services.Spotify
         public override async Task<JsonElement> ExchangeAuthorizationCodeAsync(string authorizationCode)
         {
             // Set the Grant Type
-            string grantType = _spotifyOptionsProvider.GrantType;
+            string grantType = _spotifyOptions.GrantType;
 
             // Set Redirect URI
-            string redirectURI = _spotifyOptionsProvider.RedirectUri;
+            string redirectURI = _spotifyOptions.RedirectUri;
 
             // Set Client ID
-            string clientID = _spotifyOptionsProvider.ClientId;
+            string clientID = _spotifyOptions.ClientId;
 
             // Set Client Secret
-            string clientSecret = _spotifyOptionsProvider.ClientSecret;
+            string clientSecret = _spotifyOptions.ClientSecret;
 
             // Set Token URL
-            string tokenURL = _spotifyOptionsProvider.TokenUri;
+            string tokenURL = _spotifyOptions.TokenUri;
 
             // Build the request body
             var requestBody = new Dictionary<string, string>
@@ -105,16 +108,16 @@ namespace MusicTransify.src.Services.Spotify
         public override async Task<JsonElement> GetNewTokenAsync(string refreshToken)
         {
             // Set the grant_type
-            string grantType = _spotifyOptionsProvider.GrantType;
+            string grantType = _spotifyOptions.GrantType;
 
             // Set Client ID
-            string clientID = _spotifyOptionsProvider.ClientId;
+            string clientID = _spotifyOptions.ClientId;
 
             // Set Client Secret
-            string clientSecret = _spotifyOptionsProvider.ClientSecret;
+            string clientSecret = _spotifyOptions.ClientSecret;
 
             // Set Token URL
-            string tokenURL = _spotifyOptionsProvider.TokenUri;
+            string tokenURL = _spotifyOptions.TokenUri;
 
             // Initialize request body
             var requestBody = new Dictionary<string, string>
