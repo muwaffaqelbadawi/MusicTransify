@@ -10,10 +10,8 @@ namespace MusicTransify.src.Services.YouTubeMusic
     public class YouTubeMusicAuthService : AuthService
     {
         private readonly YouTubeMusicOptions _youTubeMusicOptions;
-        private readonly HttpService _httpService;
         private readonly CookiesService _cookiesService;
         private readonly AuthHelper _authHelper;
-        private readonly ILogger<YouTubeMusicAuthService> _logger;
 
         public YouTubeMusicAuthService(
             YouTubeMusicOptions youTubeMusicOptions,
@@ -24,10 +22,8 @@ namespace MusicTransify.src.Services.YouTubeMusic
         ) : base(httpService, cookiesService, authHelper, logger)
         {
             _youTubeMusicOptions = youTubeMusicOptions;
-            _httpService = httpService;
             _cookiesService = cookiesService;
             _authHelper = authHelper;
-            _logger = logger;
         }
 
         public override string GetLogInURI()

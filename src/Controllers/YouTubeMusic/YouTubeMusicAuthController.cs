@@ -1,13 +1,9 @@
 using System;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Configurations.Spotify;
 using MusicTransify.src.Controllers.Common;
 using MusicTransify.src.Models.YouTubeMusic;
 using MusicTransify.src.Services.Common;
 using MusicTransify.src.Services.YouTubeMusic;
-using MusicTransify.src.Utilities.Common;
-
 
 namespace MusicTransify.src.Controllers.YouTubeMusic
 {
@@ -16,12 +12,10 @@ namespace MusicTransify.src.Controllers.YouTubeMusic
     public class YouTubeMusicAuthController : AuthController
     {
         public YouTubeMusicAuthController(
-            spotifyOptions spotifyOptions,
             YouTubeMusicAuthService youTubeMusicAuthService,
             SessionService sessionService,
-            TokenHelper tokenHelper,
             ILogger<AuthController> logger)
-            : base(spotifyOptions, youTubeMusicAuthService, sessionService, tokenHelper, logger)
+            : base(youTubeMusicAuthService, sessionService, logger)
         {
         }
 
@@ -35,8 +29,6 @@ namespace MusicTransify.src.Controllers.YouTubeMusic
 
             return Redirect(redirectUri);
         }
-
-
 
         [HttpGet("callback")] // Route: "/auth/callback"
         public async Task<IActionResult> CallbackAsync([FromQuery] YouTubeMusicCallback request)
@@ -63,7 +55,6 @@ namespace MusicTransify.src.Controllers.YouTubeMusic
 
             // Receive the Token Info
             var tokenInfo = await _authService.ExchangeAuthorizationCodeAsync(request.Code);
-
 
             // Redirect
             return Redirect("");

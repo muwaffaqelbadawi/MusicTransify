@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using MusicTransify.src.Configurations.Spotify;
@@ -13,10 +12,10 @@ namespace MusicTransify.src.Controllers.Spotify
     [Route("playlists")] // Route: "/playlists"
     public class SpotifyPlaylistsController : AuthController
     {
-        private readonly new SpotifyOptions _spotifyOptions;
+        private readonly SpotifyOptions _spotifyOptions;
         private readonly new SessionService _sessionService;
         private readonly HttpService _httpService;
-        private readonly new TokenHelper _token;
+        private readonly TokenHelper _tokenHelper;
         private readonly new ILogger<SpotifyPlaylistsController> _logger;
 
         public SpotifyPlaylistsController(
@@ -27,12 +26,12 @@ namespace MusicTransify.src.Controllers.Spotify
             TokenHelper token,
             ILogger<SpotifyPlaylistsController> logger,
             ILogger<AuthController> baseLogger
-        ) : base(spotifyOptions, authService, sessionService, token, baseLogger)
+        ) : base(authService, sessionService, baseLogger)
         {
             _spotifyOptions = spotifyOptions;
             _sessionService = sessionService;
             _httpService = httpService;
-            _token = token;
+            _tokenHelper = token;
             _logger = logger;
         }
 
@@ -65,10 +64,10 @@ namespace MusicTransify.src.Controllers.Spotify
             }
 
             // Set expiresIn
-            long expiresIn = _token.ParseToLong(strExpiresIn);
+            long expiresIn = _tokenHelper.ParseToLong(strExpiresIn);
 
             // Check If the token is expired
-            if (_token.IsExpired(expiresIn))
+            if (_tokenHelper.IsExpired(expiresIn))
             {
                 _logger.LogWarning("Token expired, need to refresh.");
 

@@ -9,13 +9,13 @@ namespace MusicTransify.src.Services.Common
     public class SessionService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly TokenHelper _token;
+        private readonly TokenHelper _tokenHelper;
         private readonly ILogger<SessionService> _logger;
 
         public SessionService(IHttpContextAccessor httpContextAccessor, TokenHelper token, ILogger<SessionService> logger)
         {
             _httpContextAccessor = httpContextAccessor;
-            _token = token;
+            _tokenHelper = token;
             _logger = logger;
         }
 
@@ -64,7 +64,7 @@ namespace MusicTransify.src.Services.Common
             }
 
             // Optionally, pass the old expiration date if you want to update it only if expired
-            string newExpiresIn = _token.CalculateExpirationDate(expiresIn);
+            string newExpiresIn = _tokenHelper.CalculateExpirationDate(expiresIn);
 
             // Store access token in session
             session.SetString("access_token", accessToken);

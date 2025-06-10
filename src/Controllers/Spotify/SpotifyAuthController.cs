@@ -1,7 +1,6 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Configurations.Spotify;
 using MusicTransify.src.Controllers.Common;
 using MusicTransify.src.Models.Spotify;
 using MusicTransify.src.Services.Common;
@@ -14,14 +13,15 @@ namespace MusicTransify.src.Controllers.Spotify
 
     public class SpotifyAuthController : AuthController
     {
+        private readonly TokenHelper _tokenHelper;
         public SpotifyAuthController(
-            spotifyOptions spotifyOptions,
             AuthService authService,
             SessionService sessionService,
             TokenHelper tokenHelper,
             ILogger<AuthController> logger)
-            : base(spotifyOptions, authService, sessionService, tokenHelper, logger)
+            : base(authService, sessionService, logger)
         {
+            _tokenHelper = tokenHelper;
         }
 
         [HttpGet("login/spotify")] // Route: "/auth/login/spotify"
@@ -97,7 +97,7 @@ namespace MusicTransify.src.Controllers.Spotify
                 return BadRequest("The 'expires_in' parameter is missing or invalid in the session.");
             }
 
-            long expiresIn = _token.ParseToLong(strExpiresIn);
+            long expiresIn = _tokenHelper.ParseToLong(strExpiresIn);
 
             // Check if access_token exists in the session and is not null
             if (string.IsNullOrEmpty(accessToken))
@@ -108,7 +108,7 @@ namespace MusicTransify.src.Controllers.Spotify
             }
 
             // Check If the access_token is expired
-            if (_token.IsExpired(expiresIn))
+            if (_tokenHelper.IsExpired(expiresIn))
             {
                 // Check if refresh token does not exist or invalid in the session
                 if (string.IsNullOrEmpty(refreshToken))
@@ -132,7 +132,7 @@ namespace MusicTransify.src.Controllers.Spotify
                 // Store token info in session
                 _sessionService.Store(TokenInfo);
 
-                _logger.LogInformation("Token successfully refreshed and stored in session. Redirecting to /playlists.");
+                _logger.LogInformation("Token successfully refreshed and stored in session. Redirecting...");
 
                 // Redirect
                 return Redirect("");

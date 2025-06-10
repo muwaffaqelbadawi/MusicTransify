@@ -5,9 +5,7 @@ using MusicTransify.src.Configurations.Spotify;
 using MusicTransify.src.Configurations.YouTubeMusic;
 using MusicTransify.src.Configurations.Common;
 using MusicTransify.src.Utilities.Common;
-using MusicTransify.src.Services.Transfer;
 using MusicTransify.src.Utilities.Security;
-using MusicTransify.src.Contracts;
 
 namespace MusicTransify.src
 {
@@ -21,8 +19,16 @@ namespace MusicTransify.src
             // app URLs
             var urls = builder.Configuration.GetValue<string>("Application:Urls");
 
-            // client baseUri
-            string baseUri = "";
+            // Read base URIs from configuration
+            string? SpotifyBaseUri = builder.Configuration.GetValue<string>("ApiClients:Spotify:BaseUri");
+
+            string? YouTubeMusicBaseUri = builder.Configuration.GetValue<string>("ApiClients:YouTubeMusic:BaseUri");
+
+            if (string.IsNullOrEmpty(SpotifyBaseUri))
+                throw new InvalidOperationException("Spotify BaseUri configuration is missing.");
+
+            if (string.IsNullOrEmpty(YouTubeMusicBaseUri))
+                throw new InvalidOperationException("YouTube Music BaseUri configuration is missing.");
 
             // health check
             // Add health check
@@ -43,8 +49,6 @@ namespace MusicTransify.src
             // Scoped
             // Add the SessionService singleton to the DI container
             builder.Services.AddScoped<SessionService>();
-
-            builder.Services.AddScoped<IMatchingService, FuzzyMatchingService>();
 
             // Scoped
             // Add TokenHelper to the DI container
@@ -70,11 +74,11 @@ namespace MusicTransify.src
 
             // Add Spotify HttpClient to the DI container
             builder.Services.AddHttpClient<HttpService>("SpotifyApiClientService",
-            client => client.BaseAddress = new Uri(baseUri));
+            client => client.BaseAddress = new Uri(SpotifyBaseUri));
 
             // Add YouTube Music HttpClient to the DI container
             builder.Services.AddHttpClient<HttpService>("YouTubeMusicApiClientService",
-            client => client.BaseAddress = new Uri(baseUri));
+            client => client.BaseAddress = new Uri(YouTubeMusicBaseUri));
 
             // Distributed Memory Cache
             // Add session support

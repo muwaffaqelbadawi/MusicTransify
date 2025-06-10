@@ -9,14 +9,14 @@ namespace MusicTransify.src.Services.Spotify
 {
     public class SpotifyAuthService : AuthService
     {
-        private readonly spotifyOptions _spotifyOptions;
+        private readonly SpotifyOptions _spotifyOptions;
         private readonly HttpService _httpService;
         private readonly CookiesService _cookiesService;
         private readonly AuthHelper _authHelper;
         private readonly ILogger<SpotifyAuthService> _logger;
 
         public SpotifyAuthService(
-            spotifyOptions spotifyOptions,
+            SpotifyOptions spotifyOptions,
             HttpService httpService,
             CookiesService cookiesService,
             AuthHelper authHelper,
