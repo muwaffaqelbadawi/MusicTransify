@@ -1,5 +1,6 @@
 # Set default behavior to automatically normalize line endings.
 * text=auto
+eol=crlf
 
 # Explicitly declare text files you want to always normalize
 *.cs      text

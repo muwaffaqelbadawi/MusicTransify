@@ -16,6 +16,17 @@ namespace MusicTransify.src
             // Create a new WebApplicationBuilder instance
             var builder = WebApplication.CreateBuilder(args);
 
+            // Add CORS policy
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
             // app URLs
             var urls = builder.Configuration.GetValue<string>("Application:Urls");
 
@@ -68,7 +79,7 @@ namespace MusicTransify.src
             // Register YouTube Music Options
             builder.Services.ConfigureOptions<OptionsSetup<YouTubeMusicOptions>>();
 
-            //  HttpClient
+            // HttpClient
             // Add HttpClient to the DI container
             builder.Services.AddHttpClient<HttpService>();
 
@@ -104,6 +115,9 @@ namespace MusicTransify.src
 
             // Add the custom request logging middleware
             app.UseMiddleware<RequestLoggingMiddleware>();
+
+            // Use CORS
+            app.UseCors();
 
             // Map routes to controllers
             app.MapControllers();

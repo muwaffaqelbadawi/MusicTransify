@@ -1,20 +1,16 @@
 # Visual Studio .ignore
 # https://raw.githubusercontent.com/github/gitignore/refs/heads/main/VisualStudio.gitignore
 
-
 # User-specific files
 *.rsuser
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
-
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
-
 # Mono auto generated files
 mono_crash.*
-
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -30,45 +26,33 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-
 # Visual Studio 2015/2017 cache/options directory
 .vs/
-
-
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
-
 # Visual Studio 2017 auto generated files
 Generated\ Files/
-
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
-
 # NUnit
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
-
 # Build Results of an ATL Project
 [Dd]ebugPS/
 [Rr]eleasePS/
 dlldata.c
-
 # Benchmark Results
 BenchmarkDotNet.Artifacts/
-
 # .NET Core
 project.lock.json
 project.fragment.lock.json
 artifacts/
-
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
-
 # StyleCop
 StyleCopReport.xml
-
 # Files built by Visual Studio
 *_i.c
 *_p.c
@@ -92,6 +76,7 @@ StyleCopReport.xml
 *.tmp
 *.tmp_proj
 *_wpftmp.csproj
+*.csproj.user
 *.log
 *.tlog
 *.vspscc
@@ -100,10 +85,8 @@ StyleCopReport.xml
 *.pidb
 *.svclog
 *.scc
-
 # Chutzpah Test files
 _Chutzpah*
-
 # Visual C++ cache files
 ipch/
 *.aps
@@ -114,61 +97,46 @@ ipch/
 *.cachefile
 *.VC.db
 *.VC.VC.opendb
-
 # Visual Studio profiler
 *.psess
 *.vsp
 *.vspx
 *.sap
-
 # Visual Studio Trace Files
 *.e2e
-
 # TFS 2012 Local Workspace
 $tf/
-
 # Guidance Automation Toolkit
 *.gpState
-
 # ReSharper is a .NET coding add-in
 _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
-
 # TeamCity is a build add-in
 _TeamCity*
-
 # DotCover is a Code Coverage Tool
 *.dotCover
-
 # AxoCover is a Code Coverage Tool
 .axoCover/*
 !.axoCover/settings.json
-
 # Coverlet is a free, cross platform Code Coverage Tool
 coverage*.json
 coverage*.xml
 coverage*.info
-
 # Visual Studio code coverage results
 *.coverage
 *.coveragexml
-
 # NCrunch
 _NCrunch_*
 .*crunch*.local.xml
 nCrunchTemp_*
-
 # MightyMoose
 *.mm.*
 AutoTest.Net/
-
 # Web workbench (sass)
 .sass-cache/
-
 # Installshield output folder
 [Ee]xpress/
-
 # DocProject is a documentation generator add-in
 DocProject/buildhelp/
 DocProject/Help/*.HxT
@@ -178,10 +146,8 @@ DocProject/Help/*.hhk
 DocProject/Help/*.hhp
 DocProject/Help/Html2
 DocProject/Help/html
-
 # Click-Once directory
 publish/
-
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
@@ -189,12 +155,10 @@ publish/
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
 *.publishproj
-
 # Microsoft Azure Web App publish settings. Comment the next line if you want to
 # checkin your Azure Web App publish settings, but sensitive information contained
 # in these scripts will be unencrypted
 PublishScripts/
-
 # NuGet Packages
 *.nupkg
 # NuGet Symbol Packages
@@ -208,15 +172,12 @@ PublishScripts/
 # NuGet v3's project.json files produces more ignorable files
 *.nuget.props
 *.nuget.targets
-
 # Microsoft Azure Build Output
 csx/
 *.build.csdef
-
 # Microsoft Azure Emulator
 ecf/
 rcf/
-
 # Windows Store app package directories and files
 AppPackages/
 BundleArtifacts/
@@ -225,13 +186,11 @@ _pkginfo.txt
 *.appx
 *.appxbundle
 *.appxupload
-
 # Visual Studio cache files
 # files ending in .cache can be ignored
 *.[Cc]ache
 # but keep track of directories ending in .cache
 !?*.[Cc]ache/
-
 # Others
 ClientBin/
 ~$*
@@ -242,18 +201,14 @@ ClientBin/
 *.pfx
 *.publishsettings
 orleans.codegen.cs
-
 # Including strong name files can present a security risk
 # (https://github.com/github/gitignore/pull/2483#issue-259490424)
 #*.snk
-
 # Since there are multiple workflows, uncomment next line to ignore bower_components
 # (https://github.com/github/gitignore/pull/1529#issuecomment-104372622)
 #bower_components/
-
 # RIA/Silverlight projects
 Generated_Code/
-
 # Backup & report files from converting an old project file
 # to a newer Visual Studio version. Backup files are not needed,
 # because we have git ;-)
@@ -263,12 +218,10 @@ UpgradeLog*.XML
 UpgradeLog*.htm
 ServiceFabricBackup/
 *.rptproj.bak
-
 # SQL Server files
 *.mdf
 *.ldf
 *.ndf
-
 # Business Intelligence projects
 *.rdl.data
 *.bim.layout
@@ -277,37 +230,25 @@ ServiceFabricBackup/
 *- [Bb]ackup.rdl
 *- [Bb]ackup ([0-9]).rdl
 *- [Bb]ackup ([0-9][0-9]).rdl
-
 # Microsoft Fakes
 FakesAssemblies/
-
 # GhostDoc plugin setting file
 *.GhostDoc.xml
-
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 node_modules/
-
 # Visual Studio 6 build log
 *.plg
-
 # Visual Studio 6 workspace options file
 *.opt
-
 # Visual Studio 6 auto-generated workspace file (contains which files were open etc.)
 *.vbw
-
 # Visual Studio 6 auto-generated project file (contains which files were open etc.)
 *.vbp
-
 # Visual Studio 6 workspace and project file (working project files containing files to include in project)
 *.dsw
 *.dsp
-
 # Visual Studio 6 technical files
-*.ncb
-*.aps
-
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts
 **/*.DesktopClient/GeneratedArtifacts
@@ -315,67 +256,47 @@ node_modules/
 **/*.Server/GeneratedArtifacts
 **/*.Server/ModelManifest.xml
 _Pvt_Extensions
-
 # Paket dependency manager
 .paket/paket.exe
 paket-files/
-
 # FAKE - F# Make
 .fake/
-
 # CodeRush personal settings
 .cr/personal
-
-
 # Cake - Uncomment if you are using it
 # tools/**
 # !tools/packages.config
-
 # Tabs Studio
 *.tss
-
 # Telerik's JustMock configuration file
 *.jmconfig
-
 # BizTalk build output
 *.btp.cs
 *.btm.cs
 *.odx.cs
 *.xsd.cs
-
 # OpenCover UI analysis results
 OpenCover/
-
 # Azure Stream Analytics local run output
 ASALocalRun/
-
 # MSBuild Binary and Structured Log
 *.binlog
-
 # NVidia Nsight GPU debugger configuration file
 *.nvuser
-
 # MFractors (Xamarin productivity tool) working folder
 .mfractor/
-
 # Local History for Visual Studio
 .localhistory/
-
 # Visual Studio History (VSHistory) files
 .vshistory/
-
 # BeatPulse healthcheck temp database
 healthchecksdb
-
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
-
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
-
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-
 # VS Code files for those working on multiple tools
 .vscode
 .vscode/*
@@ -384,85 +305,45 @@ FodyWeavers.xsd
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
-
 # Local History for Visual Studio Code
 .history/
-
 # Windows Installer files from build outputs
 *.cab
 *.msi
 *.msix
 *.msm
 *.msp
-
 # JetBrains Rider
 *.sln.iml
-
 # VSCode .gitignore
 # https://raw.githubusercontent.com/github/gitignore/refs/heads/main/Global/VisualStudioCode.gitignore
 !.vscode/*.code-snippets
-
-# Local History for Visual Studio Code
-.history/
-
 # Built Visual Studio Code Extensions
 *.vsix
-
 # .NET Core .gitignore
 # https://raw.githubusercontent.com/dotnet/core/refs/heads/main/.gitignore
 *.swp
 *.*~
-project.lock.json
 .DS_Store
 *.pyc
 nupkg/
-
 # Rider
 .idea/
-
 # Visual Studio
-.vs/
-
 # Fleet
 .fleet/
-
 # Code Rush
 .cr/
-
-# User-specific files
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
 build/
-bld/
-[Bb]in/
-[Oo]bj/
 [Oo]ut/
 msbuild.log
 msbuild.err
 msbuild.wrn
-
-
 # .NET Core-specific .gitignore
 # ASP.NET Core specific
-[Bb]in/
-[Oo]bj/
 secrets.json
-*.pubxml
-*.publishsettings
 project.assets.json
 project.nuget.cache
-
-
 # Environment Variables .gitignore
 # Environment variables
 .env
@@ -473,11 +354,9 @@ project.nuget.cache
 .env.production
 .env.test
 .env.staging
-
 # IDE/Editor-specific envs
 .vscode/settings.json
 .idea/workspace.xml
-
 # All apsettings json files
 appsettings.Production.json
 appsettings.Pre-production.json
@@ -487,10 +366,8 @@ appsettings.Test.json
 appsettings.local.json
 appsettings.json
 *.envrc
-
 # Dlls folder
 [Dd]lls/
-
 # Exclude all DLLs, EXEs, and other binary files
 *.dll
 *.exe
@@ -500,23 +377,161 @@ appsettings.json
 *.exp
 *.local
 *.vs/
-
 # Properties folder
 [Pp]roperties/
 [Pp]roperties/launchSettings.json
-
 # Configuration files
 App.config
-
 # Legacy ASP.NET setting files
 web.config
-
 # Auto generated Middleware files
 Middleware/bin/
 Middleware/obj/
-
 # Auto generated wwwroot non-static folders
 # You should only commit static assets (css, js, images, index.html, etc.)
 wwwroot/dist/
 wwwroot/temp/
 *.min.*
+# Node .gitignore template
+# Logs
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+# Directory for instrumented libs generated by jscoverage/JSCover
+lib-cov
+# Coverage directory used by tools like istanbul
+coverage
+*.lcov
+# nyc test coverage
+.nyc_output
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+# Bower dependency directory (https://bower.io/)
+bower_components
+# node-waf configuration
+.lock-wscript
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/Release
+# Dependency directories
+jspm_packages/
+# Snowpack dependency directory (https://snowpack.dev/)
+web_modules/
+# TypeScript cache
+*.tsbuildinfo
+# Optional npm cache directory
+.npm
+# Optional eslint cache
+.eslintcache
+# Optional stylelint cache
+.stylelintcache
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+# Optional REPL history
+.node_repl_history
+# Output of 'npm pack'
+*.tgz
+# Yarn Integrity file
+.yarn-integrity
+# dotenv environment variable files
+.env.development.local
+.env.test.local
+.env.production.local
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+# Next.js build output
+.next
+out
+# Nuxt.js build / generate output
+.nuxt
+dist
+# Gatsby files
+.cache/
+# Comment in the public line in if your project uses Gatsby and not Next.js
+# https://nextjs.org/blog/next-9-1#public-directory-support
+# public
+# vuepress build output
+.vuepress/dist
+# vuepress v2.x temp and cache directory
+.temp
+# vitepress build output
+**/.vitepress/dist
+# vitepress cache directory
+**/.vitepress/cache
+# Docusaurus cache and generated files
+.docusaurus
+# Serverless directories
+.serverless/
+# FuseBox cache
+.fusebox/
+# DynamoDB Local files
+.dynamodb/
+# TernJS port file
+.tern-port
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+# Next.js gitignore
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# dependencies
+/node_modules
+/.pnp
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+# testing
+/coverage
+/vitest-test-results
+# next.js
+/.next/
+/out/
+# production
+/build
+# misc
+*.pem
+Thumbs.db
+# debug
+# local env files
+.env*.local
+# Sentry Config File
+.env.sentry-build-plugin
+# local folder
+local
+# vercel
+.vercel
+# typescript
+next-env.d.ts
+# Database
+*.db
+# storybook
+storybook-static
+*storybook.log
+build-archive.log
+# playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+.pnp.js
+*.tsbuildinfo# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# env files (can opt-in for committing if needed)
+.env*
