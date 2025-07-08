@@ -1,4 +1,4 @@
-# Music Transify App  
+# MusicTransify
 
 ## 🚀 Overview
 
