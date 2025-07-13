@@ -1,17 +1,14 @@
 using System;
-using MusicTransify.src.Controllers.Common;
-using MusicTransify.src.Services.Common;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MusicTransify.src.Controllers.Transfer
 {
-    public class TransferController : AuthController
+    public class TransferController : Controller
     {
-        public TransferController(
-            AuthService authService,
-            SessionService sessionService,
-            ILogger<AuthController> logger
-        ) : base(authService, sessionService, logger)
+        private readonly ILogger<TransferController> _logger;
+        public TransferController(ILogger<TransferController> logger)
         {
+            _logger = logger;
         }
     }
 }

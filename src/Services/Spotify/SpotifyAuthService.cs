@@ -1,36 +1,37 @@
 using System;
 using System.Text.Json;
-using MusicTransify.src.Configurations.Spotify;
+using MusicTransify.src.Contracts;
+using Microsoft.Extensions.Options;
 using MusicTransify.src.Services.Common;
-using MusicTransify.src.Services.Cookies;
+using MusicTransify.src.Services.Common.Cookies;
+using MusicTransify.src.Configurations.Spotify;
 using MusicTransify.src.Utilities.Security;
 
 namespace MusicTransify.src.Services.Spotify
 {
-    public class SpotifyAuthService : AuthService
+    public class SpotifyAuthService : IPlatformAuthService
     {
         private readonly SpotifyOptions _spotifyOptions;
         private readonly HttpService _httpService;
         private readonly CookiesService _cookiesService;
         private readonly AuthHelper _authHelper;
-        private readonly ILogger<SpotifyAuthService> _logger;
 
         public SpotifyAuthService(
-            SpotifyOptions spotifyOptions,
+            IOptions<SpotifyOptions> spotifyOptions,
             HttpService httpService,
             CookiesService cookiesService,
-            AuthHelper authHelper,
-            ILogger<SpotifyAuthService> logger
-        ) : base(httpService, cookiesService, authHelper, logger)
+            AuthHelper authHelper)
         {
-            _spotifyOptions = spotifyOptions;
-            _httpService = httpService;
-            _cookiesService = cookiesService;
-            _authHelper = authHelper;
-            _logger = logger;
+            _spotifyOptions = spotifyOptions.Value;
+            _httpService = httpService ??
+            throw new ArgumentNullException(nameof(httpService));
+            _cookiesService = cookiesService ??
+            throw new ArgumentNullException(nameof(cookiesService));
+            _authHelper = authHelper ??
+            throw new ArgumentNullException(nameof(authHelper));
         }
 
-        public override string GetLogInURI()
+        public string GetLoginUri()
         {
             string clientID = _spotifyOptions.ClientId;
 
@@ -73,7 +74,7 @@ namespace MusicTransify.src.Services.Spotify
             return $"{AuthURL}?{queryString}";
         }
 
-        public override async Task<JsonElement> ExchangeAuthorizationCodeAsync(string authorizationCode)
+        public async Task<JsonElement> ExchangeAuthorizationCodeAsync(string authorizationCode)
         {
             // Set the Grant Type
             string grantType = _spotifyOptions.GrantType;
@@ -105,7 +106,7 @@ namespace MusicTransify.src.Services.Spotify
             return tokenInfo;
         }
 
-        public override async Task<JsonElement> GetNewTokenAsync(string refreshToken)
+        public async Task<JsonElement> GetNewTokenAsync(string refreshToken)
         {
             // Set the grant_type
             string grantType = _spotifyOptions.GrantType;

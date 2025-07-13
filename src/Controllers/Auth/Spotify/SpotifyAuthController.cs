@@ -1,41 +1,52 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Controllers.Common;
+using MusicTransify.src.Contracts;
 using MusicTransify.src.Models.Spotify;
 using MusicTransify.src.Services.Common;
+using MusicTransify.src.Services.Spotify;
 using MusicTransify.src.Utilities.Common;
+using MusicTransify.src.Controllers.Auth.Common.Login;
 
-namespace MusicTransify.src.Controllers.Spotify
+namespace MusicTransify.src.Controllers.Auth.Spotify
 {
     [ApiController]
-    [Route("auth/spotify")] // route "/auth/spotify"
+    [Route("auth/spotify")] // route "auth/spotify"
 
-    public class SpotifyAuthController : AuthController
+    public class SpotifyAuthController : LoginController
     {
+        private readonly SpotifyAuthService _spotifyAuthService;
+        private readonly SessionService _sessionService;
         private readonly TokenHelper _tokenHelper;
+        private readonly ILogger<SpotifyAuthController> _logger;
+
         public SpotifyAuthController(
-            AuthService authService,
+            SpotifyAuthService spotifyAuthService,
             SessionService sessionService,
             TokenHelper tokenHelper,
-            ILogger<AuthController> logger)
-            : base(authService, sessionService, logger)
+            Func<string, IPlatformAuthService> platformAuthFactory,
+            ILogger<LoginController> BaseLogger,
+            ILogger<SpotifyAuthController> logger
+        ) : base(BaseLogger, platformAuthFactory)
         {
+            _spotifyAuthService = spotifyAuthService;
+            _sessionService = sessionService;
             _tokenHelper = tokenHelper;
+            _logger = logger;
         }
 
-        [HttpGet("login/spotify")] // Route: "/auth/login/spotify"
+        [HttpGet("login")] // Route: "/login"
         public IActionResult Login()
         {
             _logger.LogInformation("This is the Login route");
 
             // Set redirect URI
-            string redirectUri = _authService.GetLogInURI();
+            string redirectUri = _spotifyAuthService.GetLoginUri();
 
             return Redirect(redirectUri);
         }
 
-        [HttpGet("callback")] // Route: "/auth/callback"
+        [HttpGet("callback")] // Route: "/callback"
         public async Task<IActionResult> CallbackAsync([FromQuery] SpotifyCallback request)
         {
             _logger.LogInformation("This is the callback route");
@@ -59,7 +70,7 @@ namespace MusicTransify.src.Controllers.Spotify
             }
 
             // Receive the Token Info
-            var tokenInfo = await _authService.ExchangeAuthorizationCodeAsync(request.Code);
+            var tokenInfo = await _spotifyAuthService.ExchangeAuthorizationCodeAsync(request.Code);
 
             if (tokenInfo.ValueKind == JsonValueKind.Undefined)
             {
@@ -77,7 +88,7 @@ namespace MusicTransify.src.Controllers.Spotify
             return Redirect("/playlists");
         }
 
-        [HttpGet("refresh_token")] // Route: "/auth/refresh_token"
+        [HttpGet("refresh_token")] // Route: "/refresh_token"
         public async Task<IActionResult> RefreshTokenAsync()
         {
             _logger.LogInformation("This is the refresh_token route");
@@ -104,7 +115,7 @@ namespace MusicTransify.src.Controllers.Spotify
             {
                 _logger.LogWarning("Access token missing from session; redirecting to login.");
                 // Redirect back to login route
-                return Redirect("/auth/login");
+                return Redirect("/login");
             }
 
             // Check If the access_token is expired
@@ -120,7 +131,7 @@ namespace MusicTransify.src.Controllers.Spotify
                 }
 
                 // Receive the Token Info
-                var TokenInfo = await _authService.GetNewTokenAsync(refreshToken);
+                var TokenInfo = await _spotifyAuthService.GetNewTokenAsync(refreshToken);
 
                 if (TokenInfo.ValueKind == JsonValueKind.Undefined)
                 {

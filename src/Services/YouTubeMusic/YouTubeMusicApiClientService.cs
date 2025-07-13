@@ -1,5 +1,5 @@
 using System;
-using MusicTransify.src.Configurations.Spotify;
+using MusicTransify.src.Configurations.YouTubeMusic;
 using MusicTransify.src.Services.Common;
 
 namespace MusicTransify.src.Services.YouTubeMusic
@@ -7,15 +7,15 @@ namespace MusicTransify.src.Services.YouTubeMusic
     public class YouTubeMusicApiClientService : HttpService
     {
         private readonly string _serviceName = "YouTubeMusic";
-        private readonly SpotifyOptions _spotifyOptions;
-        public YouTubeMusicApiClientService(HttpClient httpClient, ILogger<HttpService> logger, SpotifyOptions spotifyOptions) : base(httpClient, logger)
+        private readonly YouTubeMusicOptions _youTubeMusicOptions;
+        public YouTubeMusicApiClientService(HttpClient httpClient, ILogger<HttpService> logger, YouTubeMusicOptions youTubeMusicOptions) : base(httpClient, logger)
         {
-            _spotifyOptions = spotifyOptions;
+            _youTubeMusicOptions = youTubeMusicOptions;
         }
 
         public async Task<T> GetPlaylistAsync<T>(string id)
         {
-            string baseUri = _spotifyOptions.ApiBaseUri;
+            string baseUri = _youTubeMusicOptions.ApiBaseUri;
             var response = new HttpRequestMessage(HttpMethod.Get, $"{baseUri}/playlists/{id}");
 
             if (response is null)

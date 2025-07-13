@@ -2,31 +2,28 @@ using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using MusicTransify.src.Configurations.Spotify;
-using MusicTransify.src.Controllers.Common;
 using MusicTransify.src.Services.Common;
 using MusicTransify.src.Utilities.Common;
 
-namespace MusicTransify.src.Controllers.Spotify
+namespace MusicTransify.src.Controllers.Playlists.Spotify
 {
     [ApiController]
-    [Route("playlists")] // Route: "/playlists"
-    public class SpotifyPlaylistsController : AuthController
+    [Route("api/auth/spotify")] // Route: "api/auth/spotify"
+    public class SpotifyPlaylistController : Controller
     {
         private readonly SpotifyOptions _spotifyOptions;
-        private readonly new SessionService _sessionService;
+        private readonly SessionService _sessionService;
         private readonly HttpService _httpService;
         private readonly TokenHelper _tokenHelper;
-        private readonly new ILogger<SpotifyPlaylistsController> _logger;
+        private readonly ILogger<SpotifyPlaylistController> _logger;
 
-        public SpotifyPlaylistsController(
+        public SpotifyPlaylistController(
             SpotifyOptions spotifyOptions,
-            AuthService authService,
             SessionService sessionService,
             HttpService httpService,
             TokenHelper token,
-            ILogger<SpotifyPlaylistsController> logger,
-            ILogger<AuthController> baseLogger
-        ) : base(authService, sessionService, baseLogger)
+            ILogger<SpotifyPlaylistController> logger
+        )
         {
             _spotifyOptions = spotifyOptions;
             _sessionService = sessionService;
@@ -35,8 +32,7 @@ namespace MusicTransify.src.Controllers.Spotify
             _logger = logger;
         }
 
-
-        [HttpGet] // Route: "/playlists"
+        [HttpGet("/playlist")] // Route: "api/auth/spotify/playlist"
         public async Task<IActionResult> GetPlaylistsAsync()
         {
             // Use the log information
@@ -51,7 +47,7 @@ namespace MusicTransify.src.Controllers.Spotify
                 _logger.LogWarning("Missing 'access_token' parameter from the session.");
 
                 // Redirect back to Spotify login page
-                return Redirect("/auth/login");
+                return Redirect("api/auth/spotify/login"); // route "api/auth/spotify/login"
             }
 
             // Get token expiration time
@@ -72,7 +68,7 @@ namespace MusicTransify.src.Controllers.Spotify
                 _logger.LogWarning("Token expired, need to refresh.");
 
                 // Redirect to refresh token
-                return Redirect("/auth/refresh_token");
+                return Redirect("api/auth/spotify/refresh_token"); // route "api/auth/spotify/refresh_token"
             }
 
             string apiBaseUri = _spotifyOptions.ApiBaseUri;

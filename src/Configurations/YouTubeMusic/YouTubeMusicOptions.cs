@@ -3,31 +3,25 @@ using Microsoft.Extensions.Options;
 
 namespace MusicTransify.src.Configurations.YouTubeMusic
 {
+    // POCO (Plain Old CLR Object) Entities
+    // Represents the configuration options for YouTube Music API
     public class YouTubeMusicOptions
     {
-        private readonly YouTubeMusicOption _options;
-
-        public YouTubeMusicOptions(IOptions<YouTubeMusicOption> options)
-        {
-            _options = options.Value;
-        }
-
-        public string ClientId => _options.ClientId;
-        public string ProjectIdy => _options.ProjectId;
-        public string AuthUri => _options.AuthUri;
-        public string TokenUri => _options.TokenUri;
-        public string AuthProviderX509CertUri => _options.AuthProviderX509CertUri;
-        public string ClientSecret => _options.ClientSecret;
-        public string RedirectUri => _options.RedirectUri;
-        public string ApiBaseUri => _options.ApiBaseUri;
-        public string PlaylistBaseUrl => _options.PlaylistBaseUri;
-        public string ResponseType => _options.ResponseType;
-        public string Scope => _options.Scope;
-        public string GrantType => _options.GrantType;
-        public string AccessType => _options.AccessType;
-        public string Prompt => _options.Prompt;
-        public string Cookie => _options.Cookie;
-
-        public Dictionary<string, string> Headers => _options.Headers;
+        public string ClientId { get; set; } = string.Empty;
+        public string ProjectId { get; set; } = string.Empty;
+        public string AuthUri { get; set; } = string.Empty;
+        public string TokenUri { get; set; } = string.Empty;
+        public string AuthProviderX509CertUri { get; set; } = string.Empty;
+        public string ClientSecret { get; set; } = string.Empty;
+        public string RedirectUri { get; set; } = string.Empty;
+        public string ApiBaseUri { get; set; } = string.Empty;
+        public string PlaylistBaseUri { get; set; } = string.Empty;
+        public string ResponseType { get; set; } = string.Empty;
+        public string Scope { get; set; } = string.Empty;
+        public string GrantType { get; set; } = string.Empty;
+        public string AccessType { get; set; } = string.Empty;
+        public string Prompt { get; set; } = string.Empty;
+        public string Cookie { get; set; } = string.Empty;
+        public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
     }
 }

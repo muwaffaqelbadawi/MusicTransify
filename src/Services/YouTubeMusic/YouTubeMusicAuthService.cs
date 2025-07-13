@@ -1,32 +1,30 @@
 using System;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using MusicTransify.src.Configurations.YouTubeMusic;
-using MusicTransify.src.Services.Common;
-using MusicTransify.src.Services.Cookies;
+using MusicTransify.src.Contracts;
+using MusicTransify.src.Services.Common.Cookies;
 using MusicTransify.src.Utilities.Security;
 
 namespace MusicTransify.src.Services.YouTubeMusic
 {
-    public class YouTubeMusicAuthService : AuthService
+    public class YouTubeMusicAuthService : IPlatformAuthService
     {
         private readonly YouTubeMusicOptions _youTubeMusicOptions;
         private readonly CookiesService _cookiesService;
         private readonly AuthHelper _authHelper;
 
         public YouTubeMusicAuthService(
-            YouTubeMusicOptions youTubeMusicOptions,
-            HttpService httpService,
+            IOptions<YouTubeMusicOptions> youTubeMusicOptions,
             CookiesService cookiesService,
-            AuthHelper authHelper,
-            ILogger<YouTubeMusicAuthService> logger
-        ) : base(httpService, cookiesService, authHelper, logger)
+            AuthHelper authHelper)
         {
-            _youTubeMusicOptions = youTubeMusicOptions;
+            _youTubeMusicOptions = youTubeMusicOptions.Value;
             _cookiesService = cookiesService;
             _authHelper = authHelper;
         }
 
-        public override string GetLogInURI()
+        public string GetLoginUri()
         {
             // Set the client ID
             string clientID = _youTubeMusicOptions.ClientId;
@@ -73,12 +71,12 @@ namespace MusicTransify.src.Services.YouTubeMusic
             return $"{AuthURL}?{queryString}";
         }
 
-        public override Task<JsonElement> ExchangeAuthorizationCodeAsync(string authorizationCode)
+        public Task<JsonElement> ExchangeAuthorizationCodeAsync(string authorizationCode)
         {
             throw new NotImplementedException();
         }
 
-        public override Task<JsonElement> GetNewTokenAsync(string refreshToken)
+        public Task<JsonElement> GetNewTokenAsync(string refreshToken)
         {
             throw new NotImplementedException();
         }

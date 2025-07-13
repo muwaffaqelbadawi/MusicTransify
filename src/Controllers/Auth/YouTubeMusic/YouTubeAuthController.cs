@@ -1,36 +1,41 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Controllers.Common;
+using MusicTransify.src.Contracts;
 using MusicTransify.src.Models.YouTubeMusic;
-using MusicTransify.src.Services.Common;
 using MusicTransify.src.Services.YouTubeMusic;
+using MusicTransify.src.Controllers.Auth.Common.Login;
 
-namespace MusicTransify.src.Controllers.YouTubeMusic
+namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
 {
     [ApiController]
-    [Route("auth/music.youtube")] // route "/auth/music.youtube"
-    public class YouTubeMusicAuthController : AuthController
+    [Route("auth/youtube")] // route "auth/youtube"
+    public class YouTubeMusicAuthController : LoginController
     {
+        private readonly YouTubeMusicAuthService _youTubeMusicAuthService;
+        private readonly ILogger<YouTubeMusicAuthController> _logger;
         public YouTubeMusicAuthController(
             YouTubeMusicAuthService youTubeMusicAuthService,
-            SessionService sessionService,
-            ILogger<AuthController> logger)
-            : base(youTubeMusicAuthService, sessionService, logger)
+            ILogger<LoginController> Baselogger,
+            ILogger<YouTubeMusicAuthController> logger,
+            Func<string, IPlatformAuthService> platformAuthFactory
+        ) : base(Baselogger, platformAuthFactory)
         {
+            _youTubeMusicAuthService = youTubeMusicAuthService;
+            _logger = logger;
         }
 
-        [HttpGet("login/music.youtube")] // Route: "/auth/login/music.youtube"
+        [HttpGet("login")] // Route: "/login"
         public IActionResult Login()
         {
             _logger.LogInformation("This is the Login route");
 
             // Set redirect URI
-            string redirectUri = _authService.GetLogInURI();
+            string redirectUri = _youTubeMusicAuthService.GetLoginUri();
 
             return Redirect(redirectUri);
         }
 
-        [HttpGet("callback")] // Route: "/auth/callback"
+        [HttpGet("callback")] // Route: "/callback"
         public async Task<IActionResult> CallbackAsync([FromQuery] YouTubeMusicCallback request)
         {
             _logger.LogInformation("This is the callback route");
@@ -54,7 +59,7 @@ namespace MusicTransify.src.Controllers.YouTubeMusic
             }
 
             // Receive the Token Info
-            var tokenInfo = await _authService.ExchangeAuthorizationCodeAsync(request.Code);
+            var tokenInfo = await _youTubeMusicAuthService.ExchangeAuthorizationCodeAsync(request.Code);
 
             // Redirect
             return Redirect("");
