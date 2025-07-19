@@ -7,6 +7,7 @@ namespace MusicTransify.src.Configurations.YouTubeMusic
     // Represents the configuration options for YouTube Music API
     public class YouTubeMusicOptions
     {
+        public string ClientName { get; set; } = string.Empty;
         public string ClientId { get; set; } = string.Empty;
         public string ProjectId { get; set; } = string.Empty;
         public string AuthUri { get; set; } = string.Empty;

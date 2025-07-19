@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Extensions.Options;
 
 namespace MusicTransify.src.Configurations.Spotify
 {
@@ -7,6 +6,7 @@ namespace MusicTransify.src.Configurations.Spotify
     // Represents the configuration options for Spotify API
     public class SpotifyOptions
     {
+        public string ClientName { get; set; } = string.Empty;
         public string ClientId { get; set; } = string.Empty;
         public string ClientSecret { get; set; } = string.Empty;
         public string RedirectUri { get; set; } = string.Empty;
@@ -19,6 +19,8 @@ namespace MusicTransify.src.Configurations.Spotify
         public string ResponseType { get; set; } = string.Empty;
         public string ShowDialog { get; set; } = string.Empty;
         public string Cookie { get; set; } = string.Empty;
-        public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
+        public string PlaylistEndpoind { get; set; } = string.Empty;
+        public string PlaylistUrl { get; set; } = string.Empty;
+        public string UserProfile { get; set; } = string.Empty;
     }
 }

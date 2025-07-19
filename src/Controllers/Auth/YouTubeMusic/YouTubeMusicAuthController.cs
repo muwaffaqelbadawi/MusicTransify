@@ -1,48 +1,46 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Models.Spotify;
+using MusicTransify.src.Models.YouTubeMusic;
+using MusicTransify.src.Services.Auth.YouTubeMusic;
 using MusicTransify.src.Services.Session;
-using MusicTransify.src.Services.Auth.Spotify;
 using MusicTransify.src.Utilities.Token;
 
-namespace MusicTransify.src.Controllers.Auth.Spotify
+namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
 {
     [ApiController]
-    [Route("spotify")] // Route "/spotify"
-
-    public class SpotifyAuthController : Controller
+    [Route("youtube")] // Route /youtube
+    public class YouTubeMusicAuthController : Controller
     {
-        private readonly SpotifyAuthService _spotifyAuthService;
+        private readonly YouTubeMusicAuthService _youTubeMusicAuthService;
         private readonly SessionService _sessionService;
         private readonly TokenHelper _tokenHelper;
-        private readonly ILogger<SpotifyAuthController> _logger;
-
-        public SpotifyAuthController(
-            SpotifyAuthService spotifyAuthService,
+        private readonly ILogger<YouTubeMusicAuthController> _logger;
+        public YouTubeMusicAuthController(
+            YouTubeMusicAuthService youTubeMusicAuthService,
             SessionService sessionService,
             TokenHelper tokenHelper,
-            ILogger<SpotifyAuthController> logger
+            ILogger<YouTubeMusicAuthController> logger
         )
         {
-            _spotifyAuthService = spotifyAuthService;
+            _youTubeMusicAuthService = youTubeMusicAuthService;
             _sessionService = sessionService;
             _tokenHelper = tokenHelper;
             _logger = logger;
         }
 
-        [HttpGet("login")] // Route "/spotify/login"
+        [HttpGet("login")] // Route: "/youtube/login"
         public IActionResult Login()
         {
             _logger.LogInformation("This is the Login route");
 
             // Set redirect URI
-            string redirectUri = _spotifyAuthService.GetLoginUri();
+            string redirectUri = _youTubeMusicAuthService.GetLoginUri();
 
             return Redirect(redirectUri);
         }
 
-        [HttpGet("callback")] // Route: "/spotify/callback"
+        [HttpGet("callback")] // Route: "/youtube/callback"
         public async Task<IActionResult> CallbackAsync([FromQuery] Callback request)
         {
             _logger.LogInformation("This is the callback route");
@@ -66,22 +64,10 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             }
 
             // Receive the Token Info
-            var tokenInfo = await _spotifyAuthService.ExchangeAuthorizationCodeAsync(request.Code);
+            var tokenInfo = await _youTubeMusicAuthService.ExchangeAuthorizationCodeAsync(request.Code);
 
-            if (tokenInfo.ValueKind == JsonValueKind.Undefined)
-            {
-                _logger.LogError("Failed to exchange authorization code for token.");
-
-                return BadRequest("Failed to exchange authorization code.");
-            }
-
-            // Store token assets in session
-            _sessionService.Store(tokenInfo);
-
-            _logger.LogInformation("tokenInfo successfully stored in session redirecting...");
-
-            // Redirect back to playlists
-            return Redirect("/spotify/playlist");
+            // Redirect
+            return Redirect("/youtube/login");
         }
 
         [HttpGet("refreshToken")] // Route: "/refresh_token"
@@ -111,7 +97,7 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             {
                 _logger.LogWarning("Access token missing from session; redirecting to login.");
                 // Redirect back to login route
-                return Redirect("/spotify/login");
+                return Redirect("login");
             }
 
             // Check If the access_token is expired
@@ -127,7 +113,7 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
                 }
 
                 // Receive the Token Info
-                var TokenInfo = await _spotifyAuthService.GetNewTokenAsync(refreshToken);
+                var TokenInfo = await _youTubeMusicAuthService.GetNewTokenAsync(refreshToken);
 
                 if (TokenInfo.ValueKind == JsonValueKind.Undefined)
                 {
@@ -142,11 +128,11 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
                 _logger.LogInformation("Token successfully refreshed and stored in session. Redirecting...");
 
                 // Redirect
-                return Redirect("/spotify/playlist");
+                return Redirect("/youtube/playlist");
             }
 
             // Redirect
-            return Redirect("/spotify/refreshToken");
+            return Redirect("/youtube/refreshToken");
         }
     }
 }
