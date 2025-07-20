@@ -73,7 +73,10 @@ namespace MusicTransify.src.Services.Session
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to extract tokens: {TokenInfo}", tokenInfo);
+                _logger.LogError(ex,
+                "Failed to extract tokens: {TokenInfo}",
+                tokenInfo);
+
                 throw;
             }
         }
@@ -87,7 +90,7 @@ namespace MusicTransify.src.Services.Session
             {
                 _logger.LogWarning("No refresh token provided");
             }
-            
+
             var session = GetValidSession();
             string newExpiresIn = _tokenHelper.CalculateExpirationDate(expiresIn);
 
@@ -117,7 +120,8 @@ namespace MusicTransify.src.Services.Session
 
             var encryptedValue = session.GetString(tokenKey);
             return !string.IsNullOrEmpty(encryptedValue)
-                ? _protector.Unprotect(encryptedValue) : null;
+                ? _protector.Unprotect(encryptedValue)
+                : null;
         }
 
         public string? GetAccessToken() => GetProtectedToken("access_token");
@@ -172,7 +176,6 @@ namespace MusicTransify.src.Services.Session
                 _logger.LogError("Session is not available");
                 throw new InvalidOperationException("Session is not available");
             }
-
             return session;
         }
         #endregion

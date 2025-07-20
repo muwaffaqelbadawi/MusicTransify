@@ -1,12 +1,10 @@
 using System;
-using System.Linq;
 using System.Security.Cryptography;
 
 namespace MusicTransify.src.Utilities.Security
 {
     public class AuthHelper
     {
-        // Helper function for building query strings from dictionary
         public string ToQueryString(Dictionary<string, string> queryParameters)
         {
             if (queryParameters is null || queryParameters.Count == 0) return string.Empty;
@@ -19,7 +17,6 @@ namespace MusicTransify.src.Utilities.Security
             return string.Join("&", encodedParams);
         }
 
-        // Helper function to generate random string
         public string GenerateSecureRandomString(int length)
         {
             const string validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
