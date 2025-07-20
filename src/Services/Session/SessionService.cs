@@ -48,26 +48,42 @@ namespace MusicTransify.src.Services.Session
         #endregion
 
         #region Token Management
-        public (string accessToken, string tokenType, int expiresIn, string? refreshToken, string scope)
-        Check(JsonElement tokenInfo)
+        public (
+            string accessToken,
+            string tokenType,
+            int expiresIn,
+            string? refreshToken,
+            string scope
+        )
+        ExtractTokenData(JsonElement tokenInfo)
         {
             try
             {
-                string accessToken = tokenInfo.GetProperty("access_token").GetString()
-                    ?? throw new InvalidOperationException("No 'access_token' found");
+                // Required properties with validation
+                if (!tokenInfo.TryGetProperty("access_token", out var accessTokenElement) ||
+                    accessTokenElement.ValueKind == JsonValueKind.Null)
+                {
+                    throw new InvalidOperationException("Missing required 'access_token' in response");
+                }
 
-                string tokenType = tokenInfo.GetProperty("token_type").GetString()
-                    ?? "Bearer";
+                string accessToken = accessTokenElement.GetString()!;
 
-                int expiresIn = tokenInfo.GetProperty("expires_in").GetInt32();
+                // Optional properties with fallbacks
+                string tokenType = tokenInfo.TryGetProperty("token_type", out var typeElement)
+                    ? typeElement.GetString() ?? "Bearer"
+                    : "Bearer";
 
-                tokenInfo.TryGetProperty("refresh_token", out JsonElement refreshTokenElement);
-                string? refreshToken = refreshTokenElement.ValueKind != JsonValueKind.Undefined
-                    ? refreshTokenElement.GetString()
+                int expiresIn = tokenInfo.TryGetProperty("expires_in", out var expiresElement)
+                    ? expiresElement.GetInt32()
+                    : 3600; // Default 1 hour if missing
+
+                string? refreshToken = tokenInfo.TryGetProperty("refresh_token", out var refreshElement)
+                    ? refreshElement.GetString()
                     : null;
 
-                string scope = tokenInfo.GetProperty("scope").GetString()
-                    ?? "default_scope";
+                string scope = tokenInfo.TryGetProperty("scope", out var scopeElement)
+                    ? scopeElement.GetString() ?? string.Empty
+                    : string.Empty;
 
                 return (accessToken, tokenType, expiresIn, refreshToken, scope);
             }
@@ -77,14 +93,14 @@ namespace MusicTransify.src.Services.Session
                 "Failed to extract tokens: {TokenInfo}",
                 tokenInfo);
 
-                throw;
+                throw new InvalidOperationException("Session is not available");
             }
         }
 
         public void Store(JsonElement tokenInfo)
         {
-            // Check existence of token assets
-            var (accessToken, tokenType, expiresIn, refreshToken, scope) = Check(tokenInfo);
+            // ExtractTokenData existence of token assets
+            var (accessToken, tokenType, expiresIn, refreshToken, scope) = ExtractTokenData(tokenInfo);
 
             if (refreshToken is null)
             {
@@ -113,6 +129,28 @@ namespace MusicTransify.src.Services.Session
             _logger.LogInformation("Successfully stored token info in session");
         }
 
+        public void RegenerateSession()
+        {
+            var session = GetValidSession();
+            session.Clear();
+            session.CommitAsync().Wait(); // Force immediate session reset
+        }
+
+        public bool IsSessionValid()
+        {
+            try
+            {
+                var session = GetValidSession();
+                return !string.IsNullOrEmpty(GetAccessToken());
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        #endregion
+
+        #region Private Helpers
         public string? GetProtectedToken(string tokenKey)
         {
             var session = _httpContextAccessor.HttpContext?.Session
@@ -129,14 +167,16 @@ namespace MusicTransify.src.Services.Session
         public DateTime? GetExpiration()
         {
             var expiresAt = _httpContextAccessor.HttpContext?.Session.GetString("expires_at");
-            return DateTime.TryParse(expiresAt, out var result) ? result : null;
+            return DateTime.TryParse(expiresAt, out var result)
+            ? result
+            : null;
         }
 
         public string? GetTokenInfo(string tokenInfo)
         {
-            var session = _httpContextAccessor.HttpContext?.Session;
+            var session = GetValidHttpContext().Session;
 
-            if (session is null)
+            if (!session.IsAvailable)
             {
                 _logger.LogError("Session is not available");
                 throw new InvalidOperationException("Session is not available");
@@ -157,7 +197,6 @@ namespace MusicTransify.src.Services.Session
                 _ => throw new ArgumentException($"Invalid tokenInfo: {tokenInfo}", nameof(tokenInfo))
             };
         }
-
         #endregion
 
         #region Private Helpers
