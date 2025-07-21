@@ -2,19 +2,19 @@ using System;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using MusicTransify.src.Configurations.YouTubeMusic;
-using MusicTransify.src.Contracts;
+using MusicTransify.src.Contracts.YouTubeMusic;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Utilities.Security;
 
 namespace MusicTransify.src.Services.Auth.YouTubeMusic
 {
-    public class YouTubeMusicAuthService : IAuthService
+    public class YouTubeMusicService : IYouTubeMusicService
     {
         private readonly YouTubeMusicOptions _options;
         private readonly CookiesService _cookiesService;
         private readonly AuthHelper _authHelper;
 
-        public YouTubeMusicAuthService(
+        public YouTubeMusicService(
             IOptions<YouTubeMusicOptions> options,
             CookiesService cookiesService,
             AuthHelper authHelper)

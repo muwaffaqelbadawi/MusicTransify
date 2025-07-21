@@ -11,21 +11,21 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
     [ApiController]
     [Route("spotify")] // Route "/spotify"
 
-    public class SpotifyAuthController : Controller
+    public class SpotifyController : Controller
     {
-        private readonly SpotifyAuthService _spotifyAuthService;
+        private readonly SpotifyService _spotifyService;
         private readonly SessionService _sessionService;
         private readonly TokenHelper _tokenHelper;
-        private readonly ILogger<SpotifyAuthController> _logger;
+        private readonly ILogger<SpotifyController> _logger;
 
-        public SpotifyAuthController(
-            SpotifyAuthService spotifyAuthService,
+        public SpotifyController(
+            SpotifyService spotifyService,
             SessionService sessionService,
             TokenHelper tokenHelper,
-            ILogger<SpotifyAuthController> logger
+            ILogger<SpotifyController> logger
         )
         {
-            _spotifyAuthService = spotifyAuthService;
+            _spotifyService = spotifyService;
             _sessionService = sessionService;
             _tokenHelper = tokenHelper;
             _logger = logger;
@@ -37,7 +37,7 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             _logger.LogInformation("This is the Login route");
 
             // Set redirect URI
-            string redirectUri = _spotifyAuthService.GetLoginUri();
+            string redirectUri = _spotifyService.GetLoginUri();
 
             return Redirect(redirectUri);
         }
@@ -66,7 +66,7 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             }
 
             // Receive the Token Info
-            var tokenInfo = await _spotifyAuthService.ExchangeAuthorizationCodeAsync(request.Code);
+            var tokenInfo = await _spotifyService.ExchangeAuthorizationCodeAsync(request.Code);
 
             if (tokenInfo.ValueKind == JsonValueKind.Undefined)
             {
@@ -127,7 +127,7 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
                 }
 
                 // Receive the Token Info
-                var TokenInfo = await _spotifyAuthService.GetNewTokenAsync(refreshToken);
+                var TokenInfo = await _spotifyService.GetNewTokenAsync(refreshToken);
 
                 if (TokenInfo.ValueKind == JsonValueKind.Undefined)
                 {

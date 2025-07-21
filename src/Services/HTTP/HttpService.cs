@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Text.Json;
 using System.Net.Http.Headers;
-using MusicTransify.src.Contracts;
+using MusicTransify.src.Contracts.HTTP;
 
 namespace MusicTransify.src.Services.HTTP
 {

@@ -5,7 +5,8 @@ using MusicTransify.src.Services.Session;
 using MusicTransify.src.Utilities.Token;
 using MusicTransify.src.Configurations.Spotify;
 using Microsoft.Extensions.Options;
-using MusicTransify.src.Contracts;
+using MusicTransify.src.Contracts.HTTP;
+using MusicTransify.src.Services.Cache;
 
 namespace MusicTransify.src.Controllers.Playlists.Spotify
 {
@@ -17,6 +18,7 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
         private readonly SessionService _sessionService;
         private readonly IHttpService _httpService;
         private readonly TokenHelper _tokenHelper;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<SpotifyPlaylistController> _logger;
 
         public SpotifyPlaylistController(
@@ -24,6 +26,7 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
             SessionService sessionService,
             IHttpService httpService,
             TokenHelper token,
+            ICacheService cacheService,
             ILogger<SpotifyPlaylistController> logger
         )
         {
@@ -31,6 +34,7 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
             _sessionService = sessionService;
             _httpService = httpService;
             _tokenHelper = token;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
@@ -77,8 +81,16 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
                 return Redirect("/spotify/refresh_token"); // route "/spotify/refresh_token"
             }
 
-            // Fetch playlists from Spotify
-            // Use using block in the controller to properly dispose the response
+            // Caching
+            var cacheKey = $"Spotify:User:{accessToken}:Playlists";
+            var cachedPlaylists = await _cacheService.GetAsync<JsonElement>(cacheKey);
+
+            if (cachedPlaylists.ValueKind != JsonValueKind.Undefined)
+            {
+                _logger.LogInformation("Serving playlists from cache.");
+                return Ok(cachedPlaylists);
+            }
+
             try
             {
                 using (var response = await _httpService.GetHttpResponseAsync(
@@ -108,6 +120,9 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
                     {
                         // Deserialize playlist
                         var playlists = JsonSerializer.Deserialize<JsonElement>(result);
+
+                        // Cache the response for 10 minutes
+                        await _cacheService.SetAsync(cacheKey, playlists, TimeSpan.FromMinutes(10));
 
                         // Returning the playlists
                         return Ok(playlists);

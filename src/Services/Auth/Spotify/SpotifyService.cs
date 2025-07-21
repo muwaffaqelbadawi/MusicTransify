@@ -1,26 +1,27 @@
 using System;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using MusicTransify.src.Contracts;
+using MusicTransify.src.Contracts.HTTP;
+using MusicTransify.src.Contracts.Spotify;
 using MusicTransify.src.Utilities.Security;
 using MusicTransify.src.Configurations.Spotify;
 using MusicTransify.src.Services.Cookies;
 
 namespace MusicTransify.src.Services.Auth.Spotify
 {
-    public class SpotifyAuthService : IAuthService
+    public class SpotifyService : ISpotifyService
     {
         private readonly SpotifyOptions _options;
         private readonly IHttpService _httpService;
         private readonly CookiesService _cookiesService;
         private readonly AuthHelper _authHelper;
-        private readonly ILogger<SpotifyAuthService> _logger;
-        public SpotifyAuthService(
+        private readonly ILogger<SpotifyService> _logger;
+        public SpotifyService(
             IOptions<SpotifyOptions> options,
             IHttpService httpService,
             CookiesService cookiesService,
             AuthHelper authHelper,
-            ILogger<SpotifyAuthService> logger
+            ILogger<SpotifyService> logger
         )
         {
             _options = options.Value;

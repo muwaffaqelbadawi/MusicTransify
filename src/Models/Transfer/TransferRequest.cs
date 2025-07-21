@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MusicTransify.src.Models.Transfer
 {
@@ -9,7 +6,6 @@ namespace MusicTransify.src.Models.Transfer
     {
         Spotify,
         YouTubeMusic
-        // Add other platforms as needed
     }
 
     public class TransferRequest

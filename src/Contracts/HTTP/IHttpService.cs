@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 
-namespace MusicTransify.src.Contracts
+namespace MusicTransify.src.Contracts.HTTP
 {
     public interface IHttpService
     {

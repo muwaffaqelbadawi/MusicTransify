@@ -10,17 +10,17 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
 {
     [ApiController]
     [Route("youtube")] // Route /youtube
-    public class YouTubeMusicAuthController : Controller
+    public class YouTubeMusicController : Controller
     {
-        private readonly YouTubeMusicAuthService _youTubeMusicAuthService;
+        private readonly YouTubeMusicService _youTubeMusicAuthService;
         private readonly SessionService _sessionService;
         private readonly TokenHelper _tokenHelper;
-        private readonly ILogger<YouTubeMusicAuthController> _logger;
-        public YouTubeMusicAuthController(
-            YouTubeMusicAuthService youTubeMusicAuthService,
+        private readonly ILogger<YouTubeMusicController> _logger;
+        public YouTubeMusicController(
+            YouTubeMusicService youTubeMusicAuthService,
             SessionService sessionService,
             TokenHelper tokenHelper,
-            ILogger<YouTubeMusicAuthController> logger
+            ILogger<YouTubeMusicController> logger
         )
         {
             _youTubeMusicAuthService = youTubeMusicAuthService;

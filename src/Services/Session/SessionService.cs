@@ -133,7 +133,7 @@ namespace MusicTransify.src.Services.Session
         {
             var session = GetValidSession();
             session.Clear();
-            session.CommitAsync().Wait(); // Force immediate session reset
+            session.CommitAsync().Wait();
         }
 
         public bool IsSessionValid()

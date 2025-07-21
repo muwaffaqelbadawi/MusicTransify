@@ -1,9 +1,9 @@
 using System;
 using System.Text.Json;
 
-namespace MusicTransify.src.Contracts
+namespace MusicTransify.src.Contracts.Spotify
 {
-    public interface IAuthService
+    public interface ISpotifyService
     {
         string GetLoginUri();
         Task<JsonElement> ExchangeAuthorizationCodeAsync(string authorizationCode);

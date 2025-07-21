@@ -1,6 +1,5 @@
 using System;
-
-namespace MusicTransify.src.Services.Auth.YouTubeMusic
+namespace MusicTransify.src.Services.Token.YouTubeMusic
 {
     public class YouTubeMusicRefreshTokenService
     {
