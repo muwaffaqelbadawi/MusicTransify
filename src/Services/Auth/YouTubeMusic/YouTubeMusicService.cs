@@ -29,11 +29,21 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             // Set the client ID
             string clientID = _options.ClientId;
 
-            // Set Response Type
+            // Set the client secret
+            string clientSecret = _options.ClientSecret;
+
+            // Set the response type
             string responseType = _options.ResponseType;
 
+            // Set the scope list
+            var scopeList = _options.Scope;
+
+            // Join the scope list into a single string
+            // This is necessary because the scope parameter in the OAuth URL expects a space-separated string
+            var scope = string.Join(" ", scopeList);
+
             // Set the scope value
-            string Scope = _options.Scope;
+            string Scope = scope;
 
             // Set the scope value
             string accessType = _options.AccessType;
@@ -56,6 +66,7 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             var queryParameters = new Dictionary<string, string>
             {
                 { "client_id", clientID },
+                { "client_secret", clientSecret },
                 { "redirect_uri", redirectURI },
                 { "response_type", responseType },
                 { "scope", Scope },

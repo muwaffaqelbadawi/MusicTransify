@@ -64,7 +64,9 @@ namespace MusicTransify.src
             }
 
             // Spotify configurations
-            var spotifyBaseUrl = builder.Configuration.GetSection("SpotifyOptions:ApiBaseUri").Value
+            var spotifyOptions = builder.Configuration.GetSection("Spotify");
+
+            var spotifyBaseUrl = builder.Configuration.GetSection("Spotify:ApiBaseUri").Value
             ?? throw new InvalidOperationException("spotifyBaseUrl is missing");
 
             var applicationContentType = builder.Configuration.GetSection("Headers:ContentType").Value
@@ -74,7 +76,9 @@ namespace MusicTransify.src
             ?? throw new InvalidOperationException("spotify Spotify content format is missing");
 
             // YouTube Music configurations
-            var youtubeBaseUrl = builder.Configuration.GetSection("YouTubeOptions:ApiBaseUri").Value
+            var YouTubeMusicOptions = builder.Configuration.GetSection("YouTube");
+
+            var youtubeBaseUrl = builder.Configuration.GetSection("YouTube:ApiBaseUri").Value
             ?? throw new InvalidOperationException("youtubeBaseUrl is missing");
 
             var userProfile = builder.Configuration.GetSection("Session:userProfile").Value
@@ -99,7 +103,7 @@ namespace MusicTransify.src
             });
 
             // Configure YouTube Music client
-            builder.Services.AddHttpClient<YouTubeMusicService>("youtube", client =>
+            builder.Services.AddHttpClient<YouTubeMusicService>("YouTube", client =>
             {
                 client.BaseAddress = new Uri(youtubeBaseUrl, UriKind.Absolute);
             });
@@ -135,6 +139,23 @@ namespace MusicTransify.src
             builder.Services.AddMemoryCache();
             builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
 
+
+            // ===== register Options =====
+            // Register Spotify options
+            builder.Services
+            .AddOptions<SpotifyOptions>()
+            .Bind(spotifyOptions)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+            // Register YouTube Music options
+            builder.Services
+            .AddOptions<YouTubeMusicOptions>()
+            .Bind(YouTubeMusicOptions)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+
             // ===== Other registrations =====
             builder.Services.AddTransient<SpotifyService>();
             builder.Services.AddTransient<YouTubeMusicService>();
@@ -144,8 +165,8 @@ namespace MusicTransify.src
             builder.Services.AddTransient<CookiesService>();
 
             // Configuration bindings
-            builder.Services.Configure<SpotifyOptions>(builder.Configuration.GetSection("SpotifyOptions"));
-            builder.Services.Configure<YouTubeMusicOptions>(builder.Configuration.GetSection("YouTubeOptions"));
+            builder.Services.Configure<SpotifyOptions>(spotifyOptions);
+            builder.Services.Configure<YouTubeMusicOptions>(builder.Configuration.GetSection("YouTube"));
             builder.Services.Configure<CookiePolicyOptions>(options =>
             {
                 options.Secure = CookieSecurePolicy.Always;
@@ -155,6 +176,7 @@ namespace MusicTransify.src
             // Infrastructure
             builder.Services.AddHttpContextAccessor();
 
+            // Data Protection
             builder.Services.AddDataProtection()
                 .PersistKeysToFileSystem(new DirectoryInfo(userProfile))
                 .SetApplicationName("MusicTransify");
