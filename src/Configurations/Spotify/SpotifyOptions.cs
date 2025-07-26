@@ -32,6 +32,6 @@ namespace MusicTransify.src.Configurations.Spotify
         [Required]
         public string PlaylistUrl { get; set; } = string.Empty;
         [Required]
-        public List<string> Scope { get; set; } = new List<string>();
+        public string[] Scope { get; set; } = Array.Empty<string>();
     }
 }

@@ -1,69 +1,53 @@
 using System;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.DataProtection;
+using MusicTransify.src.Configurations.Spotify;
+using MusicTransify.src.Configurations.YouTubeMusic;
 using MusicTransify.src.Contracts.HTTP;
 using MusicTransify.src.Contracts.Spotify;
+using MusicTransify.src.Contracts.YouTubeMusic;
+using MusicTransify.src.Infrastructure.Resilience.Spotify;
+using MusicTransify.src.Infrastructure.Resilience.PolicyBuilder;
+using MusicTransify.src.Middlewares;
 using MusicTransify.src.Services.Auth.Spotify;
 using MusicTransify.src.Services.Auth.YouTubeMusic;
 using MusicTransify.src.Services.HTTP;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Services.Session;
-using MusicTransify.src.Configurations.Spotify;
-using MusicTransify.src.Configurations.YouTubeMusic;
+using MusicTransify.src.Services.Cache;
 using MusicTransify.src.Utilities.Token;
 using MusicTransify.src.Utilities.Security;
-using MusicTransify.src.Middlewares;
-using MusicTransify.src.Infrastructure.Resilience.PolicyBuilder;
-using MusicTransify.src.Contracts.YouTubeMusic;
-using MusicTransify.src.Infrastructure.Resilience.Spotify;
-using MusicTransify.src.Services.Cache;
+using MusicTransify.src.Utilities.Helper.Auth.Common;
+using MusicTransify.src.Utilities.Helper.Auth.Spotify;
+using MusicTransify.src.Utilities.Helper.Auth.YouTubeMusic;
 
 namespace MusicTransify.src
 {
     class Program
     {
-        static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             // ========== Configuration Urls ========== //
-            var nodeJsUrls = builder.Configuration.GetSection("Application:NodejsUrls").Get<string[]>()
-            ?? throw new InvalidOperationException("Nodejs URLs are missing");
-
-            // Application Utls
-            var Urls = builder.Configuration.GetSection("Application:DotNetUrls").Get<string[]>()
-                ?? throw new InvalidOperationException("Nodejs Urls are missing");
-
             // Frontend URL
-            var frontendUrl = nodeJsUrls.FirstOrDefault()
-                ?? throw new InvalidOperationException("Frontend URL is empty");
+            var frontendUrl = builder.Configuration.GetSection("Application:Frontend").Value ?? "";
 
-            if (!Uri.TryCreate(frontendUrl, UriKind.Absolute, out Uri? frontendUri))
-            {
-                throw new InvalidOperationException($"Invalid URL: {frontendUrl}");
-            }
+            // Application name
+            var appName = builder.Configuration.GetValue<string>("Application:Name") ?? "MusicTransify";
 
             // CORS
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("Frontend", policy =>
+                options.AddPolicy("FrontendPolicy", policy =>
                 {
-                    policy.WithOrigins(frontendUri.ToString())
+                    policy.WithOrigins(frontendUrl)
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
             });
 
-            // Application URL
-            var AppUrl = Urls.FirstOrDefault()
-                ?? throw new InvalidOperationException("Application URL is empty");
-
-            if (!Uri.TryCreate(AppUrl, UriKind.Absolute, out Uri? AppUri))
-            {
-                throw new InvalidOperationException($"Invalid URL: {AppUrl}");
-            }
-
-            // Spotify configurations
+            // ========== Spotify configurations ========== //
             var spotifyOptions = builder.Configuration.GetSection("Spotify");
 
             var spotifyBaseUrl = builder.Configuration.GetSection("Spotify:ApiBaseUri").Value
@@ -75,7 +59,7 @@ namespace MusicTransify.src
             var applicationContentFormat = builder.Configuration.GetSection("Headers:ContentFormat").Value
             ?? throw new InvalidOperationException("spotify Spotify content format is missing");
 
-            // YouTube Music configurations
+            // ========== YouTube Music configurations ========== //
             var YouTubeMusicOptions = builder.Configuration.GetSection("YouTube");
 
             var youtubeBaseUrl = builder.Configuration.GetSection("YouTube:ApiBaseUri").Value
@@ -139,7 +123,6 @@ namespace MusicTransify.src
             builder.Services.AddMemoryCache();
             builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
 
-
             // ===== register Options =====
             // Register Spotify options
             builder.Services
@@ -155,18 +138,24 @@ namespace MusicTransify.src
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-
-            // ===== Other registrations =====
+            // ===== Register other services =====
+            // Scoped
             builder.Services.AddTransient<SpotifyService>();
             builder.Services.AddTransient<YouTubeMusicService>();
             builder.Services.AddScoped<SessionService>();
             builder.Services.AddScoped<TokenHelper>();
             builder.Services.AddScoped<AuthHelper>();
+            builder.Services.AddScoped<StateHelper>();
+            builder.Services.AddScoped<SpotifyAuthHelper>();
+            builder.Services.AddScoped<YouTubeMusicAuthHelper>();
+
+            // Transient
             builder.Services.AddTransient<CookiesService>();
+
 
             // Configuration bindings
             builder.Services.Configure<SpotifyOptions>(spotifyOptions);
-            builder.Services.Configure<YouTubeMusicOptions>(builder.Configuration.GetSection("YouTube"));
+            builder.Services.Configure<YouTubeMusicOptions>(YouTubeMusicOptions);
             builder.Services.Configure<CookiePolicyOptions>(options =>
             {
                 options.Secure = CookieSecurePolicy.Always;
@@ -179,7 +168,7 @@ namespace MusicTransify.src
             // Data Protection
             builder.Services.AddDataProtection()
                 .PersistKeysToFileSystem(new DirectoryInfo(userProfile))
-                .SetApplicationName("MusicTransify");
+                .SetApplicationName(appName);
             builder.Services.AddDistributedMemoryCache();
 
             builder.Services.AddSession(options =>
@@ -197,9 +186,13 @@ namespace MusicTransify.src
             app.UseMiddleware<Logging>();
             app.UseCookiePolicy();
 
-            // Core middleware
+            // Use Routing
             app.UseRouting();
-            app.UseCors();
+
+            // Use Cors
+            app.UseCors("FrontendPolicy");
+
+            // Use Sessions
             app.UseSession();
 
             // Endpoints
@@ -207,7 +200,7 @@ namespace MusicTransify.src
 
             // ========== Logging ========== //
             app.Logger.LogInformation("Application starting...");
-            app.Logger.LogInformation("AppUrl: {}", AppUrl);
+            app.Logger.LogInformation("Application Name: {}", appName);
             app.Logger.LogInformation("frontendUrl: {}", frontendUrl);
             app.Logger.LogInformation("SpotifyBaseUrl: {}", spotifyBaseUrl);
             app.Logger.LogInformation("SpotifyContentType: {}", applicationContentType);
@@ -216,7 +209,7 @@ namespace MusicTransify.src
             app.Logger.LogInformation("userProfile: {}", userProfile);
 
             // ========== START APP ========== //
-            await app.RunAsync(AppUrl);
+            app.Run();
         }
     }
 }

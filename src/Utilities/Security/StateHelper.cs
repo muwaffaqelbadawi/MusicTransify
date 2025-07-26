@@ -3,20 +3,8 @@ using System.Security.Cryptography;
 
 namespace MusicTransify.src.Utilities.Security
 {
-    public class AuthHelper
+    public class StateHelper
     {
-        public string ToQueryString(Dictionary<string, string> queryParameters)
-        {
-            if (queryParameters is null || queryParameters.Count == 0) return string.Empty;
-
-            var encodedParams = queryParameters
-            .Where(kvp => !string.IsNullOrEmpty(kvp.Value))
-            .Select(kvp =>
-            $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}");
-
-            return string.Join("&", encodedParams);
-        }
-
         public string GenerateSecureRandomString(int length)
         {
             const string validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";

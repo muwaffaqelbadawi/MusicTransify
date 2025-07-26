@@ -10,6 +10,10 @@ namespace MusicTransify.src.Configurations.YouTubeMusic
         [Required]
         public string ClientName { get; set; } = string.Empty;
         [Required]
+        public string ClientSecret { get; set; } = string.Empty;
+        [Required]
+        public string RedirectUri { get; set; } = string.Empty;
+        [Required]
         public string ClientId { get; set; } = string.Empty;
         [Required]
         public string ProjectId { get; set; } = string.Empty;
@@ -19,10 +23,6 @@ namespace MusicTransify.src.Configurations.YouTubeMusic
         public string TokenUri { get; set; } = string.Empty;
         [Required]
         public string AuthProviderX509CertUri { get; set; } = string.Empty;
-        [Required]
-        public string ClientSecret { get; set; } = string.Empty;
-        [Required]
-        public string RedirectUri { get; set; } = string.Empty;
         [Required]
         public string ApiBaseUri { get; set; } = string.Empty;
         [Required]
@@ -34,6 +34,6 @@ namespace MusicTransify.src.Configurations.YouTubeMusic
         [Required]
         public string Prompt { get; set; } = string.Empty;
         [Required]
-        public List<string> Scope { get; set; } = new List<string>();
+        public string[] Scope { get; set; } = Array.Empty<string>();
     }
 }

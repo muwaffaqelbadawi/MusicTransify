@@ -80,7 +80,9 @@ namespace MusicTransify.src.Services.HTTP
                             _logger?.LogWarning("POST {Url} failed: {StatusCode} {Content}",
                             url, response.StatusCode, content);
 
-                            throw new HttpRequestException($"HTTP Request failed with status: {response.StatusCode}");
+                            throw new HttpRequestException(
+                                $"HTTP Request failed with status: {response.StatusCode}"
+                            );
                         }
 
                         try

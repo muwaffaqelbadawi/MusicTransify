@@ -34,7 +34,7 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
         [HttpGet("login")] // Route "/spotify/login"
         public IActionResult Login()
         {
-            _logger.LogInformation("This is the Login route");
+            _logger.LogInformation("This is the Spotify Login route on Spotify Controller");
 
             // Set redirect URI
             string redirectUri = _spotifyService.GetLoginUri();
@@ -65,10 +65,12 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
                 return BadRequest("Missing 'code' parameter in the callback request.");
             }
 
-            // Receive the Token Info
-            var tokenInfo = await _spotifyService.ExchangeAuthorizationCodeAsync(request.Code);
+            // Receive the access token
+            var accessToken = await _spotifyService.ExchangeAuthorizationCodeAsync(
+                code: request.Code
+            );
 
-            if (tokenInfo.ValueKind == JsonValueKind.Undefined)
+            if (accessToken.ValueKind == JsonValueKind.Undefined)
             {
                 _logger.LogError("Failed to exchange authorization code for token.");
 
@@ -76,9 +78,9 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             }
 
             // Store token assets in session
-            _sessionService.Store(tokenInfo);
+            _sessionService.Store(accessToken);
 
-            _logger.LogInformation("tokenInfo successfully stored in session redirecting...");
+            _logger.LogInformation("accessToken successfully stored in session redirecting...");
 
             // Redirect back to playlists
             return Redirect("/spotify/playlist");
@@ -126,10 +128,10 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
                     return BadRequest("The 'refresh_token' parameter is missing or invalid in the session.");
                 }
 
-                // Receive the Token Info
-                var TokenInfo = await _spotifyService.GetNewTokenAsync(refreshToken);
+                // Receive the new access token Info
+                var newAccessToken = await _spotifyService.GetNewTokenAsync(refreshToken);
 
-                if (TokenInfo.ValueKind == JsonValueKind.Undefined)
+                if (newAccessToken.ValueKind == JsonValueKind.Undefined)
                 {
                     _logger.LogError("Failed to get new token using refresh token.");
 
@@ -137,7 +139,7 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
                 }
 
                 // Store token info in session
-                _sessionService.Store(TokenInfo);
+                _sessionService.Store(newAccessToken);
 
                 _logger.LogInformation("Token successfully refreshed and stored in session. Redirecting...");
 

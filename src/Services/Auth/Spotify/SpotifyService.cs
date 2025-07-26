@@ -1,162 +1,108 @@
 using System;
 using System.Text.Json;
-using Microsoft.Extensions.Options;
 using MusicTransify.src.Contracts.HTTP;
 using MusicTransify.src.Contracts.Spotify;
-using MusicTransify.src.Utilities.Security;
-using MusicTransify.src.Configurations.Spotify;
-using MusicTransify.src.Services.Cookies;
+using MusicTransify.src.Utilities.Helper.Auth.Common;
+using MusicTransify.src.Utilities.Helper.Auth.Spotify;
 
 namespace MusicTransify.src.Services.Auth.Spotify
 {
     public class SpotifyService : ISpotifyService
     {
-        private readonly SpotifyOptions _options;
         private readonly IHttpService _httpService;
-        private readonly CookiesService _cookiesService;
+        private readonly SpotifyAuthHelper _spotifyAuthHelper;
         private readonly AuthHelper _authHelper;
         private readonly ILogger<SpotifyService> _logger;
         public SpotifyService(
-            IOptions<SpotifyOptions> options,
             IHttpService httpService,
-            CookiesService cookiesService,
+            SpotifyAuthHelper spotifyAuthHelper,
             AuthHelper authHelper,
             ILogger<SpotifyService> logger
         )
         {
-            _options = options.Value;
             _httpService = httpService;
-            _cookiesService = cookiesService;
+            _spotifyAuthHelper = spotifyAuthHelper;
             _authHelper = authHelper;
-            _cookiesService = cookiesService;
             _logger = logger;
         }
 
         public string GetLoginUri()
         {
-            _logger.LogInformation("Accessing Spotify login URI");
+            _logger.LogInformation("Accessing Spotify login Uri function");
 
-            // Set the client ID
-            string clientID = _options.ClientId;
+            // Build login query
+            var queryParameters = _spotifyAuthHelper.BuildLogin();
 
-            // Set Response Type
-            string responseType = _options.ResponseType;
+            // Transform login query to query string
+            string queryString = _authHelper.ToQueryString(queryParameters);
 
-            // Set the scope list
-            var scopeList = _options.Scope;
+            // Set authUri
+            string authUri = _spotifyAuthHelper.AuthUri;
 
-            // Join the scope list into a single string
-            // This is necessary because the scope parameter in the OAuth URL expects a space-separated string
-            var scope = string.Join(" ", scopeList);
-
-            _logger.LogInformation("Spotify scope: {scope}", scope);
-
-            // Set the scope value
-            string Scope = scope;
-
-            // Set Redirect URI
-            string redirectURI = _options.RedirectUri;
-
-            // Show dialog flag
-            string showDialog = _options.ShowDialog;
-
-            // Set OAuth state
-            string state = _authHelper.GenerateSecureRandomString(32);
-
-            // Append cookies
-            // Store state in cookies instead of appending
-            // _cookiesService.StoreState(state);
-            _cookiesService.AppendCookies(state);
-
-            // Set Auth URL (base URL)
-            string AuthURL = _options.AuthUri;
-
-            // Query Parameters
-            var queryParameters = new Dictionary<string, string>
-            {
-                { "response_type", responseType },
-                { "client_id", clientID },
-                { "scope", Scope },
-                { "redirect_uri", redirectURI },
-                { "show_dialog", showDialog },
-                { "state", state }
-            };
-
-            // Build the query string from the parameters
-            var queryString = _authHelper.ToQueryString(queryParameters);
-
-            // Returning the authorization URL
-            return $"{AuthURL}?{queryString}";
+            // Build login URI
+            return _authHelper.FormRedirectUrl(authUri, queryString);
         }
 
         public async Task<JsonElement> ExchangeAuthorizationCodeAsync(string code)
         {
-            _logger.LogInformation("");
+            _logger.LogInformation("Accessing Exchanging authorization code function");
 
-            // Set the Grant Type
-            string grantType = _options.GrantType;
+            // Build auth exchange query
+            var requestBody = _spotifyAuthHelper.BuildAuthExchange(code);
 
-            // Set Redirect URI
-            string redirectURI = _options.RedirectUri;
+            // Set client name
+            string clientName = _spotifyAuthHelper.ClientName;
 
-            // Set Client ID
-            string clientID = _options.ClientId;
+            // Set tokenUri
+            string tokenUri = _spotifyAuthHelper.TokenUri;
 
-            // Set Client Secret
-            string clientSecret = _options.ClientSecret;
-
-            // Set Token URL
-            string tokenURL = _options.TokenUri;
-
-            // Build the request body
-            var requestBody = new Dictionary<string, string>
+            try
             {
-              { "code", code },
-              { "grant_type", grantType },
-              { "redirect_uri", redirectURI },
-              { "client_id", clientID },
-              { "client_secret", clientSecret }
-            };
+                // Get access token
+                var accessToken = await _httpService.PostFormUrlEncodedContentAsync(
+                clientName: clientName,
+                tokenUri: tokenUri,
+                requestBody: requestBody
+                );
 
-            var tokenInfo = await _httpService.PostFormUrlEncodedContentAsync(
-            "Spotify",
-            tokenURL,
-            requestBody
-            );
-            return tokenInfo;
+                return accessToken;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Failed to exchange authorization code.");
+                throw new ApplicationException("Spotify exchange failed.", ex);
+            }
         }
 
         public async Task<JsonElement> GetNewTokenAsync(string refreshToken)
         {
-            _logger.LogInformation("");
+            _logger.LogInformation("Accessing New token generation request function");
 
-            // Set the grant_type
-            string grantType = _options.GrantType;
+            // Build new token query
+            var requestBody = _spotifyAuthHelper.BuildNewToken(refreshToken);
+        
+            // Set client name
+            string clientName = _spotifyAuthHelper.ClientName;
 
-            // Set Client ID
-            string clientID = _options.ClientId;
+            // Set tokenUri
+            string tokenUri = _spotifyAuthHelper.TokenUri;
 
-            // Set Client Secret
-            string clientSecret = _options.ClientSecret;
-
-            // Set Token URL
-            string tokenURL = _options.TokenUri;
-
-            // Initialize request body
-            var requestBody = new Dictionary<string, string>
+            try
             {
-              { "grant_type", grantType },
-              { "refresh_token", refreshToken },
-              { "client_id", clientID },
-              { "client_secret", clientSecret }
-            };
+                // Get new access token
+                var newAccessToken = await _httpService.PostFormUrlEncodedContentAsync(
+                    clientName: clientName,
+                    tokenUri: tokenUri,
+                    requestBody: requestBody
+                );
 
-            var tokenInfo = await _httpService.PostFormUrlEncodedContentAsync(
-            "Spotify",
-            tokenURL,
-            requestBody
-            );
-            return tokenInfo;
+                return newAccessToken;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Failed to get new access token.");
+                throw new ApplicationException("Spotify token refresh failed.", ex);
+            }
         }
     }
 }

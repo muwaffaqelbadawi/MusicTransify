@@ -41,7 +41,11 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
         }
 
         [HttpGet("callback")] // Route: "/youtube/callback"
-        public async Task<IActionResult> CallbackAsync([FromQuery] Callback request)
+        public async Task<IActionResult> CallbackAsync(
+            string clientName,
+            string TokenUri,
+            [FromQuery] Callback request
+        )
         {
             _logger.LogInformation("This is the callback route");
 
@@ -64,7 +68,11 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
             }
 
             // Receive the Token Info
-            var tokenInfo = await _youTubeMusicAuthService.ExchangeAuthorizationCodeAsync(request.Code);
+            var accesToken = await _youTubeMusicAuthService.ExchangeAuthorizationCodeAsync(
+                clientName: clientName,
+                code: request.Code,
+                tokenUri: TokenUri
+            );
 
             // Redirect
             return Redirect("/youtube/login");
