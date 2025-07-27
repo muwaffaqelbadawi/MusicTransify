@@ -1,127 +1,108 @@
 using System;
 using System.Text.Json;
-using Microsoft.Extensions.Options;
-using MusicTransify.src.Configurations.YouTubeMusic;
-using MusicTransify.src.Contracts.YouTubeMusic;
-using MusicTransify.src.Services.Cookies;
-using MusicTransify.src.Utilities.Helper.Auth.Common;
-using MusicTransify.src.Utilities.Helper.Auth.YouTubeMusic;
-using MusicTransify.src.Utilities.Security;
+using MusicTransify.src.Contracts.Services;
+using MusicTransify.src.Utilities.Auth.Common;
+using MusicTransify.src.Utilities.Auth.YouTubeMusic;
 
 namespace MusicTransify.src.Services.Auth.YouTubeMusic
 {
-    public class YouTubeMusicService : IYouTubeMusicService
+    public class YouTubeMusicService : IProviderService
     {
-        private readonly YouTubeMusicOptions _options;
-        private readonly CookiesService _cookiesService;
+        private readonly IHttpService _httpService;
         private readonly AuthHelper _authHelper;
-        private readonly YouTubeMusicAuthHelper _youTubeMusicAuthHelper;
-        private readonly StateHelper _stateHelper;
+        private readonly YouTubeMusicHelper _youTubeMusicAuthHelper;
         private readonly ILogger<YouTubeMusicService> _logger;
 
         public YouTubeMusicService(
-            IOptions<YouTubeMusicOptions> options,
-            CookiesService cookiesService,
+            IHttpService httpService,
             AuthHelper authHelper,
-            YouTubeMusicAuthHelper youTubeMusicAuthHelper,
-            StateHelper stateHelper,
+            YouTubeMusicHelper youTubeMusicAuthHelper,
             ILogger<YouTubeMusicService> logger
         )
         {
-            _options = options.Value;
-            _cookiesService = cookiesService;
+            _httpService = httpService;
             _authHelper = authHelper;
             _youTubeMusicAuthHelper = youTubeMusicAuthHelper;
-            _stateHelper = stateHelper;
             _logger = logger;
         }
 
         public string GetLoginUri()
         {
-            _logger.LogInformation("Accessing YouTube service");
-            _logger.LogInformation("Accessing YouTube login URI");
+            _logger.LogInformation("Accessing YouTube Music login Uri function");
 
-            // Set the client ID
-            string clientID = _options.ClientId;
+            // Build login query
+            var queryParameters = _youTubeMusicAuthHelper.BuildLoginRequest();
 
-            // Set the client secret
-            string clientSecret = _options.ClientSecret;
+            // Transform login query to query string
+            string queryString = _authHelper.ToQueryString(queryParameters);
 
-            // Set the response type
-            string responseType = _options.ResponseType;
+            // Set authUri
+            string authUri = _youTubeMusicAuthHelper.AuthUri;
 
-            // Set the scope list
-            var scope = _authHelper.BuildScopeString(_options.Scope);
+            // Build login URI
+            return _authHelper.FormRedirectUrl(authUri, queryString);
+        }
 
-            _logger.LogInformation("Spotify scope: {scope}", scope);
+        public async Task<JsonElement> ExchangeAuthorizationCodeAsync(string code)
+        {
+            _logger.LogInformation("Accessing Exchanging authorization code function");
 
-            // Set the scope value
-            string accessType = _options.AccessType;
+            // Build auth exchange query
+            var requestBody = _youTubeMusicAuthHelper.BuildCodeExchangeRequest(code);
 
-            // Set Redirect URI
-            string redirectURI = _options.RedirectUri;
+            // Set client name
+            string clientName = _youTubeMusicAuthHelper.ClientName;
 
-            // Set Auth URL (base URL)
-            string AuthURL = _options.AuthUri;
+            // Set tokenUri
+            string tokenUri = _youTubeMusicAuthHelper.TokenUri;
 
-            // Set state
-            string state = _stateHelper.GenerateSecureRandomString(32);
-
-            // Set prompt
-            string prompt = _options.Prompt;
-
-            // set cookies
-            _cookiesService.AppendCookies(state);
-
-            var queryParameters = new Dictionary<string, string>
+            try
             {
-                { "client_id", clientID },
-                { "client_secret", clientSecret },
-                { "redirect_uri", redirectURI },
-                { "response_type", responseType },
-                { "scope", scope },
-                { "access_type", accessType },
-                { "state", state },
-                { "prompt", prompt },
-            };
+                // Get access token
+                var accessToken = await _httpService.PostFormUrlEncodedContentAsync(
+                clientName: clientName,
+                tokenUri: tokenUri,
+                requestBody: requestBody
+                );
 
-            // Build the query string from the parameters
-            var queryString = _authHelper.ToQueryString(queryParameters);
-
-            // Returning the authorization URL
-            return $"{AuthURL}?{queryString}";
+                return accessToken;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Failed to exchange authorization code.");
+                throw new ApplicationException("Spotify exchange failed.", ex);
+            }
         }
 
-        public Task<JsonElement> ExchangeAuthorizationCodeAsync(string code)
+        public async Task<JsonElement> GetNewTokenAsync(string refreshToken)
         {
-            _logger.LogInformation("Exchanging authorization code for access token");
+            _logger.LogInformation("Accessing New token generation request function");
 
-            
-            throw new NotImplementedException();
-        }
+            // Build new token query
+            var requestBody = _youTubeMusicAuthHelper.BuildRefreshTokenRequest(refreshToken);
 
-        public Task<JsonElement> GetNewTokenAsync(string refreshToken)
-        {
-            _logger.LogInformation("New token generation requested");
-            throw new NotImplementedException();
-        }
+            // Set client name
+            string clientName = _youTubeMusicAuthHelper.ClientName;
 
-        public Task<JsonElement> ExchangeAuthorizationCodeAsync(
-            string clientName,
-            string code,
-            string tokenUri
-        )
-        {
-            throw new NotImplementedException();
-        }
+            // Set tokenUri
+            string tokenUri = _youTubeMusicAuthHelper.TokenUri;
 
-        public Task<JsonElement> GetNewTokenAsync(
-            string clientName,
-            string tokenUrl,
-            string refreshToken
-        )
-        {
-            throw new NotImplementedException();
+            try
+            {
+                // Get new access token
+                var newAccessToken = await _httpService.PostFormUrlEncodedContentAsync(
+                    clientName: clientName,
+                    tokenUri: tokenUri,
+                    requestBody: requestBody
+                );
+
+                return newAccessToken;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Failed to get new access token.");
+                throw new ApplicationException("YouTube Music token refresh failed.", ex);
+            }
         }
     }
 }

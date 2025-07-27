@@ -1,25 +1,26 @@
 using System;
 using Microsoft.Extensions.Options;
 using MusicTransify.src.Configurations.Spotify;
+using MusicTransify.src.Contracts.Helper;
 using MusicTransify.src.Services.Cookies;
-using MusicTransify.src.Utilities.Helper.Auth.Common;
+using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Security;
 
-namespace MusicTransify.src.Utilities.Helper.Auth.Spotify
+namespace MusicTransify.src.Utilities.Auth.Spotify
 {
-    public class SpotifyAuthHelper
+    public class SpotifyHelper : IProviderHelper
     {
         private readonly SpotifyOptions _options;
         private readonly StateHelper _stateHelper;
         private readonly CookiesService _cookiesService;
         private readonly AuthHelper _authHelper;
-        private readonly ILogger<SpotifyAuthHelper> _logger;
-        public SpotifyAuthHelper(
+        private readonly ILogger<SpotifyHelper> _logger;
+        public SpotifyHelper(
             IOptions<SpotifyOptions> options,
             StateHelper stateHelper,
             CookiesService cookiesService,
             AuthHelper authHelper,
-            ILogger<SpotifyAuthHelper> logger
+            ILogger<SpotifyHelper> logger
         )
         {
             _options = options.Value;
@@ -28,9 +29,9 @@ namespace MusicTransify.src.Utilities.Helper.Auth.Spotify
             _authHelper = authHelper;
             _logger = logger;
         }
-        public Dictionary<string, string> BuildLogin()
+        public Dictionary<string, string> BuildLoginRequest()
         {
-            _logger.LogInformation("Accessing Sporify login query builder function");
+            _logger.LogInformation("Building Spotify login request URL...");
 
             if (_options.Scope == null || _options.Scope.Length == 0)
                 throw new InvalidOperationException("Spotify scopes are not configured.");
@@ -41,8 +42,11 @@ namespace MusicTransify.src.Utilities.Helper.Auth.Spotify
             // Set the client ID
             string clientID = _options.ClientId;
 
+            // Set the list of scopes
+            string[] scopeList = _options.Scope.Distinct().ToArray();
+
             // Set the scope list
-            var scope = _authHelper.BuildScopeString(_options.Scope);
+            string scope = _authHelper.BuildScopeString(scopeList);
 
             _logger.LogInformation("Spotify scope: {}", scope);
 
@@ -69,9 +73,9 @@ namespace MusicTransify.src.Utilities.Helper.Auth.Spotify
             };
         }
 
-        public Dictionary<string, string> BuildAuthExchange(string code)
+        public Dictionary<string, string> BuildCodeExchangeRequest(string code)
         {
-            _logger.LogInformation("Accessing Sporify auth exchange query builder function");
+            _logger.LogInformation("Exchanging code for tokens...");
 
             // Set the Grant Type
             string grantType = _options.GrantType;
@@ -98,12 +102,12 @@ namespace MusicTransify.src.Utilities.Helper.Auth.Spotify
               { "client_secret", clientSecret }
             };
         }
-        public Dictionary<string, string> BuildNewToken(string refreshToken)
+        public Dictionary<string, string> BuildRefreshTokenRequest(string refreshToken)
         {
-            _logger.LogInformation("Accessing Sporifynew token query builder function");
+            _logger.LogInformation("Refreshing access token...");
 
-            // Set the grant_type
-            string grantType = _options.GrantType;
+            // Set grant type for refresh token
+            string refreshTokenGrantType = _options.RefreshTokenGrantType;
 
             // Set Client ID
             string clientID = _options.ClientId;
@@ -116,7 +120,7 @@ namespace MusicTransify.src.Utilities.Helper.Auth.Spotify
 
             return new Dictionary<string, string>
             {
-              { "grant_type", grantType },
+              { "grant_type", refreshTokenGrantType },
               { "refresh_token", refreshToken },
               { "client_id", clientID },
               { "client_secret", clientSecret }

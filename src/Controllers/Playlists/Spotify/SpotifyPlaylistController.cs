@@ -5,7 +5,7 @@ using MusicTransify.src.Services.Session;
 using MusicTransify.src.Utilities.Token;
 using MusicTransify.src.Configurations.Spotify;
 using Microsoft.Extensions.Options;
-using MusicTransify.src.Contracts.HTTP;
+using MusicTransify.src.Contracts.Services;
 using MusicTransify.src.Services.Cache;
 
 namespace MusicTransify.src.Controllers.Playlists.Spotify

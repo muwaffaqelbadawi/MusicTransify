@@ -1,21 +1,20 @@
 using System;
 using System.Text.Json;
-using MusicTransify.src.Contracts.HTTP;
-using MusicTransify.src.Contracts.Spotify;
-using MusicTransify.src.Utilities.Helper.Auth.Common;
-using MusicTransify.src.Utilities.Helper.Auth.Spotify;
+using MusicTransify.src.Contracts.Services;
+using MusicTransify.src.Utilities.Auth.Common;
+using MusicTransify.src.Utilities.Auth.Spotify;
 
 namespace MusicTransify.src.Services.Auth.Spotify
 {
-    public class SpotifyService : ISpotifyService
+    public class SpotifyService : IProviderService
     {
         private readonly IHttpService _httpService;
-        private readonly SpotifyAuthHelper _spotifyAuthHelper;
+        private readonly SpotifyHelper _spotifyAuthHelper;
         private readonly AuthHelper _authHelper;
         private readonly ILogger<SpotifyService> _logger;
         public SpotifyService(
             IHttpService httpService,
-            SpotifyAuthHelper spotifyAuthHelper,
+            SpotifyHelper spotifyAuthHelper,
             AuthHelper authHelper,
             ILogger<SpotifyService> logger
         )
@@ -31,7 +30,7 @@ namespace MusicTransify.src.Services.Auth.Spotify
             _logger.LogInformation("Accessing Spotify login Uri function");
 
             // Build login query
-            var queryParameters = _spotifyAuthHelper.BuildLogin();
+            var queryParameters = _spotifyAuthHelper.BuildLoginRequest();
 
             // Transform login query to query string
             string queryString = _authHelper.ToQueryString(queryParameters);
@@ -48,7 +47,7 @@ namespace MusicTransify.src.Services.Auth.Spotify
             _logger.LogInformation("Accessing Exchanging authorization code function");
 
             // Build auth exchange query
-            var requestBody = _spotifyAuthHelper.BuildAuthExchange(code);
+            var requestBody = _spotifyAuthHelper.BuildCodeExchangeRequest(code);
 
             // Set client name
             string clientName = _spotifyAuthHelper.ClientName;
@@ -79,7 +78,7 @@ namespace MusicTransify.src.Services.Auth.Spotify
             _logger.LogInformation("Accessing New token generation request function");
 
             // Build new token query
-            var requestBody = _spotifyAuthHelper.BuildNewToken(refreshToken);
+            var requestBody = _spotifyAuthHelper.BuildRefreshTokenRequest(refreshToken);
         
             // Set client name
             string clientName = _spotifyAuthHelper.ClientName;

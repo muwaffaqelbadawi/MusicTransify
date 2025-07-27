@@ -1,6 +1,6 @@
 using System;
 
-namespace MusicTransify.src.Utilities.Helper.Auth.Common
+namespace MusicTransify.src.Utilities.Auth.Common
 {
     public class AuthHelper
     {
@@ -18,11 +18,14 @@ namespace MusicTransify.src.Utilities.Helper.Auth.Common
         public string BuildScopeString(string[] scopes)
         {
             if (scopes is null || scopes.Length == 0) return string.Empty;
-            return string.Join(" ", scopes);
+
+            var distinctScopes = scopes.Distinct();
+
+            return string.Join(" ", distinctScopes);
         }
+
         public string FormRedirectUrl(string authUri, string queryString)
         {
-
             if (string.IsNullOrEmpty(authUri))
             {
                 throw new InvalidOperationException("AuthUri is not configured.");

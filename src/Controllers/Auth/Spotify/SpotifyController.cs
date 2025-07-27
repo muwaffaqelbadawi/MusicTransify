@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Models.Spotify;
+using MusicTransify.src.Contracts.DTOs;
 using MusicTransify.src.Services.Session;
 using MusicTransify.src.Services.Auth.Spotify;
 using MusicTransify.src.Utilities.Token;
@@ -34,41 +34,24 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
         [HttpGet("login")] // Route "/spotify/login"
         public IActionResult Login()
         {
-            _logger.LogInformation("This is the Spotify Login route on Spotify Controller");
-
             // Set redirect URI
             string redirectUri = _spotifyService.GetLoginUri();
+
+            _logger.LogInformation("Redirecting to Spotify login: {RedirectUri}", redirectUri);
 
             return Redirect(redirectUri);
         }
 
         [HttpGet("callback")] // Route: "/spotify/callback"
-        public async Task<IActionResult> CallbackAsync([FromQuery] Callback request)
+        public async Task<IActionResult> CallbackAsync([FromQuery] CallbackRequest request)
         {
             _logger.LogInformation("This is the callback route");
 
-            // Check if "error" exists in the query string and not null
-            if (!string.IsNullOrEmpty(request.Error))
-            {
-                _logger.LogWarning("OAuth callback error: {Error}", request.Error);
-
-                // Return the JSON error message if not exists
-                return BadRequest(new { request.Error });
-            }
-
-            // Check if "code" does not exists in the query string and not null
-            if (string.IsNullOrEmpty(request.Code))
-            {
-                _logger.LogWarning("Missing 'code' parameter in the callback request.");
-
-                // Return the JSON code message if not exists
-                return BadRequest("Missing 'code' parameter in the callback request.");
-            }
+            var validationResult = ValidateCallbackRequest(request);
+            if (validationResult is not null) return validationResult;
 
             // Receive the access token
-            var accessToken = await _spotifyService.ExchangeAuthorizationCodeAsync(
-                code: request.Code
-            );
+            var accessToken = await _spotifyService.ExchangeAuthorizationCodeAsync(request.Code ?? string.Empty);
 
             if (accessToken.ValueKind == JsonValueKind.Undefined)
             {
@@ -83,7 +66,10 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             _logger.LogInformation("accessToken successfully stored in session redirecting...");
 
             // Redirect back to playlists
-            return Redirect("/spotify/playlist");
+            // return Redirect("/spotify/playlist");
+
+            // Redirect back to playlists
+            return Ok("Access token granted for Spotify Auth access and stored successfully. You can now access your playlists.");
         }
 
         [HttpGet("refreshToken")] // Route: "/refresh_token"
@@ -112,6 +98,7 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             if (string.IsNullOrEmpty(accessToken))
             {
                 _logger.LogWarning("Access token missing from session; redirecting to login.");
+
                 // Redirect back to login route
                 return Redirect("/spotify/login");
             }
@@ -138,17 +125,47 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
                     return BadRequest("Failed to get new token");
                 }
 
-                // Store token info in session
+                // Store the new token in session
                 _sessionService.Store(newAccessToken);
 
                 _logger.LogInformation("Token successfully refreshed and stored in session. Redirecting...");
 
-                // Redirect
-                return Redirect("/spotify/playlist");
+                // Successfully refreshed token, redirect back to playlists
+                // return Redirect("/spotify/playlist");
+                return Ok("Access token granted for Spotify Auth access and stored successfully. You can now access your playlists.");
             }
 
+            _logger.LogInformation("Token is still valid, no refresh needed.");
+
             // Redirect
-            return Redirect("/spotify/refreshToken");
+            return Ok("Token is still valid, no refresh needed.");
+        }
+
+        private BadRequestObjectResult? ValidateCallbackRequest(CallbackRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Code))
+            {
+                _logger.LogWarning("Missing 'Code' parameter in callback request.");
+                return BadRequest("Missing 'Code' parameter in callback request.");
+            }
+
+            if (string.IsNullOrEmpty(request.State))
+            {
+                _logger.LogWarning("Missing 'State' parameter in callback (optional).");
+                return BadRequest("Missing 'State' parameter in callback request.");
+            }
+
+            if (string.IsNullOrEmpty(request.Scope))
+            {
+                _logger.LogWarning("Missing 'Scope' parameter in callback request.");
+            }
+
+            if (!string.IsNullOrEmpty(request.Error))
+            {
+                _logger.LogWarning("OAuth error in callback: {Error}", request.Error);
+            }
+
+            return null!;
         }
     }
 }
