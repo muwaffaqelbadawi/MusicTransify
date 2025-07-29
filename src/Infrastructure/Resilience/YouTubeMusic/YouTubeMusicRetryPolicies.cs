@@ -5,7 +5,7 @@ using System.Net;
 
 namespace MusicTransify.src.Infrastructure.Resilience.YouTubeMusic
 {
-    public static class YouTubeRetryPolicy
+    public static class YouTubeMusicRetryPolicy
     {
         public static IAsyncPolicy<HttpResponseMessage> Default() =>
             HttpPolicyExtensions

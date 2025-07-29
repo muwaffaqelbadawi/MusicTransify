@@ -8,6 +8,6 @@ namespace MusicTransify.src.Services.RetryPolicy.YouTubeMusic
     public class YouTubeRetryPolicyService : IYouTubeMusicRetryPolicy
     {
         public IAsyncPolicy<HttpResponseMessage> RetryPolicy()
-            => YouTubeRetryPolicy.Default();
+            => YouTubeMusicRetryPolicy.Default();
     }
 }
