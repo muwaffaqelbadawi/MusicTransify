@@ -1,15 +1,16 @@
 using System;
 using System.Text.Json;
 
-namespace MusicTransify.src.Contracts.Services
+namespace MusicTransify.src.Contracts.Services.ProviderHttp.YouTubeMusic
 {
-    public interface IHttpService
+    public interface IYouTubeMusicHttpService
     {
         Task<JsonElement> PostFormUrlEncodedContentAsync(
-            string clientName,
-            string tokenUri,
-            Dictionary<string, string> requestBody
-        );
+           string clientName,
+           string tokenUri,
+           Dictionary<string, string> requestBody
+       );
+
         Task<HttpResponseMessage> GetHttpResponseAsync(
             string clientName,
             string accessToken,

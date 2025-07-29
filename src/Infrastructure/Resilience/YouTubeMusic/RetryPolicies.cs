@@ -1,19 +1,20 @@
 using System;
 using Polly;
 using Polly.Extensions.Http;
+using System.Net;
 
 namespace MusicTransify.src.Infrastructure.Resilience.YouTubeMusic
 {
-    public class RetryPolicies
+    public static class YouTubeRetryPolicy
     {
-        public static IAsyncPolicy<HttpResponseMessage> YouTubeMusicRetryPolicy()
-        {
-            return HttpPolicyExtensions
+        public static IAsyncPolicy<HttpResponseMessage> Default() =>
+            HttpPolicyExtensions
                 .HandleTransientHttpError()
+                .OrResult(response => response.StatusCode == HttpStatusCode.TooManyRequests)
                 .WaitAndRetryAsync(
-                    3,
-                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))
+                    retryCount: 4,
+                    sleepDurationProvider: attempt => TimeSpan.FromSeconds(1.5 * attempt)
                 );
-        }
     }
+
 }

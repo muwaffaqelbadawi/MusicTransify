@@ -20,6 +20,7 @@ namespace MusicTransify.src.Configurations.YouTubeMusic
         public string RefreshTokenGrantType { get; set; } = string.Empty;
         public string AccessType { get; set; } = string.Empty;
         public string Prompt { get; set; } = string.Empty;
+        public string PlaylistUrl { get; set; } = string.Empty;
         public string[] Scope { get; set; } = Array.Empty<string>();
         public string IncludeGrantedScopes { get; set; } = string.Empty;
     }

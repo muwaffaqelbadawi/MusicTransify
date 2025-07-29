@@ -1,28 +1,35 @@
 using System;
 using System.Text.Json;
-using MusicTransify.src.Contracts.Services;
 using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Auth.Spotify;
+using MusicTransify.src.Contracts.Services.ProviderAuth.Spotify;
+using MusicTransify.src.Contracts.Services.ProviderHttp.Spotify;
 
 namespace MusicTransify.src.Services.Auth.Spotify
 {
-    public class SpotifyService : IProviderService
+    public class SpotifyService : IServiceProvider, ISpotifyService
     {
-        private readonly IHttpService _httpService;
+        // Remember to always inject the interface not actual service
+        private readonly ISpotifyHttpService _spotifyHttpService;
         private readonly SpotifyHelper _spotifyAuthHelper;
         private readonly AuthHelper _authHelper;
         private readonly ILogger<SpotifyService> _logger;
         public SpotifyService(
-            IHttpService httpService,
+            ISpotifyHttpService spotifyHttpService,
             SpotifyHelper spotifyAuthHelper,
             AuthHelper authHelper,
             ILogger<SpotifyService> logger
         )
         {
-            _httpService = httpService;
+            _spotifyHttpService = spotifyHttpService;
             _spotifyAuthHelper = spotifyAuthHelper;
             _authHelper = authHelper;
             _logger = logger;
+        }
+
+        public object? GetService(Type serviceType)
+        {
+            throw new NotImplementedException();
         }
 
         public string GetLoginUri()
@@ -58,7 +65,7 @@ namespace MusicTransify.src.Services.Auth.Spotify
             try
             {
                 // Get access token
-                var accessToken = await _httpService.PostFormUrlEncodedContentAsync(
+                var accessToken = await _spotifyHttpService.PostFormUrlEncodedContentAsync(
                 clientName: clientName,
                 tokenUri: tokenUri,
                 requestBody: requestBody
@@ -89,7 +96,7 @@ namespace MusicTransify.src.Services.Auth.Spotify
             try
             {
                 // Get new access token
-                var newAccessToken = await _httpService.PostFormUrlEncodedContentAsync(
+                var newAccessToken = await _spotifyHttpService.PostFormUrlEncodedContentAsync(
                     clientName: clientName,
                     tokenUri: tokenUri,
                     requestBody: requestBody

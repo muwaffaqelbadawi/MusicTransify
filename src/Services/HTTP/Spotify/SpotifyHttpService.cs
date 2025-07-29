@@ -2,60 +2,76 @@ using System;
 using System.Net;
 using System.Text.Json;
 using System.Net.Http.Headers;
-using MusicTransify.src.Contracts.Services;
+using MusicTransify.src.Contracts.Services.ProviderHttp.Spotify;
 
-namespace MusicTransify.src.Services.HTTP
+namespace MusicTransify.src.Services.HTTP.Spotify
 {
-    public class HttpService : IHttpService
+    public class SpotifyHttpService : ISpotifyHttpService
     {
-        private readonly HttpClient _httpClient;
-        private readonly ILogger<HttpService> _logger;
-        public HttpService(HttpClient httpClient, ILogger<HttpService> logger)
+        private readonly HttpClient _client;
+        private readonly ILogger<SpotifyHttpService> _logger;
+        public SpotifyHttpService(
+            HttpClient client,
+            ILogger<SpotifyHttpService> logger
+        )
         {
-            _httpClient = httpClient;
+            _client = client;
             _logger = logger;
         }
 
-        public async Task<T> SendRequestAsync<T>(string clientName,
-        HttpRequestMessage request)
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
-            if (_httpClient is not null)
+            PropertyNameCaseInsensitive = true
+        };
+
+        public async Task<T> SendRequestAsync<T>(
+            string clientName,
+            HttpRequestMessage request
+        )
+        {
+            _logger?.LogInformation("Sending HTTP request to {clientName} with {method} {url}", clientName, request.Method, request.RequestUri);
+
+            var response = await _client.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
             {
-                using (var response = await _httpClient.SendAsync(request))
-                {
-                    if (response.StatusCode.Equals(HttpStatusCode.OK))
-                    {
-                        if (response is null)
-                        {
-                            _logger?.LogError("No response received from {clientName} for Send request {request}", clientName, request);
-                            throw new HttpRequestException("No response received from Spotify");
-                        }
-
-                        var content = await response.Content.ReadAsStringAsync();
-
-                        var result = JsonSerializer.Deserialize<T>(content);
-
-                        if (result is null)
-                        {
-                            _logger?.LogError("result is null for response: {content}", content);
-                            throw new JsonException("Result is null.");
-                        }
-
-                        return result;
-                    }
-                }
+                var error = await response.Content.ReadAsStringAsync();
+                _logger?.LogError("HTTP request to {clientName} failed with status code {statusCode} and message: {error}", clientName, response.StatusCode, error);
+                throw new HttpRequestException($"Request failed: {response.StatusCode}");
             }
 
-            throw new InvalidOperationException($"{clientName} is null");
+            var content = await response.Content.ReadAsStringAsync();
+
+            #if DEBUG
+            _logger?.LogDebug("Received response from {clientName}: {content}", clientName, content);
+            #endif
+
+            try
+            {
+                var result = JsonSerializer.Deserialize<T>(content, _serializerOptions);
+
+                if (result is null)
+                {
+                    _logger?.LogError("Failed to deserialize response from {clientName}. Content: {content}", clientName, content);
+                    throw new JsonException("Deserialized result is null.");
+                }
+
+                return result;
+            }
+            catch (JsonException ex)
+            {
+                _logger?.LogError(ex, "JSON deserialization failed for {clientName}. Content: {content}", clientName, content);
+                throw;
+            }
         }
 
         public async Task<JsonElement> PostFormUrlEncodedContentAsync(
             string clientName,
-            string url,
+            string tokenUri,
             Dictionary<string, string> requestBody
         )
         {
-            if (_httpClient is not null)
+            if (_client is not null)
             {
                 try
                 {
@@ -63,11 +79,11 @@ namespace MusicTransify.src.Services.HTTP
                     var formContent = new FormUrlEncodedContent(requestBody);
 
                     // Post Form Url Encoded Content
-                    using (var response = await _httpClient.PostAsync(url, formContent))
+                    using (var response = await _client.PostAsync(tokenUri, formContent))
                     {
                         if (response is null)
                         {
-                            _logger?.LogError("No response received from Spotify for POST {Url}", url);
+                            _logger?.LogError("No response received from Spotify for POST {tokenUri}", tokenUri);
                             throw new HttpRequestException("No response received from Spotify");
                         }
 
@@ -77,8 +93,8 @@ namespace MusicTransify.src.Services.HTTP
                         // Handling response error
                         if (!response.StatusCode.Equals(HttpStatusCode.OK))
                         {
-                            _logger?.LogWarning("POST {Url} failed: {StatusCode} {Content}",
-                            url, response.StatusCode, content);
+                            _logger?.LogWarning("POST {TokenUri} failed: {StatusCode} {Content}",
+                            tokenUri, response.StatusCode, content);
 
                             throw new HttpRequestException(
                                 $"HTTP Request failed with status: {response.StatusCode}"
@@ -101,7 +117,7 @@ namespace MusicTransify.src.Services.HTTP
 
                 catch (Exception ex) when (ex is not HttpRequestException && ex is not JsonException)
                 {
-                    _logger?.LogError(ex, "Unexpected error during POST to {Url}", url);
+                    _logger?.LogError(ex, "Unexpected error during POST to {TokenUri}", tokenUri);
                     throw;
                 }
             }
@@ -116,7 +132,7 @@ namespace MusicTransify.src.Services.HTTP
             string endPoint
         )
         {
-            if (_httpClient is not null)
+            if (_client is not null)
             {
                 if (string.IsNullOrEmpty(accessToken))
                 {
@@ -146,7 +162,7 @@ namespace MusicTransify.src.Services.HTTP
                 try
                 {
                     // Remove the using block - let the caller dispose the response
-                    var response = await _httpClient.SendAsync(request);
+                    var response = await _client.SendAsync(request);
                     
                     if (!response.StatusCode.Equals(HttpStatusCode.OK))
                     {

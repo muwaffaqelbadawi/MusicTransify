@@ -37,16 +37,16 @@ namespace MusicTransify.src.Infrastructure.Resilience.PolicyBuilder
                 .Handle<Exception>()
                 .FallbackAsync(
                     fallbackValue: new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-                    {
-                        Content = new StringContent("Fallback response")
-                    },
-                    onFallbackAsync: async b =>
-                    {
-                        Console.WriteLine("Fallback triggered due to: " + b.Exception.Message);
-                        await Task.CompletedTask;
-                    });
+                        {
+                            Content = new StringContent("Fallback response")
+                        },
+                        onFallbackAsync: async b =>
+                            {
+                                Console.WriteLine("Fallback triggered due to: " + b.Exception.Message);
+                                await Task.CompletedTask;
+                            });
 
-            return Policy.WrapAsync(fallbackPolicy, circuitBreakerPolicy, retryPolicy, timeoutPolicy);
+                return Policy.WrapAsync(fallbackPolicy, circuitBreakerPolicy, retryPolicy, timeoutPolicy);
         }
     }
 }

@@ -1,29 +1,37 @@
 using System;
 using System.Text.Json;
-using MusicTransify.src.Contracts.Services;
+using MusicTransify.src.Services.HTTP.YouTubeMusic;
 using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Auth.YouTubeMusic;
+using MusicTransify.src.Contracts.Services.ProviderAuth.YouTubeMusic;
+using MusicTransify.src.Contracts.Services.ProviderHttp.YouTubeMusic;
 
 namespace MusicTransify.src.Services.Auth.YouTubeMusic
 {
-    public class YouTubeMusicService : IProviderService
+    public class YouTubeMusicService : IServiceProvider, IYouTubeMusicService
     {
-        private readonly IHttpService _httpService;
+        // Remember to always inject the interface not actual service
+        private readonly IYouTubeMusicHttpService _youTubeMusicHttpService;
         private readonly AuthHelper _authHelper;
         private readonly YouTubeMusicHelper _youTubeMusicAuthHelper;
         private readonly ILogger<YouTubeMusicService> _logger;
 
         public YouTubeMusicService(
-            IHttpService httpService,
+            IYouTubeMusicHttpService youTubeMusicHttpService,
             AuthHelper authHelper,
             YouTubeMusicHelper youTubeMusicAuthHelper,
             ILogger<YouTubeMusicService> logger
         )
         {
-            _httpService = httpService;
+            _youTubeMusicHttpService = youTubeMusicHttpService;
             _authHelper = authHelper;
             _youTubeMusicAuthHelper = youTubeMusicAuthHelper;
             _logger = logger;
+        }
+
+        public object? GetService(Type serviceType)
+        {
+            throw new NotImplementedException();
         }
 
         public string GetLoginUri()
@@ -59,7 +67,7 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             try
             {
                 // Get access token
-                var accessToken = await _httpService.PostFormUrlEncodedContentAsync(
+                var accessToken = await _youTubeMusicHttpService.PostFormUrlEncodedContentAsync(
                 clientName: clientName,
                 tokenUri: tokenUri,
                 requestBody: requestBody
@@ -90,7 +98,7 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             try
             {
                 // Get new access token
-                var newAccessToken = await _httpService.PostFormUrlEncodedContentAsync(
+                var newAccessToken = await _youTubeMusicHttpService.PostFormUrlEncodedContentAsync(
                     clientName: clientName,
                     tokenUri: tokenUri,
                     requestBody: requestBody

@@ -4,16 +4,16 @@ using Polly.Extensions.Http;
 
 namespace MusicTransify.src.Infrastructure.Resilience.Spotify
 {
-    public static class RetryPolicies
+    public static class SpotifyRetryPolicy
     {
-        public static IAsyncPolicy<HttpResponseMessage> SpotifyRetryPolicy()
-        {
-            return HttpPolicyExtensions
+        public static IAsyncPolicy<HttpResponseMessage> Default() =>
+            HttpPolicyExtensions
                 .HandleTransientHttpError()
                 .WaitAndRetryAsync(
-                    3,
-                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))
+                    retryCount: 3,
+                    sleepDurationProvider: attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt))
                 );
-        }
     }
+
+
 }

@@ -3,13 +3,10 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.DataProtection;
 using MusicTransify.src.Configurations.Spotify;
 using MusicTransify.src.Configurations.YouTubeMusic;
-using MusicTransify.src.Contracts.Services;
 using MusicTransify.src.Infrastructure.Resilience.Spotify;
-using MusicTransify.src.Infrastructure.Resilience.PolicyBuilder;
 using MusicTransify.src.Middlewares;
 using MusicTransify.src.Services.Auth.Spotify;
 using MusicTransify.src.Services.Auth.YouTubeMusic;
-using MusicTransify.src.Services.HTTP;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Services.Session;
 using MusicTransify.src.Services.Cache;
@@ -18,7 +15,15 @@ using MusicTransify.src.Utilities.Security;
 using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Auth.Spotify;
 using MusicTransify.src.Utilities.Auth.YouTubeMusic;
-using MusicTransify.src.Contracts.Helper;
+using MusicTransify.src.Infrastructure.Resilience.YouTubeMusic;
+using MusicTransify.src.Services.HTTP.Spotify;
+using MusicTransify.src.Contracts.Services.ProviderAuth.Spotify;
+using MusicTransify.src.Contracts.Services.ProviderAuth.YouTubeMusic;
+using MusicTransify.src.Contracts.Helper.Spotify;
+using MusicTransify.src.Contracts.Helper.YouTubeMusic;
+using MusicTransify.src.Contracts.Services.ProviderHttp.Spotify;
+using MusicTransify.src.Contracts.Services.ProviderHttp.YouTubeMusic;
+using MusicTransify.src.Services.HTTP.YouTubeMusic;
 
 namespace MusicTransify.src
 {
@@ -67,67 +72,70 @@ namespace MusicTransify.src
             var userProfile = builder.Configuration.GetSection("Session:userProfile").Value
             ?? throw new InvalidOperationException("userProfile is missing");
 
-            // ========== SERVICE REGISTRATION ========== //
-            builder.Services.AddHttpClient<IHttpService, HttpService>()
-                .ConfigureHttpClient(client =>
-                {
-                    client.BaseAddress = new Uri(spotifyBaseUrl, UriKind.Absolute);
-                    client.DefaultRequestHeaders.Accept.Add(
-                        new MediaTypeWithQualityHeaderValue(applicationContentType));
-                })
-                .AddPolicyHandler(RetryPolicies.SpotifyRetryPolicy());
-
-            // Configure Spotify client
-            builder.Services.AddHttpClient("Spotify", client =>
-            {
-                client.BaseAddress = new Uri(spotifyBaseUrl, UriKind.Absolute);
-                client.DefaultRequestHeaders.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue(applicationContentType));
-            });
-
-            // Configure YouTube Music client
-            builder.Services.AddHttpClient<YouTubeMusicService>("YouTube", client =>
-            {
-                client.BaseAddress = new Uri(youtubeBaseUrl, UriKind.Absolute);
-            });
 
             // ========== REGISTER SERVICE WITH INTERFACE ========== //
-            // Register Spotify service
-            builder.Services.AddHttpClient<IProviderService, SpotifyService>(client =>
-            {
-                client.BaseAddress = new Uri(spotifyBaseUrl);
-            })
-            .AddPolicyHandler(PolicyBuilder.CreateResiliencePolicy());
 
-            // Register YouTube Music service
-            builder.Services.AddHttpClient<IProviderService, YouTubeMusicService>(client =>
-            {
-                client.BaseAddress = new Uri(youtubeBaseUrl, UriKind.Absolute);
-            })
-            .AddPolicyHandler(PolicyBuilder.CreateResiliencePolicy());
+            // Register provider service (Spotify service)
+            builder.Services.AddHttpClient<ISpotifyService, SpotifyService>(client =>
+                {
+                    client.BaseAddress = new Uri(spotifyBaseUrl);
+                })
+                .AddPolicyHandler(SpotifyRetryPolicy.Default());
 
-            // Register Spotify Helper
-            builder.Services.AddHttpClient<IProviderHelper, SpotifyHelper>(client =>
-            {
-                client.BaseAddress = new Uri(spotifyBaseUrl);
-            })
-            .AddPolicyHandler(PolicyBuilder.CreateResiliencePolicy());
+            // Register provider service (YouTube Music service)
+            builder.Services.AddHttpClient<IYouTubeMusicService, YouTubeMusicService>(client =>
+                {
+                    client.BaseAddress = new Uri(youtubeBaseUrl, UriKind.Absolute);
+                })
+                .AddPolicyHandler(YouTubeRetryPolicy.Default());
 
-            // Register YouTube Music Helper
-            builder.Services.AddHttpClient<IProviderHelper, YouTubeMusicHelper>(client =>
-            {
-                client.BaseAddress = new Uri(youtubeBaseUrl, UriKind.Absolute);
-            })
-            .AddPolicyHandler(PolicyBuilder.CreateResiliencePolicy());
+            // Register provider Helper (Spotify Helper)
+            builder.Services.AddHttpClient<ISpotifyHelper, SpotifyHelper>(client =>
+                {
+                    client.BaseAddress = new Uri(spotifyBaseUrl);
+                })
+                .AddPolicyHandler(SpotifyRetryPolicy.Default());
 
-            // Add Spotify content type
-            builder.Services.AddControllers(options =>
+            // Register provider Helper (YouTube Music Helper)
+            builder.Services.AddHttpClient<IYouTubeMusicHelper, YouTubeMusicHelper>(client =>
+                {
+                    client.BaseAddress = new Uri(youtubeBaseUrl, UriKind.Absolute);
+                })
+                .AddPolicyHandler(YouTubeRetryPolicy.Default());
+
+            // Register provider Http service (Spotify Http service)
+            builder.Services.AddHttpClient<ISpotifyHttpService, SpotifyHttpService>("Spotify", client =>
+                {
+                    client.BaseAddress = new Uri(spotifyBaseUrl, UriKind.Absolute);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(applicationContentType));
+                })
+                .AddPolicyHandler(SpotifyRetryPolicy.Default());
+
+            // Registering the consumer
+            builder.Services.AddTransient<SpotifyService>();
+
+
+            // Register provider Http service (Spotify Http service)
+            builder.Services.AddHttpClient<IYouTubeMusicHttpService, YouTubeMusicHttpService>("YouTube", client =>
+                {
+                    client.BaseAddress = new Uri(youtubeBaseUrl, UriKind.Absolute);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(applicationContentType));
+                })
+                .AddPolicyHandler(YouTubeRetryPolicy.Default());
+
+            // Registering the consumer
+            builder.Services.AddTransient<YouTubeMusicService>();
+
+
+
+            // >NET built-in Cookies Service
+            builder.Services.Configure<CookiePolicyOptions>(options =>
             {
-                options.FormatterMappings.SetMediaTypeMappingForFormat(
-                    applicationContentFormat, applicationContentType);
+                options.Secure = CookieSecurePolicy.Always;
+                options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always;
             });
 
-            // Add YouTube Music content type
+            // Add Spotify content type
             builder.Services.AddControllers(options =>
             {
                 options.FormatterMappings.SetMediaTypeMappingForFormat(
@@ -165,13 +173,6 @@ namespace MusicTransify.src
 
             // Transient - Custom Cookies Service
             builder.Services.AddTransient<CookiesService>();
-
-            // >NET built-in Cookies Service
-            builder.Services.Configure<CookiePolicyOptions>(options =>
-            {
-                options.Secure = CookieSecurePolicy.Always;
-                options.HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always;
-            });
 
             // Infrastructure
             builder.Services.AddHttpContextAccessor();

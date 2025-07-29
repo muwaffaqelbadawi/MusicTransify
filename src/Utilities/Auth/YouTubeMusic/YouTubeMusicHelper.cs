@@ -1,14 +1,14 @@
 using System;
 using Microsoft.Extensions.Options;
 using MusicTransify.src.Configurations.YouTubeMusic;
-using MusicTransify.src.Contracts.Helper;
+using MusicTransify.src.Contracts.Helper.YouTubeMusic;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Security;
 
 namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
 {
-    public class YouTubeMusicHelper : IProviderHelper
+    public class YouTubeMusicHelper : IYouTubeMusicHelper
     {
         private readonly YouTubeMusicOptions _options;
         private readonly StateHelper _stateHelper;

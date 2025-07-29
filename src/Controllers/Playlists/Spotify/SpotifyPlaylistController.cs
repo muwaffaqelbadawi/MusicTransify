@@ -5,8 +5,8 @@ using MusicTransify.src.Services.Session;
 using MusicTransify.src.Utilities.Token;
 using MusicTransify.src.Configurations.Spotify;
 using Microsoft.Extensions.Options;
-using MusicTransify.src.Contracts.Services;
 using MusicTransify.src.Services.Cache;
+using MusicTransify.src.Contracts.Services.ProviderHttp.Spotify;
 
 namespace MusicTransify.src.Controllers.Playlists.Spotify
 {
@@ -16,7 +16,7 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
     {
         private readonly SpotifyOptions _spotifyOptions;
         private readonly SessionService _sessionService;
-        private readonly IHttpService _httpService;
+        private readonly ISpotifyHttpService _spotifyHttpService;
         private readonly TokenHelper _tokenHelper;
         private readonly ICacheService _cacheService;
         private readonly ILogger<SpotifyPlaylistController> _logger;
@@ -24,7 +24,7 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
         public SpotifyPlaylistController(
             IOptions<SpotifyOptions> spotifyOptions,
             SessionService sessionService,
-            IHttpService httpService,
+            ISpotifyHttpService spotifyHttpService,
             TokenHelper token,
             ICacheService cacheService,
             ILogger<SpotifyPlaylistController> logger
@@ -32,7 +32,7 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
         {
             _spotifyOptions = spotifyOptions.Value;
             _sessionService = sessionService;
-            _httpService = httpService;
+            _spotifyHttpService = spotifyHttpService;
             _tokenHelper = token;
             _cacheService = cacheService;
             _logger = logger;
@@ -93,7 +93,7 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
 
             try
             {
-                using (var response = await _httpService.GetHttpResponseAsync(
+                using (var response = await _spotifyHttpService.GetHttpResponseAsync(
                     clientName,
                     accessToken,
                     apiBaseUri,

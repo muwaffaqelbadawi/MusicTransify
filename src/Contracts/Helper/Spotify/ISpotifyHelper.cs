@@ -1,8 +1,8 @@
 using System;
 
-namespace MusicTransify.src.Contracts.Helper
+namespace MusicTransify.src.Contracts.Helper.Spotify
 {
-    public interface IProviderHelper
+    public interface ISpotifyHelper
     {
         public Dictionary<string, string> BuildLoginRequest();
         public Dictionary<string, string> BuildCodeExchangeRequest(string code);

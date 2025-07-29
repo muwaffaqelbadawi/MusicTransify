@@ -1,14 +1,14 @@
 using System;
 using Microsoft.Extensions.Options;
 using MusicTransify.src.Configurations.Spotify;
-using MusicTransify.src.Contracts.Helper;
+using MusicTransify.src.Contracts.Helper.Spotify;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Security;
 
 namespace MusicTransify.src.Utilities.Auth.Spotify
 {
-    public class SpotifyHelper : IProviderHelper
+    public class SpotifyHelper : ISpotifyHelper
     {
         private readonly SpotifyOptions _options;
         private readonly StateHelper _stateHelper;

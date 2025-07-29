@@ -1,9 +1,9 @@
 using System;
 using System.Text.Json;
 
-namespace MusicTransify.src.Contracts.Services
+namespace MusicTransify.src.Contracts.Services.ProviderAuth.YouTubeMusic
 {
-    public interface IProviderService
+    public interface IYouTubeMusicService
     {
         string GetLoginUri();
         Task<JsonElement> ExchangeAuthorizationCodeAsync(string code);

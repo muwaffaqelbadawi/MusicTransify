@@ -1,27 +1,30 @@
 using System;
 using MusicTransify.src.Configurations.Spotify;
-using MusicTransify.src.Services.HTTP;
+using MusicTransify.src.Services.HTTP.Spotify;
+using MusicTransify.src.Contracts.Services.ProviderPlaylist.Spotify;
 
 namespace MusicTransify.src.Services.Playlists.Spotify
 {
-    public class SpotifyPlaylistService : HttpService
+    public class SpotifyPlaylistService : ISpotifyPlaylistService
     {
         private readonly SpotifyOptions _spotifyOptions;
+        private readonly SpotifyHttpService _spotifyHttpService;
         private readonly ILogger<SpotifyPlaylistService> _logger;
 
         public SpotifyPlaylistService(
-            HttpClient httpClient,
             SpotifyOptions spotifyOptions,
+            SpotifyHttpService spotifyHttpService,
             ILogger<SpotifyPlaylistService> logger
-        ) : base(httpClient, logger)
+        )
         {
             _spotifyOptions = spotifyOptions;
+            _spotifyHttpService = spotifyHttpService;
             _logger = logger;
         }
 
         public async Task<T> GetPlaylistAsync<T>(string id)
         {
-            _logger.LogInformation("Playlist service accessed");
+            _logger.LogInformation("Getting Spotify playlist with ID: {id}", id);
 
             var clientName = _spotifyOptions.ClientName;
             string playlistUrl = _spotifyOptions.PlaylistUrl;
@@ -38,7 +41,7 @@ namespace MusicTransify.src.Services.Playlists.Spotify
                 throw new HttpRequestException("No response received from Spotify");
             }
 
-            return await SendRequestAsync<T>(clientName, response);
+            return await _spotifyHttpService.SendRequestAsync<T>(clientName, response);
         }
     }
 }
