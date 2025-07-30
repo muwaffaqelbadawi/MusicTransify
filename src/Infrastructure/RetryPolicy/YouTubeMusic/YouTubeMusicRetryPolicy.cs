@@ -1,9 +1,9 @@
 using System;
+using System.Net;
 using Polly;
 using Polly.Extensions.Http;
-using System.Net;
 
-namespace MusicTransify.src.Infrastructure.Resilience.YouTubeMusic
+namespace MusicTransify.src.Infrastructure.RetryPolicy.YouTubeMusic
 {
     public static class YouTubeMusicRetryPolicy
     {

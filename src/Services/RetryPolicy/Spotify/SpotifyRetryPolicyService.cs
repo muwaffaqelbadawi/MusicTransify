@@ -1,6 +1,6 @@
 using System;
 using Polly;
-using MusicTransify.src.Infrastructure.Resilience.Spotify;
+using MusicTransify.src.Infrastructure.RetryPolicy.Spotify;
 using MusicTransify.src.Contracts.RetryPolicy.Spotify;
 
 namespace MusicTransify.src.Services.RetryPolicy.Spotify

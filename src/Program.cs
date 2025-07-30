@@ -1,22 +1,13 @@
+// Global using
 using System;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.DataProtection;
+
+// Configurations
 using MusicTransify.src.Configurations.Spotify;
 using MusicTransify.src.Configurations.YouTubeMusic;
-using MusicTransify.src.Infrastructure.Resilience.Spotify;
-using MusicTransify.src.Middlewares;
-using MusicTransify.src.Services.Auth.Spotify;
-using MusicTransify.src.Services.Auth.YouTubeMusic;
-using MusicTransify.src.Services.Http.YouTubeMusic;
-using MusicTransify.src.Services.Cookies;
-using MusicTransify.src.Services.Session;
-using MusicTransify.src.Services.Cache;
-using MusicTransify.src.Utilities.Token;
-using MusicTransify.src.Utilities.Security;
-using MusicTransify.src.Utilities.Auth.Common;
-using MusicTransify.src.Utilities.Auth.Spotify;
-using MusicTransify.src.Utilities.Auth.YouTubeMusic;
-using MusicTransify.src.Services.Http.Spotify;
+
+// Contracts
 using MusicTransify.src.Contracts.Services.Auth.Spotify;
 using MusicTransify.src.Contracts.Services.Auth.YouTubeMusic;
 using MusicTransify.src.Contracts.Services.Http.Spotify;
@@ -24,7 +15,28 @@ using MusicTransify.src.Contracts.Services.Http.YouTubeMusic;
 using MusicTransify.src.Contracts.Helper.Spotify;
 using MusicTransify.src.Contracts.Helper.YouTubeMusic;
 
-using MusicTransify.src.Infrastructure.Resilience.YouTubeMusic;
+// Infrastructure
+using MusicTransify.src.Infrastructure.RetryPolicy.Spotify;
+using MusicTransify.src.Infrastructure.RetryPolicy.YouTubeMusic;
+
+// Middlewares
+using MusicTransify.src.Middlewares;
+
+// Services
+using MusicTransify.src.Services.Auth.Spotify;
+using MusicTransify.src.Services.Auth.YouTubeMusic;
+using MusicTransify.src.Services.Cache;
+using MusicTransify.src.Services.Cookies;
+using MusicTransify.src.Services.Http.Spotify;
+using MusicTransify.src.Services.Http.YouTubeMusic;
+using MusicTransify.src.Services.Session;
+
+// Helpers
+using MusicTransify.src.Utilities.Auth.Common;
+using MusicTransify.src.Utilities.Auth.Spotify;
+using MusicTransify.src.Utilities.Auth.YouTubeMusic;
+using MusicTransify.src.Utilities.Security;
+using MusicTransify.src.Utilities.Token;
 
 namespace MusicTransify.src
 {
