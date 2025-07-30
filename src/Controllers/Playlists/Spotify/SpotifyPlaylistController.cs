@@ -6,7 +6,7 @@ using MusicTransify.src.Utilities.Token;
 using MusicTransify.src.Configurations.Spotify;
 using Microsoft.Extensions.Options;
 using MusicTransify.src.Services.Cache;
-using MusicTransify.src.Contracts.Services.ProviderHttp.Spotify;
+using MusicTransify.src.Contracts.Services.Http.Spotify;
 
 namespace MusicTransify.src.Controllers.Playlists.Spotify
 {

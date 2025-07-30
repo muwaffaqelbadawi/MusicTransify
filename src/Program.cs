@@ -7,6 +7,7 @@ using MusicTransify.src.Infrastructure.Resilience.Spotify;
 using MusicTransify.src.Middlewares;
 using MusicTransify.src.Services.Auth.Spotify;
 using MusicTransify.src.Services.Auth.YouTubeMusic;
+using MusicTransify.src.Services.Http.YouTubeMusic;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Services.Session;
 using MusicTransify.src.Services.Cache;
@@ -15,14 +16,14 @@ using MusicTransify.src.Utilities.Security;
 using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Auth.Spotify;
 using MusicTransify.src.Utilities.Auth.YouTubeMusic;
-using MusicTransify.src.Services.HTTP.Spotify;
-using MusicTransify.src.Contracts.Services.ProviderAuth.Spotify;
-using MusicTransify.src.Contracts.Services.ProviderAuth.YouTubeMusic;
+using MusicTransify.src.Services.Http.Spotify;
+using MusicTransify.src.Contracts.Services.Auth.Spotify;
+using MusicTransify.src.Contracts.Services.Auth.YouTubeMusic;
+using MusicTransify.src.Contracts.Services.Http.Spotify;
+using MusicTransify.src.Contracts.Services.Http.YouTubeMusic;
 using MusicTransify.src.Contracts.Helper.Spotify;
 using MusicTransify.src.Contracts.Helper.YouTubeMusic;
-using MusicTransify.src.Contracts.Services.ProviderHttp.Spotify;
-using MusicTransify.src.Contracts.Services.ProviderHttp.YouTubeMusic;
-using MusicTransify.src.Services.HTTP.YouTubeMusic;
+
 using MusicTransify.src.Infrastructure.Resilience.YouTubeMusic;
 
 namespace MusicTransify.src

@@ -2,8 +2,8 @@ using System;
 using System.Text.Json;
 using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Auth.Spotify;
-using MusicTransify.src.Contracts.Services.ProviderAuth.Spotify;
-using MusicTransify.src.Contracts.Services.ProviderHttp.Spotify;
+using MusicTransify.src.Contracts.Services.Auth.Spotify;
+using MusicTransify.src.Contracts.Services.Http.Spotify;
 
 namespace MusicTransify.src.Services.Auth.Spotify
 {

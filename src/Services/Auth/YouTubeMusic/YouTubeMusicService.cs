@@ -2,8 +2,8 @@ using System;
 using System.Text.Json;
 using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Auth.YouTubeMusic;
-using MusicTransify.src.Contracts.Services.ProviderAuth.YouTubeMusic;
-using MusicTransify.src.Contracts.Services.ProviderHttp.YouTubeMusic;
+using MusicTransify.src.Contracts.Services.Auth.YouTubeMusic;
+using MusicTransify.src.Contracts.Services.Http.YouTubeMusic;
 
 namespace MusicTransify.src.Services.Auth.YouTubeMusic
 {

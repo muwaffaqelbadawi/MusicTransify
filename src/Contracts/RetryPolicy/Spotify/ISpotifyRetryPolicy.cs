@@ -1,9 +1,9 @@
 using System;
 using Polly;
 
-namespace MusicTransify.src.Contracts.Infrastructure.ProviderRetryPolicy.YouTubeMusic
+namespace MusicTransify.src.Contracts.RetryPolicy.Spotify
 {
-    public interface IYouTubeMusicRetryPolicy
+    public interface ISpotifyRetryPolicy
     {
         IAsyncPolicy<HttpResponseMessage> RetryPolicy()
             => Policy.NoOpAsync<HttpResponseMessage>();

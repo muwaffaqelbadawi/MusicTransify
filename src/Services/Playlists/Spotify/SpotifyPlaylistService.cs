@@ -1,7 +1,7 @@
 using System;
 using MusicTransify.src.Configurations.Spotify;
-using MusicTransify.src.Services.HTTP.Spotify;
-using MusicTransify.src.Contracts.Services.ProviderPlaylist.Spotify;
+using MusicTransify.src.Services.Http.Spotify;
+using MusicTransify.src.Contracts.Services.Playlist.Spotify;
 
 namespace MusicTransify.src.Services.Playlists.Spotify
 {

@@ -2,9 +2,9 @@ using System;
 using System.Net;
 using System.Text.Json;
 using System.Net.Http.Headers;
-using MusicTransify.src.Contracts.Services.ProviderHttp.Spotify;
+using MusicTransify.src.Contracts.Services.Http.Spotify;
 
-namespace MusicTransify.src.Services.HTTP.Spotify
+namespace MusicTransify.src.Services.Http.Spotify
 {
     public class SpotifyHttpService : ISpotifyHttpService
     {

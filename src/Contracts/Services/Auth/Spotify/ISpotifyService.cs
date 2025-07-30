@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 
-namespace MusicTransify.src.Contracts.Services.ProviderAuth.Spotify
+namespace MusicTransify.src.Contracts.Services.Auth.Spotify
 {
     public interface ISpotifyService
     {

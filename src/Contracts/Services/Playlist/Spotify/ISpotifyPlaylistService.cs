@@ -1,6 +1,6 @@
 using System;
 
-namespace MusicTransify.src.Contracts.Services.ProviderPlaylist.Spotify
+namespace MusicTransify.src.Contracts.Services.Playlist.Spotify
 {
     public interface ISpotifyPlaylistService
     {

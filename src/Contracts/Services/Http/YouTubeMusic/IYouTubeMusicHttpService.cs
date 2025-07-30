@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 
-namespace MusicTransify.src.Contracts.Services.ProviderHttp.YouTubeMusic
+namespace MusicTransify.src.Contracts.Services.Http.YouTubeMusic
 {
     public interface IYouTubeMusicHttpService
     {

@@ -1,7 +1,7 @@
 using System;
 using MusicTransify.src.Configurations.YouTubeMusic;
-using MusicTransify.src.Services.HTTP.YouTubeMusic;
-using MusicTransify.src.Contracts.Services.ProviderPlaylist.YouTubeMusic;
+using MusicTransify.src.Services.Http.YouTubeMusic;
+using MusicTransify.src.Contracts.Services.Playlist.YouTubeMusic;
 
 namespace MusicTransify.src.Services.Playlists.YouTubeMusic
 {

@@ -2,9 +2,9 @@ using System;
 using System.Net;
 using System.Text.Json;
 using System.Net.Http.Headers;
-using MusicTransify.src.Contracts.Services.ProviderHttp.YouTubeMusic;
+using MusicTransify.src.Contracts.Services.Http.YouTubeMusic;
 
-namespace MusicTransify.src.Services.HTTP.YouTubeMusic
+namespace MusicTransify.src.Services.Http.YouTubeMusic
 {
     public class YouTubeMusicHttpService : IYouTubeMusicHttpService
     {
