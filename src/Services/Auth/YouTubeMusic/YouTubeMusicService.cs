@@ -1,6 +1,5 @@
 using System;
 using System.Text.Json;
-using MusicTransify.src.Services.HTTP.YouTubeMusic;
 using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Auth.YouTubeMusic;
 using MusicTransify.src.Contracts.Services.ProviderAuth.YouTubeMusic;
@@ -8,9 +7,10 @@ using MusicTransify.src.Contracts.Services.ProviderHttp.YouTubeMusic;
 
 namespace MusicTransify.src.Services.Auth.YouTubeMusic
 {
-    public class YouTubeMusicService : IServiceProvider, IYouTubeMusicService
+    public class YouTubeMusicService : IYouTubeMusicService
     {
-        // Remember to always inject the interface not actual service
+        // Remember to always inject the interface not the implementation
+        // This allows for easier testing and mocking
         private readonly IYouTubeMusicHttpService _youTubeMusicHttpService;
         private readonly AuthHelper _authHelper;
         private readonly YouTubeMusicHelper _youTubeMusicAuthHelper;
@@ -29,17 +29,12 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             _logger = logger;
         }
 
-        public object? GetService(Type serviceType)
-        {
-            throw new NotImplementedException();
-        }
-
         public string GetLoginUri()
         {
             _logger.LogInformation("Accessing YouTube Music login Uri function");
 
             // Build login query
-            var queryParameters = _youTubeMusicAuthHelper.BuildLoginRequest();
+            Dictionary<string, string> queryParameters = _youTubeMusicAuthHelper.BuildLoginRequest();
 
             // Transform login query to query string
             string queryString = _authHelper.ToQueryString(queryParameters);
@@ -56,7 +51,7 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             _logger.LogInformation("Accessing Exchanging authorization code function");
 
             // Build auth exchange query
-            var requestBody = _youTubeMusicAuthHelper.BuildCodeExchangeRequest(code);
+            Dictionary<string, string> requestBody = _youTubeMusicAuthHelper.BuildCodeExchangeRequest(code);
 
             // Set client name
             string clientName = _youTubeMusicAuthHelper.ClientName;
@@ -67,7 +62,7 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             try
             {
                 // Get access token
-                var accessToken = await _youTubeMusicHttpService.PostFormUrlEncodedContentAsync(
+                JsonElement accessToken = await _youTubeMusicHttpService.PostFormUrlEncodedContentAsync(
                 clientName: clientName,
                 tokenUri: tokenUri,
                 requestBody: requestBody
@@ -87,7 +82,7 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             _logger.LogInformation("Accessing New token generation request function");
 
             // Build new token query
-            var requestBody = _youTubeMusicAuthHelper.BuildRefreshTokenRequest(refreshToken);
+            Dictionary<string, string> requestBody = _youTubeMusicAuthHelper.BuildRefreshTokenRequest(refreshToken);
 
             // Set client name
             string clientName = _youTubeMusicAuthHelper.ClientName;
@@ -98,7 +93,7 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             try
             {
                 // Get new access token
-                var newAccessToken = await _youTubeMusicHttpService.PostFormUrlEncodedContentAsync(
+                JsonElement newAccessToken = await _youTubeMusicHttpService.PostFormUrlEncodedContentAsync(
                     clientName: clientName,
                     tokenUri: tokenUri,
                     requestBody: requestBody

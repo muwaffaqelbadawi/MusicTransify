@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Contracts.DTOs;
+using MusicTransify.src.Contracts.DTOs.shared;
 using MusicTransify.src.Services.Auth.YouTubeMusic;
 using MusicTransify.src.Services.Session;
 using MusicTransify.src.Utilities.Token;

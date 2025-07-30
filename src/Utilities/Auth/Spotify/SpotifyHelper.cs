@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.Options;
 using MusicTransify.src.Configurations.Spotify;
+using MusicTransify.src.Contracts.DTOs.Spotify;
 using MusicTransify.src.Contracts.Helper.Spotify;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Utilities.Auth.Common;
@@ -59,18 +60,20 @@ namespace MusicTransify.src.Utilities.Auth.Spotify
             // Set state
             string state = _stateHelper.GenerateSecureRandomString(32);
 
+            // Add cookies
             _cookiesService.AppendCookies(state);
 
-            // Query Parameters
-            return new Dictionary<string, string>
+            LoginRequestDto loginRequest = new()
             {
-                { "response_type", responseType },
-                { "client_id", clientID },
-                { "scope", scope },
-                { "redirect_uri", redirectURI },
-                { "show_dialog", showDialog },
-                { "state", state }
+                ResponseType = responseType,
+                ClientId = clientID,
+                Scope = scope,
+                RedirectUri = redirectURI,
+                ShowDialog = showDialog,
+                State = state
             };
+
+            return loginRequest.ToDictionary();
         }
 
         public Dictionary<string, string> BuildCodeExchangeRequest(string code)
@@ -84,24 +87,23 @@ namespace MusicTransify.src.Utilities.Auth.Spotify
             string redirectURI = _options.RedirectUri;
 
             // Set Client ID
-            string clientID = _options.ClientId;
+            string clientId = _options.ClientId;
 
             // Set Client Secret
             string clientSecret = _options.ClientSecret;
 
-            // Set Token URL
-            string tokenURL = _options.TokenUri;
-
-            // Build exchange
-            return new Dictionary<string, string>
+            TokenExchangeRequestDto CodeExchangeRequest = new()
             {
-              { "code", code },
-              { "grant_type", grantType },
-              { "redirect_uri", redirectURI },
-              { "client_id", clientID },
-              { "client_secret", clientSecret }
+                Code = code,
+                GrantType = grantType,
+                RedirectUri = redirectURI,
+                ClientId = clientId,
+                ClientSecret = clientSecret,
             };
+
+            return CodeExchangeRequest.ToDictionary();
         }
+
         public Dictionary<string, string> BuildRefreshTokenRequest(string refreshToken)
         {
             _logger.LogInformation("Refreshing access token...");
@@ -118,16 +120,19 @@ namespace MusicTransify.src.Utilities.Auth.Spotify
             // Set Token URL
             string tokenURL = _options.TokenUri;
 
-            return new Dictionary<string, string>
+            RefreshTokenRequestDto refreshTokenRequest = new()
             {
-              { "grant_type", refreshTokenGrantType },
-              { "refresh_token", refreshToken },
-              { "client_id", clientID },
-              { "client_secret", clientSecret }
+                GrantType = refreshTokenGrantType,
+                RefreshToken = refreshToken,
+                ClientId = clientID,
+                ClientSecret = clientSecret
             };
+
+            return refreshTokenRequest.ToDictionary();
         }
-        public string ClientName => _options.ClientName ?? throw new InvalidOperationException("Client Name is not configured");
-        public string AuthUri => _options.AuthUri ?? throw new InvalidOperationException("Auth URI is not configured.");
-        public string TokenUri => _options.TokenUri ?? throw new InvalidOperationException("Token URI is not configured.");
+
+        public string ClientName => _options.ClientName;
+        public string AuthUri => _options.AuthUri;
+        public string TokenUri => _options.TokenUri;
     }
 }

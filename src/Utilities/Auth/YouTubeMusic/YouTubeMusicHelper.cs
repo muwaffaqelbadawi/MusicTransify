@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.Options;
 using MusicTransify.src.Configurations.YouTubeMusic;
+using MusicTransify.src.Contracts.DTOs.YouTubeMusic;
 using MusicTransify.src.Contracts.Helper.YouTubeMusic;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Utilities.Auth.Common;
@@ -36,7 +37,9 @@ namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
             _logger.LogInformation("Building YouTube Music login URL...");
 
             if (_options.Scope == null || _options.Scope.Length == 0)
+            {
                 throw new InvalidOperationException("YouTbe Music scopes are not configured");
+            }
 
             // Set the client ID
             string clientID = _options.ClientId;
@@ -67,16 +70,18 @@ namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
             // set cookies
             _cookiesService.AppendCookies(state);
 
-            return new Dictionary<string, string>
+            LoginRequestDto loginRequest = new()
             {
-                { "client_id", clientID },
-                { "redirect_uri", redirectUri },
-                { "response_type", responseType },
-                { "scope", scope },
-                { "access_type",  accessType},
-                { "include_granted_scopes", includeGrantedScopes },
-                { "state", state },
+                ClientId = clientID,
+                RedirectUri = redirectUri,
+                ResponseType = responseType,
+                Scope = scope,
+                AccessType = accessType,
+                IncludeGrantedScopes = includeGrantedScopes,
+                State = state
             };
+
+            return loginRequest.ToDictionary();
         }
 
         public Dictionary<string, string> BuildCodeExchangeRequest(string code)
@@ -95,14 +100,16 @@ namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
             // Set the Grant Type
             string grantType = _options.GrantType;
 
-            return new Dictionary<string, string>
+            TokenExchangeRequestDto CodeExchangeRequest = new()
             {
-                { "code", code },
-                { "client_id", clientId },
-                { "client_secret", clientSecret },
-                { "redirect_uri", redirectUri },
-                { "grant_type", grantType }
+                Code = code,
+                ClientId = clientId,
+                ClientSecret = clientSecret,
+                RedirectUri = redirectUri,
+                GrantType = grantType,
             };
+
+            return CodeExchangeRequest.ToDictionary();
         }
 
         public Dictionary<string, string> BuildRefreshTokenRequest(string refreshToken)
@@ -118,19 +125,19 @@ namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
             // Set grant type for refresh token
             string refreshTokenGrantType = _options.RefreshTokenGrantType;
 
-            return new Dictionary<string, string>
+            RefreshTokenRequestDto refreshTokenRequest = new()
             {
-                { "refresh_token", refreshToken },
-                { "client_id", clientId },
-                { "client_secret", clientSecret },
-                { "grant_type", refreshTokenGrantType }
+                RefreshToken = refreshToken,
+                ClientId = clientId,
+                ClientSecret = clientSecret,
+                RefreshTokenGrantType = refreshTokenGrantType
             };
+
+            return refreshTokenRequest.ToDictionary();
         }
 
-        public string ClientName => _options.ClientName ?? throw new InvalidOperationException("Client Name is not configured");
-
-        public string AuthUri => _options.AuthUri ?? throw new InvalidOperationException("Auth URI is not configured.");
-
-        public string TokenUri => _options.TokenUri ?? throw new InvalidOperationException("Token URI is not configured.");
+        public string ClientName => _options.ClientName;
+        public string AuthUri => _options.AuthUri;
+        public string TokenUri => _options.TokenUri;
     }
 }

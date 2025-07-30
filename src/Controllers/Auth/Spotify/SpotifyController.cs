@@ -1,10 +1,10 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Contracts.DTOs;
 using MusicTransify.src.Services.Session;
 using MusicTransify.src.Services.Auth.Spotify;
 using MusicTransify.src.Utilities.Token;
+using MusicTransify.src.Contracts.DTOs.shared;
 
 namespace MusicTransify.src.Controllers.Auth.Spotify
 {
