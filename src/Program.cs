@@ -12,6 +12,8 @@ using MusicTransify.src.Contracts.Services.Auth.Spotify;
 using MusicTransify.src.Contracts.Services.Auth.YouTubeMusic;
 using MusicTransify.src.Contracts.Services.Http.Spotify;
 using MusicTransify.src.Contracts.Services.Http.YouTubeMusic;
+using MusicTransify.src.Contracts.Services.Playlist.Spotify;
+using MusicTransify.src.Contracts.Services.Playlist.YouTubeMusic;
 using MusicTransify.src.Contracts.Helper.Spotify;
 using MusicTransify.src.Contracts.Helper.YouTubeMusic;
 
@@ -29,7 +31,10 @@ using MusicTransify.src.Services.Cache;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Services.Http.Spotify;
 using MusicTransify.src.Services.Http.YouTubeMusic;
-using MusicTransify.src.Services.Session;
+using MusicTransify.src.Services.Playlists.Spotify;
+using MusicTransify.src.Services.Playlists.YouTubeMusic;
+using MusicTransify.src.Services.Session.Spotify;
+using MusicTransify.src.Services.Session.YouTubeMusic;
 
 // Helpers
 using MusicTransify.src.Utilities.Auth.Common;
@@ -37,6 +42,10 @@ using MusicTransify.src.Utilities.Auth.Spotify;
 using MusicTransify.src.Utilities.Auth.YouTubeMusic;
 using MusicTransify.src.Utilities.Security;
 using MusicTransify.src.Utilities.Token;
+using MusicTransify.src.Utilities.Playlist.Spotify;
+using MusicTransify.src.Utilities.Playlist.YouTubeMusic;
+using MusicTransify.src.Contracts.Session.Spotify;
+using MusicTransify.src.Contracts.Session.YouTubeMusic;
 
 namespace MusicTransify.src
 {
@@ -77,7 +86,7 @@ namespace MusicTransify.src
             ?? throw new InvalidOperationException("spotify Spotify content format is missing");
 
             // ========== YouTube Music configurations ========== //
-            var YouTubeMusicOptions = builder.Configuration.GetSection("YouTube");
+            var youtubeMusicOptions = builder.Configuration.GetSection("YouTube");
 
             var youtubeBaseUrl = builder.Configuration.GetSection("YouTube:ApiBaseUri").Value
             ?? throw new InvalidOperationException("youtubeBaseUrl is missing");
@@ -86,6 +95,28 @@ namespace MusicTransify.src
             ?? throw new InvalidOperationException("userProfile is missing");
 
             // ========== REGISTER SERVICE WITH INTERFACE ========== //
+
+            // Register provider Http service (Spotify Http service)
+            builder.Services.AddHttpClient<ISpotifyHttpService, SpotifyHttpService>("Spotify", client =>
+                {
+                    client.BaseAddress = new Uri(spotifyBaseUrl, UriKind.Absolute);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(applicationContentType));
+                })
+                .AddPolicyHandler(SpotifyRetryPolicy.Default());
+
+            // Registering the Spotify consumer
+            builder.Services.AddTransient<SpotifyService>();
+
+            // Register provider Http service (Spotify Http service)
+            builder.Services.AddHttpClient<IYouTubeMusicHttpService, YouTubeMusicHttpService>("YouTube", client =>
+                {
+                    client.BaseAddress = new Uri(youtubeBaseUrl, UriKind.Absolute);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(applicationContentType));
+                })
+                .AddPolicyHandler(YouTubeMusicRetryPolicy.Default());
+
+            // Registering the YouTube Music consumer
+            builder.Services.AddTransient<YouTubeMusicService>();
 
             // Register provider service (Spotify service)
             builder.Services.AddHttpClient<ISpotifyService, SpotifyService>(client =>
@@ -101,43 +132,33 @@ namespace MusicTransify.src
                 })
                 .AddPolicyHandler(YouTubeMusicRetryPolicy.Default());
 
+
+            // Register playlist provider service (Spotify playlist service)
+            builder.Services.AddTransient<ISpotifyPlaylistService, SpotifyPlaylistService>();
+
+            // Register playlist provider service (YouTube Music playlist service)
+            builder.Services.AddTransient<IYouTubeMusicPlaylistService, YouTubeMusicPlaylistService>();
+
             // Register provider Helper (Spotify Helper)
-            builder.Services.AddHttpClient<ISpotifyHelper, SpotifyHelper>(client =>
-                {
-                    client.BaseAddress = new Uri(spotifyBaseUrl);
-                })
-                .AddPolicyHandler(SpotifyRetryPolicy.Default());
+            builder.Services.AddTransient<ISpotifyHelper, SpotifyHelper>();
 
             // Register provider Helper (YouTube Music Helper)
-            builder.Services.AddHttpClient<IYouTubeMusicHelper, YouTubeMusicHelper>(client =>
-                {
-                    client.BaseAddress = new Uri(youtubeBaseUrl, UriKind.Absolute);
-                })
-                .AddPolicyHandler(YouTubeMusicRetryPolicy.Default());
+            builder.Services.AddTransient<IYouTubeMusicHelper, YouTubeMusicHelper>();
 
-            // Register provider Http service (Spotify Http service)
-            builder.Services.AddHttpClient<ISpotifyHttpService, SpotifyHttpService>("Spotify", client =>
-                {
-                    client.BaseAddress = new Uri(spotifyBaseUrl, UriKind.Absolute);
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(applicationContentType));
-                })
-                .AddPolicyHandler(SpotifyRetryPolicy.Default());
+            // Register provider playlist Helper (Spotify Playlist Helper)
+            builder.Services.AddTransient<ISpotifyPlaylistHelper, SpotifyPlaylistHelper>();
 
-            // Registering the consumer
-            builder.Services.AddTransient<SpotifyService>();
+            // Register provider playlist Helper (YouTube Music Playlist Helper)
+            builder.Services.AddTransient<IYouTubeMusicPlaylistHelper, YouTubeMusicPlaylistHelper>();
 
-            // Register provider Http service (Spotify Http service)
-            builder.Services.AddHttpClient<IYouTubeMusicHttpService, YouTubeMusicHttpService>("YouTube", client =>
-                {
-                    client.BaseAddress = new Uri(youtubeBaseUrl, UriKind.Absolute);
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(applicationContentType));
-                })
-                .AddPolicyHandler(YouTubeMusicRetryPolicy.Default());
 
-            // Registering the consumer
-            builder.Services.AddTransient<YouTubeMusicService>();
+            // Register provider session (Spotify session)
+            builder.Services.AddTransient<ISpotifySessionService, SpotifySessionService>();
 
-            // >NET built-in Cookies Service
+            // Register provider session (YouTube Music session)
+            builder.Services.AddTransient<IYouTubeMusicSessionService, YouTubeMusicSessionService>();
+
+            // .NET built-in Cookies Service
             builder.Services.Configure<CookiePolicyOptions>(options =>
             {
                 options.Secure = CookieSecurePolicy.Always;
@@ -165,7 +186,7 @@ namespace MusicTransify.src
             // Register YouTube Music options
             builder.Services
             .AddOptions<YouTubeMusicOptions>()
-            .Bind(YouTubeMusicOptions)
+            .Bind(youtubeMusicOptions)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -173,7 +194,8 @@ namespace MusicTransify.src
             // Scoped
             builder.Services.AddTransient<SpotifyService>();
             builder.Services.AddTransient<YouTubeMusicService>();
-            builder.Services.AddScoped<SessionService>();
+            builder.Services.AddScoped<SpotifySessionService>();
+            builder.Services.AddScoped<YouTubeMusicSessionService>();
             builder.Services.AddScoped<TokenHelper>();
             builder.Services.AddScoped<AuthHelper>();
             builder.Services.AddScoped<StateHelper>();
@@ -190,12 +212,15 @@ namespace MusicTransify.src
             builder.Services.AddDataProtection()
                 .PersistKeysToFileSystem(new DirectoryInfo(userProfile))
                 .SetApplicationName(appName);
+
+
             builder.Services.AddDistributedMemoryCache();
 
             builder.Services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromHours(2);
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
                 options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             });
 

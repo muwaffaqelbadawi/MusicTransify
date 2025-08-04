@@ -1,21 +1,27 @@
 using System;
-using System.Text.Json;
 
 namespace MusicTransify.src.Contracts.Services.Http.Spotify
 {
     public interface ISpotifyHttpService
     {
-        Task<JsonElement> PostFormUrlEncodedContentAsync(
-            string clientName,
+        Task<T> SendRequestAsync<T>(
+            HttpRequestMessage request
+        );
+
+        Task<T> PostFormUrlEncodedContentAsync<T>(
             string tokenUri,
             Dictionary<string, string> requestBody
         );
-        
-        Task<HttpResponseMessage> GetHttpResponseAsync(
-            string clientName,
+
+        public HttpRequestMessage GetRequest(
             string accessToken,
-            string apiBaseUri,
-            string endPoint
+            string Uri
+        );
+
+        public HttpRequestMessage GetRequestWithId(
+            string accessToken,
+            string Uri,
+            string Id
         );
     }
 }

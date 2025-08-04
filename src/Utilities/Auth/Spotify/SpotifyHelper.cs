@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.Options;
 using MusicTransify.src.Configurations.Spotify;
-using MusicTransify.src.Contracts.DTOs.Spotify;
+using MusicTransify.src.Contracts.DTOs.Request.Spotify;
 using MusicTransify.src.Contracts.Helper.Spotify;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Utilities.Auth.Common;
@@ -73,7 +73,7 @@ namespace MusicTransify.src.Utilities.Auth.Spotify
                 State = state
             };
 
-            return loginRequest.ToDictionary();
+            return loginRequest.ToMap();
         }
 
         public Dictionary<string, string> BuildCodeExchangeRequest(string code)
@@ -101,7 +101,7 @@ namespace MusicTransify.src.Utilities.Auth.Spotify
                 ClientSecret = clientSecret,
             };
 
-            return CodeExchangeRequest.ToDictionary();
+            return CodeExchangeRequest.ToMap();
         }
 
         public Dictionary<string, string> BuildRefreshTokenRequest(string refreshToken)
@@ -128,7 +128,7 @@ namespace MusicTransify.src.Utilities.Auth.Spotify
                 ClientSecret = clientSecret
             };
 
-            return refreshTokenRequest.ToDictionary();
+            return refreshTokenRequest.ToMap();
         }
 
         public string ClientName => _options.ClientName;

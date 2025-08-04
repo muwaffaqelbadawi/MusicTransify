@@ -65,7 +65,7 @@ namespace MusicTransify.src.Services.Http.YouTubeMusic
             }
         }
 
-        public async Task<JsonElement> PostFormUrlEncodedContentAsync(
+        public async Task<T> PostFormUrlEncodedContentAsync<T>(
             string clientName,
             string tokenUri,
             Dictionary<string, string> requestBody
@@ -104,13 +104,14 @@ namespace MusicTransify.src.Services.Http.YouTubeMusic
                         try
                         {
                             // return Token Info
-                            return JsonSerializer.Deserialize<JsonElement>(content);
+                            return JsonSerializer.Deserialize<T>(content) ??
+                                throw new JsonException(nameof(content));
                         }
 
                         catch (JsonException ex)
                         {
                             _logger?.LogError(ex, "Failed to deserialize response: {Content}", content);
-                            throw new JsonException("Failed to parse Spotify response", ex);
+                            throw new JsonException($"Failed to parse Spotify response, {nameof(content)}", ex);
                         }
                     }
                 }
@@ -125,61 +126,69 @@ namespace MusicTransify.src.Services.Http.YouTubeMusic
             throw new InvalidOperationException($"{clientName} is null");
         }
 
-        public async Task<HttpResponseMessage> GetHttpResponseAsync(
+        public async Task<T> GetHttpResponseAsync<T>(
             string clientName,
             string accessToken,
             string apiBaseUri,
             string endPoint
         )
         {
-            if (_client is not null)
+            if (string.IsNullOrEmpty(accessToken))
             {
-                if (string.IsNullOrEmpty(accessToken))
-                {
-                    _logger?.LogWarning("Access token is null or empty for GET {Endpoint}", endPoint);
-                    throw new InvalidOperationException("Access token in is null or empty");
-                }
-
-                if (string.IsNullOrEmpty(apiBaseUri))
-                {
-                    _logger?.LogWarning("apiBaseUri is null or empty");
-                    throw new InvalidOperationException("apiBaseUri in is null or empty");
-                }
-
-                if (string.IsNullOrEmpty(endPoint))
-                {
-                    _logger?.LogWarning("endPoint is null or empty");
-                    throw new InvalidOperationException("endPoint in is null or empty");
-                }
-
-                var url = $"{apiBaseUri}{endPoint}";
-
-                var request = new HttpRequestMessage(HttpMethod.Get, url);
-
-                // Set the Authorization header with the access token
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-                try
-                {
-                    // Remove the using block - let the caller dispose the response
-                    var response = await _client.SendAsync(request);
-
-                    if (!response.StatusCode.Equals(HttpStatusCode.OK))
-                    {
-                        string errorContent = await response.Content.ReadAsStringAsync();
-                        _logger?.LogWarning("GET {Url} failed: {StatusCode} {ErrorContent}", url, response.StatusCode, errorContent);
-                    }
-
-                    return response;
-                }
-                catch (JsonException ex)
-                {
-                    _logger?.LogError(ex, "Failed to send GET request to {Url}", url);
-                    throw;
-                }
+                _logger?.LogWarning("Access token is null or empty for GET {Endpoint}", endPoint);
+                throw new InvalidOperationException(nameof(accessToken));
             }
 
-            throw new InvalidOperationException($"{clientName} is null");
+            if (string.IsNullOrEmpty(apiBaseUri))
+            {
+                _logger?.LogWarning("apiBaseUri is null or empty");
+                throw new InvalidOperationException($"{nameof(apiBaseUri)} is null or empty");
+            }
+
+            if (string.IsNullOrEmpty(endPoint))
+            {
+                _logger?.LogWarning("endPoint is null or empty");
+                throw new InvalidOperationException($"{nameof(endPoint)} is null or empty");
+            }
+
+            string url = $"{apiBaseUri}{endPoint}";
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            // Set the Authorization header with the access token
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            try
+            {
+                var response = await _client.SendAsync(request);
+
+                string content = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorContent = await response.Content.ReadAsStringAsync();
+                    _logger?.LogWarning("GET {Url} failed: {StatusCode} {ErrorContent}",
+                    url,
+                    response.StatusCode,
+                    errorContent);
+
+                    throw new HttpRequestException($"GET failed with status: {response.StatusCode}");
+                }
+
+                var result = JsonSerializer.Deserialize<T>(content, _serializerOptions);
+
+                if (result is null)
+                {
+                    throw new JsonException("Deserialized response is null");
+                }
+
+                return result;
+            }
+            catch (JsonException ex)
+            {
+                _logger?.LogError(ex, "Failed to GET {Url}", url);
+                throw new JsonException($"Failed to GET {url}");
+            }
         }
     }
 }

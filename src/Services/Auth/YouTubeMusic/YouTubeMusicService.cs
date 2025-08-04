@@ -4,6 +4,7 @@ using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Auth.YouTubeMusic;
 using MusicTransify.src.Contracts.Services.Auth.YouTubeMusic;
 using MusicTransify.src.Contracts.Services.Http.YouTubeMusic;
+using MusicTransify.src.Contracts.DTOs.Response.Token.YouTubeMusic;
 
 namespace MusicTransify.src.Services.Auth.YouTubeMusic
 {
@@ -46,7 +47,7 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             return _authHelper.FormRedirectUrl(authUri, queryString);
         }
 
-        public async Task<JsonElement> ExchangeAuthorizationCodeAsync(string code)
+        public async Task<YouTubeMusicTokenResponse> ExchangeAuthorizationCodeAsync(string code)
         {
             _logger.LogInformation("Accessing Exchanging authorization code function");
 
@@ -62,7 +63,7 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             try
             {
                 // Get access token
-                JsonElement accessToken = await _youTubeMusicHttpService.PostFormUrlEncodedContentAsync(
+                var accessToken = await _youTubeMusicHttpService.PostFormUrlEncodedContentAsync<YouTubeMusicTokenResponse>(
                 clientName: clientName,
                 tokenUri: tokenUri,
                 requestBody: requestBody
@@ -77,7 +78,7 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             }
         }
 
-        public async Task<JsonElement> GetNewTokenAsync(string refreshToken)
+        public async Task<YouTubeMusicTokenResponse> GetNewTokenAsync(string refreshToken)
         {
             _logger.LogInformation("Accessing New token generation request function");
 
@@ -93,7 +94,7 @@ namespace MusicTransify.src.Services.Auth.YouTubeMusic
             try
             {
                 // Get new access token
-                JsonElement newAccessToken = await _youTubeMusicHttpService.PostFormUrlEncodedContentAsync(
+                var newAccessToken = await _youTubeMusicHttpService.PostFormUrlEncodedContentAsync<YouTubeMusicTokenResponse>(
                     clientName: clientName,
                     tokenUri: tokenUri,
                     requestBody: requestBody

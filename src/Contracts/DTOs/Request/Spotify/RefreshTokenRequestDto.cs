@@ -1,15 +1,22 @@
 using System;
+using System.Text.Json.Serialization;
+using MusicTransify.src.Contracts.Mapper;
 
-namespace MusicTransify.src.Contracts.DTOs.Spotify
+
+namespace MusicTransify.src.Contracts.DTOs.Request.Spotify
 {
-    public record RefreshTokenRequestDto
+    public class RefreshTokenRequestDto : IMappable
     {
+        [JsonPropertyName("refresh_token")]
         public string RefreshToken { get; set; } = string.Empty;
+        [JsonPropertyName("grant_type")]
         public string GrantType { get; set; } = string.Empty;
+        [JsonPropertyName("client_id")]
         public string ClientId { get; set; } = string.Empty;
+        [JsonPropertyName("client_secret")]
         public string ClientSecret { get; set; } = string.Empty;
 
-        public Dictionary<string, string> ToDictionary() => new()
+        public Dictionary<string, string> ToMap() => new()
         {
             ["grant_type"] = GrantType,
             ["refresh_token"] = RefreshToken,

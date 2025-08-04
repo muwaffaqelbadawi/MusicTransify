@@ -1,46 +1,54 @@
 using System;
 using MusicTransify.src.Configurations.YouTubeMusic;
-using MusicTransify.src.Services.Http.YouTubeMusic;
 using MusicTransify.src.Contracts.Services.Playlist.YouTubeMusic;
+using MusicTransify.src.Contracts.Services.Http.YouTubeMusic;
+using MusicTransify.src.Contracts.Helper.YouTubeMusic;
 
 namespace MusicTransify.src.Services.Playlists.YouTubeMusic
 {
     public class YouTubeMusicPlaylistService : IYouTubeMusicPlaylistService
     {
-        private readonly YouTubeMusicOptions _youTubeMusicOptions;
-        private readonly YouTubeMusicHttpService _youTubeMusicHttpService;
+        private readonly IYouTubeMusicHttpService _youTubeMusicHttpService;
+        private readonly IYouTubeMusicPlaylistHelper _youTubeMusicPlaylistHelper;
         private readonly ILogger<YouTubeMusicPlaylistService> _logger;
         public YouTubeMusicPlaylistService(
-            YouTubeMusicOptions youTubeMusicOptions,
-            YouTubeMusicHttpService youTubeMusicHttpService,
+            IYouTubeMusicHttpService youTubeMusicHttpService,
+            IYouTubeMusicPlaylistHelper youTubeMusicPlaylistHelper,
             ILogger<YouTubeMusicPlaylistService> logger
         )
         {
-            _youTubeMusicOptions = youTubeMusicOptions;
             _youTubeMusicHttpService = youTubeMusicHttpService;
+            _youTubeMusicPlaylistHelper = youTubeMusicPlaylistHelper;
             _logger = logger;
         }
 
-        public async Task<T> GetPlaylistAsync<T>(string id)
+        public async Task<T> GetPlaylistAsync<T>()
         {
-            _logger.LogInformation("Getting YouTube Music playlist with ID: {id}", id);
+            _logger.LogInformation("Getting YouTube Music playlist");
 
-            var clientName = _youTubeMusicOptions.ClientName;
-            string playlistUrl = _youTubeMusicOptions.PlaylistUrl;
+            var clientName = _youTubeMusicPlaylistHelper.ClientName;
 
-            if (_youTubeMusicOptions is null)
+            if (string.IsNullOrEmpty(clientName))
             {
-                throw new InvalidOperationException("YouTubeMusicOptions is not configured.");
+                throw new InvalidOperationException(nameof(clientName));
             }
 
-            var response = new HttpRequestMessage(HttpMethod.Get, $"{playlistUrl}{id}");
-
-            if (response is null)
+            try
             {
-                throw new HttpRequestException("No response received from YouTube Music");
+                using (var response = _youTubeMusicPlaylistHelper.BuildPlaylistRequest())
+                {
+                    return await _youTubeMusicHttpService.SendRequestAsync<T>(clientName, response);
+                }
             }
+            catch (HttpRequestException ex)
+            {
+                throw new HttpRequestException("No playlist response received from YouTube Music", ex);
+            }
+        }
 
-            return await _youTubeMusicHttpService.SendRequestAsync<T>(clientName, response);
+        public Task<T> GetPlaylistAsync<T>(string id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

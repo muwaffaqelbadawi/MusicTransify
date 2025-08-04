@@ -1,9 +1,9 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MusicTransify.src.Contracts.DTOs.shared
+namespace MusicTransify.src.Contracts.DTOs.Request.Shared
 {
-    public record CallbackRequest
+    public class CallbackRequest
     {
         // For receiving query params from Http query
         [FromQuery(Name = "code")]

@@ -1,12 +1,11 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Services.Session;
 using MusicTransify.src.Utilities.Token;
-using MusicTransify.src.Configurations.Spotify;
-using Microsoft.Extensions.Options;
 using MusicTransify.src.Services.Cache;
-using MusicTransify.src.Contracts.Services.Http.Spotify;
+using MusicTransify.src.Contracts.Services.Playlist.Spotify;
+using MusicTransify.src.Contracts.DTOs.Response.Playlist.Spotify;
+using MusicTransify.src.Services.Session.Spotify;
 
 namespace MusicTransify.src.Controllers.Playlists.Spotify
 {
@@ -14,25 +13,22 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
     [Route("/spotify/playlist")] // Route: "/spotify/playlist"
     public class SpotifyPlaylistController : Controller
     {
-        private readonly SpotifyOptions _spotifyOptions;
-        private readonly SessionService _sessionService;
-        private readonly ISpotifyHttpService _spotifyHttpService;
+        private readonly ISpotifyPlaylistService _spotifyPlaylistService;
+        private readonly SpotifySessionService _sessionService;
         private readonly TokenHelper _tokenHelper;
         private readonly ICacheService _cacheService;
         private readonly ILogger<SpotifyPlaylistController> _logger;
 
         public SpotifyPlaylistController(
-            IOptions<SpotifyOptions> spotifyOptions,
-            SessionService sessionService,
-            ISpotifyHttpService spotifyHttpService,
+            ISpotifyPlaylistService spotifyPlaylistService,
+            SpotifySessionService sessionService,
             TokenHelper token,
             ICacheService cacheService,
             ILogger<SpotifyPlaylistController> logger
         )
         {
-            _spotifyOptions = spotifyOptions.Value;
+            _spotifyPlaylistService = spotifyPlaylistService;
             _sessionService = sessionService;
-            _spotifyHttpService = spotifyHttpService;
             _tokenHelper = token;
             _cacheService = cacheService;
             _logger = logger;
@@ -41,15 +37,11 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
         [HttpGet("")] // Route: "/spotify/playlist"
         public async Task<IActionResult> GetPlaylistsAsync()
         {
-            var clientName = _spotifyOptions.ClientName;
-            string apiBaseUri = _spotifyOptions.ApiBaseUri;
-            string endPoint = _spotifyOptions.PlaylistEndpoind;
-
             // Use the log information
             _logger.LogInformation("Playlist controller accessed");
 
             // Get access token
-            var accessToken = _sessionService.GetTokenInfo("access_token");
+            string accessToken = _sessionService.GetTokenInfo("access_token") ?? string.Empty;
 
             // Check if access token exists in the session and is not null
             if (string.IsNullOrEmpty(accessToken))
@@ -93,50 +85,36 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
 
             try
             {
-                using (var response = await _spotifyHttpService.GetHttpResponseAsync(
-                    clientName,
-                    accessToken,
-                    apiBaseUri,
-                    endPoint
-                ))
+                // Deserialize playlist
+                var playlist = await _spotifyPlaylistService.GetPlaylistAsync<SpotifyPlaylistsResponseWrapper>();
+
+                if (playlist is null)
                 {
-                    if (response is null)
-                    {
-                        _logger.LogError("Null response received from HTTP service");
-                        return StatusCode(500, "Internal server error");
-                    }
-
-                    // Handling response error
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        _logger.LogWarning("Error fetching playlists: {StatusCode}", response.StatusCode);
-                        return StatusCode((int)response.StatusCode, $"Error fetching playlists: {response.StatusCode}");
-                    }
-
-                    // Getting result as a response
-                    var result = await response.Content.ReadAsStringAsync();
-
-                    try
-                    {
-                        // Deserialize playlist
-                        var playlists = JsonSerializer.Deserialize<JsonElement>(result);
-
-                        // Cache the response for 10 minutes
-                        await _cacheService.SetAsync(cacheKey, playlists, TimeSpan.FromMinutes(10));
-
-                        // Returning the playlists
-                        return Ok(playlists);
-                    }
-                    catch (JsonException ex)
-                    {
-                        _logger.LogError(ex, "Failed to parse Spotify playlists response: {Response}", result);
-                        return StatusCode(500, "Failed to parse playlists response from Spotify.");
-                    }
+                    _logger.LogError("Failed to deserialize playlist response.");
+                    return StatusCode(500, "Playlist not found");
                 }
+
+                if (playlist is null || playlist.Items is null)
+                {
+                    _logger.LogError("Failed to fetch playlists or received empty result.");
+                    return StatusCode(500, "Internal server error");
+                }
+
+                // Otherwise, return the actual playlists
+                _logger.LogInformation("Playlists fetched successfully. Caching result...");
+                await _cacheService.SetAsync(cacheKey, playlist, TimeSpan.FromMinutes(10));
+
+                _logger.LogInformation("Playlists response cached successfully.");
+                
+                // Cache the response for 10 minutes
+                await _cacheService.SetAsync(cacheKey, playlist, TimeSpan.FromMinutes(10));
+
+                // Returning the playlists
+                return Ok(playlist);
             }
-            catch (System.Exception)
+            catch (JsonException ex)
             {
-                _logger.LogError("An error occurred while fetching playlists from Spotify.");
+                _logger.LogError(ex, "An error occurred while fetching playlists from Spotify.");
                 return StatusCode(500, "Internal server error while fetching playlists.");
             }
         }

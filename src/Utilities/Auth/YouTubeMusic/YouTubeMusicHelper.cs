@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.Options;
 using MusicTransify.src.Configurations.YouTubeMusic;
-using MusicTransify.src.Contracts.DTOs.YouTubeMusic;
+using MusicTransify.src.Contracts.DTOs.Request.YouTubeMusic;
 using MusicTransify.src.Contracts.Helper.YouTubeMusic;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Utilities.Auth.Common;
@@ -81,7 +81,7 @@ namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
                 State = state
             };
 
-            return loginRequest.ToDictionary();
+            return loginRequest.ToMap();
         }
 
         public Dictionary<string, string> BuildCodeExchangeRequest(string code)
@@ -133,7 +133,7 @@ namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
                 RefreshTokenGrantType = refreshTokenGrantType
             };
 
-            return refreshTokenRequest.ToDictionary();
+            return refreshTokenRequest.ToMap();
         }
 
         public string ClientName => _options.ClientName;

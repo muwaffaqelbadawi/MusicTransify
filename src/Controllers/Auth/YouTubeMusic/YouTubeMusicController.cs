@@ -1,9 +1,9 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Contracts.DTOs.shared;
+using MusicTransify.src.Contracts.DTOs.Request.Shared;
 using MusicTransify.src.Services.Auth.YouTubeMusic;
-using MusicTransify.src.Services.Session;
+using MusicTransify.src.Services.Session.YouTubeMusic;
 using MusicTransify.src.Utilities.Token;
 
 namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
@@ -13,12 +13,12 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
     public class YouTubeMusicController : Controller
     {
         private readonly YouTubeMusicService _youTubeMusicService;
-        private readonly SessionService _sessionService;
+        private readonly YouTubeMusicSessionService _sessionService;
         private readonly TokenHelper _tokenHelper;
         private readonly ILogger<YouTubeMusicController> _logger;
         public YouTubeMusicController(
             YouTubeMusicService youTubeMusicService,
-            SessionService sessionService,
+            YouTubeMusicSessionService sessionService,
             TokenHelper tokenHelper,
             ILogger<YouTubeMusicController> logger
         )
@@ -53,7 +53,7 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
             // Receive the the access token
             var accessToken = await _youTubeMusicService.ExchangeAuthorizationCodeAsync(request.Code ?? string.Empty);
 
-            if (accessToken.ValueKind == JsonValueKind.Undefined)
+            if (accessToken is null)
             {
                 _logger.LogError("Failed to exchange authorization code for token.");
 
@@ -118,7 +118,7 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
                 // Receive the new access token Info
                 var newAccessToken = await _youTubeMusicService.GetNewTokenAsync(refreshToken);
 
-                if (newAccessToken.ValueKind == JsonValueKind.Undefined)
+                if (newAccessToken is null)
                 {
                     _logger.LogError("Failed to get new token using refresh token.");
 

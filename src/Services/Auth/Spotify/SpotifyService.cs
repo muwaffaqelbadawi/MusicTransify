@@ -1,16 +1,14 @@
 using System;
-using System.Text.Json;
 using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Auth.Spotify;
 using MusicTransify.src.Contracts.Services.Auth.Spotify;
 using MusicTransify.src.Contracts.Services.Http.Spotify;
+using MusicTransify.src.Contracts.DTOs.Response.Token.Spotify;
 
 namespace MusicTransify.src.Services.Auth.Spotify
 {
     public class SpotifyService : ISpotifyService
     {
-        // Remember to always inject the interface not the implementation
-        // This allows for easier testing and mocking
         private readonly ISpotifyHttpService _spotifyHttpService;
         private readonly SpotifyHelper _spotifyAuthHelper;
         private readonly AuthHelper _authHelper;
@@ -45,15 +43,12 @@ namespace MusicTransify.src.Services.Auth.Spotify
             return _authHelper.FormRedirectUrl(authUri, queryString);
         }
 
-        public async Task<JsonElement> ExchangeAuthorizationCodeAsync(string code)
+        public async Task<SpotifyTokenResponse> ExchangeAuthorizationCodeAsync(string code)
         {
             _logger.LogInformation("Accessing Exchanging authorization code function");
 
             // Build auth exchange query
             Dictionary<string, string> requestBody = _spotifyAuthHelper.BuildCodeExchangeRequest(code);
-
-            // Set client name
-            string clientName = _spotifyAuthHelper.ClientName;
 
             // Set tokenUri
             string tokenUri = _spotifyAuthHelper.TokenUri;
@@ -61,11 +56,19 @@ namespace MusicTransify.src.Services.Auth.Spotify
             try
             {
                 // Get access token
-                JsonElement accessToken = await _spotifyHttpService.PostFormUrlEncodedContentAsync(
-                clientName: clientName,
-                tokenUri: tokenUri,
-                requestBody: requestBody
+                var accessToken = await _spotifyHttpService.PostFormUrlEncodedContentAsync<SpotifyTokenResponse>(
+                    tokenUri: tokenUri,
+                    requestBody: requestBody
                 );
+
+                if (string.IsNullOrEmpty(tokenUri))
+                    throw new InvalidOperationException("Token URI is null or empty");
+
+                if (requestBody is null)
+                    throw new InvalidOperationException("Request body is null");
+
+                if (accessToken is null)
+                    throw new InvalidOperationException("Access token is null");
 
                 return accessToken;
             }
@@ -76,15 +79,12 @@ namespace MusicTransify.src.Services.Auth.Spotify
             }
         }
 
-        public async Task<JsonElement> GetNewTokenAsync(string refreshToken)
+        public async Task<SpotifyTokenResponse> GetNewTokenAsync(string refreshToken)
         {
             _logger.LogInformation("Accessing New token generation request function");
 
             // Build new token query
             Dictionary<string, string> requestBody = _spotifyAuthHelper.BuildRefreshTokenRequest(refreshToken);
-        
-            // Set client name
-            string clientName = _spotifyAuthHelper.ClientName;
 
             // Set tokenUri
             string tokenUri = _spotifyAuthHelper.TokenUri;
@@ -92,8 +92,7 @@ namespace MusicTransify.src.Services.Auth.Spotify
             try
             {
                 // Get new access token
-                JsonElement newAccessToken = await _spotifyHttpService.PostFormUrlEncodedContentAsync(
-                    clientName: clientName,
+                var newAccessToken = await _spotifyHttpService.PostFormUrlEncodedContentAsync<SpotifyTokenResponse>(
                     tokenUri: tokenUri,
                     requestBody: requestBody
                 );

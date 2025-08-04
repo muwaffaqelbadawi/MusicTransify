@@ -2,20 +2,25 @@ using System;
 using System.Net;
 using System.Text.Json;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Options;
 using MusicTransify.src.Contracts.Services.Http.Spotify;
+using MusicTransify.src.Configurations.Spotify;
 
 namespace MusicTransify.src.Services.Http.Spotify
 {
     public class SpotifyHttpService : ISpotifyHttpService
     {
         private readonly HttpClient _client;
+        private readonly SpotifyOptions _options;
         private readonly ILogger<SpotifyHttpService> _logger;
         public SpotifyHttpService(
             HttpClient client,
+            IOptions<SpotifyOptions> options,
             ILogger<SpotifyHttpService> logger
         )
         {
             _client = client;
+            _options = options.Value;
             _logger = logger;
         }
 
@@ -25,26 +30,33 @@ namespace MusicTransify.src.Services.Http.Spotify
         };
 
         public async Task<T> SendRequestAsync<T>(
-            string clientName,
             HttpRequestMessage request
         )
         {
-            _logger?.LogInformation("Sending HTTP request to {clientName} with {method} {url}", clientName, request.Method, request.RequestUri);
+            string clientName = _options.ClientName;
+
+            _logger?.LogInformation(
+                "Sending HTTP request to {clientName} with {method} {url}",
+                clientName,
+                request.Method,
+                request.RequestUri
+            );
 
             var response = await _client.SendAsync(request);
 
             if (!response.IsSuccessStatusCode)
             {
-                var error = await response.Content.ReadAsStringAsync();
-                _logger?.LogError("HTTP request to {clientName} failed with status code {statusCode} and message: {error}", clientName, response.StatusCode, error);
+                string error = await response.Content.ReadAsStringAsync();
+                _logger?.LogError(
+                    "HTTP request to {clientName} failed with status code {statusCode} and message: {error}",
+                    clientName,
+                    response.StatusCode,
+                    error
+                );
                 throw new HttpRequestException($"Request failed: {response.StatusCode}");
             }
 
-            var content = await response.Content.ReadAsStringAsync();
-
-            #if DEBUG
-            _logger?.LogDebug("Received response from {clientName}: {content}", clientName, content);
-            #endif
+            string content = await response.Content.ReadAsStringAsync();
 
             try
             {
@@ -52,7 +64,11 @@ namespace MusicTransify.src.Services.Http.Spotify
 
                 if (result is null)
                 {
-                    _logger?.LogError("Failed to deserialize response from {clientName}. Content: {content}", clientName, content);
+                    _logger?.LogError(
+                        "Failed to deserialize response from {clientName}. Content: {content}",
+                        clientName,
+                        content
+                    );
                     throw new JsonException("Deserialized result is null.");
                 }
 
@@ -60,13 +76,16 @@ namespace MusicTransify.src.Services.Http.Spotify
             }
             catch (JsonException ex)
             {
-                _logger?.LogError(ex, "JSON deserialization failed for {clientName}. Content: {content}", clientName, content);
-                throw;
+                _logger?.LogError(ex,
+                "JSON deserialization failed for {clientName}. Content: {content}",
+                clientName,
+                content
+                );
+                throw new JsonException("Failed to deserialize response from Spotify.", ex);
             }
         }
 
-        public async Task<JsonElement> PostFormUrlEncodedContentAsync(
-            string clientName,
+        public async Task<T> PostFormUrlEncodedContentAsync<T>(
             string tokenUri,
             Dictionary<string, string> requestBody
         )
@@ -94,7 +113,10 @@ namespace MusicTransify.src.Services.Http.Spotify
                         if (!response.StatusCode.Equals(HttpStatusCode.OK))
                         {
                             _logger?.LogWarning("POST {TokenUri} failed: {StatusCode} {Content}",
-                            tokenUri, response.StatusCode, content);
+                            tokenUri,
+                            response.StatusCode,
+                            content
+                        );
 
                             throw new HttpRequestException(
                                 $"HTTP Request failed with status: {response.StatusCode}"
@@ -104,82 +126,49 @@ namespace MusicTransify.src.Services.Http.Spotify
                         try
                         {
                             // return Token Info
-                            return JsonSerializer.Deserialize<JsonElement>(content);
+                            return JsonSerializer.Deserialize<T>(content) ??
+                                throw new JsonException(nameof(content));
                         }
 
                         catch (JsonException ex)
                         {
                             _logger?.LogError(ex, "Failed to deserialize response: {Content}", content);
-                            throw new JsonException("Failed to parse Spotify response", ex);
+                            throw new JsonException($"Failed to parse Spotify response, {nameof(content)}", ex);
                         }
                     }
                 }
 
                 catch (Exception ex) when (ex is not HttpRequestException && ex is not JsonException)
                 {
-                    _logger?.LogError(ex, "Unexpected error during POST to {TokenUri}", tokenUri);
+                    _logger?.LogError(ex, "Unexpected error during POST to {tokenUri}", tokenUri);
                     throw;
                 }
             }
 
-            throw new InvalidOperationException($"{clientName} is null");
+            throw new InvalidOperationException(nameof(tokenUri));
         }
 
-        public async Task<HttpResponseMessage> GetHttpResponseAsync(
-            string clientName,
+        public HttpRequestMessage GetRequest(
             string accessToken,
-            string apiBaseUri,
-            string endPoint
+            string Uri
         )
         {
-            if (_client is not null)
-            {
-                if (string.IsNullOrEmpty(accessToken))
-                {
-                    _logger?.LogWarning("Access token is null or empty for GET {Endpoint}", endPoint);
-                    throw new InvalidOperationException("Access token in is null or empty");
-                }
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{Uri}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-                if (string.IsNullOrEmpty(apiBaseUri))
-                {
-                    _logger?.LogWarning("apiBaseUri is null or empty");
-                    throw new InvalidOperationException("apiBaseUri in is null or empty");
-                }
+            return request;
+        }
 
-                if (string.IsNullOrEmpty(endPoint))
-                {
-                    _logger?.LogWarning("endPoint is null or empty");
-                    throw new InvalidOperationException("endPoint in is null or empty");
-                }
+        public HttpRequestMessage GetRequestWithId(
+            string accessToken,
+            string Uri,
+            string Id
+        )
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{Uri}/{Id}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-                var url = $"{apiBaseUri}{endPoint}";
-
-                var request = new HttpRequestMessage(HttpMethod.Get, url);
-
-                // Set the Authorization header with the access token
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-                try
-                {
-                    // Remove the using block - let the caller dispose the response
-                    var response = await _client.SendAsync(request);
-                    
-                    if (!response.StatusCode.Equals(HttpStatusCode.OK))
-                    {
-                        string errorContent = await response.Content.ReadAsStringAsync();
-                        _logger?.LogWarning("GET {Url} failed: {StatusCode} {ErrorContent}", url, response.StatusCode, errorContent);
-                    }
-
-                    return response;
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "Failed to send GET request to {Url}", url);
-                    throw;
-                }
-            }
-
-            throw new InvalidOperationException($"{clientName} is null");
+            return request;
         }
     }
 }

@@ -1,10 +1,10 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Services.Session;
+using MusicTransify.src.Services.Session.Spotify;
 using MusicTransify.src.Services.Auth.Spotify;
 using MusicTransify.src.Utilities.Token;
-using MusicTransify.src.Contracts.DTOs.shared;
+using MusicTransify.src.Contracts.DTOs.Request.Shared;
 
 namespace MusicTransify.src.Controllers.Auth.Spotify
 {
@@ -14,13 +14,13 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
     public class SpotifyController : Controller
     {
         private readonly SpotifyService _spotifyService;
-        private readonly SessionService _sessionService;
+        private readonly SpotifySessionService _sessionService;
         private readonly TokenHelper _tokenHelper;
         private readonly ILogger<SpotifyController> _logger;
 
         public SpotifyController(
             SpotifyService spotifyService,
-            SessionService sessionService,
+            SpotifySessionService sessionService,
             TokenHelper tokenHelper,
             ILogger<SpotifyController> logger
         )
@@ -53,7 +53,7 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             // Receive the access token
             var accessToken = await _spotifyService.ExchangeAuthorizationCodeAsync(request.Code ?? string.Empty);
 
-            if (accessToken.ValueKind == JsonValueKind.Undefined)
+            if (accessToken is null)
             {
                 _logger.LogError("Failed to exchange authorization code for token.");
 
@@ -63,13 +63,16 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             // Store token assets in session
             _sessionService.Store(accessToken);
 
-            _logger.LogInformation("accessToken successfully stored in session redirecting...");
+            _logger.LogInformation("accessToken successfully stored in session redirecting to playlist route...");
+
+            _logger.LogInformation("Token stored: {accessToken}", accessToken?.AccessToken);
+
+
+            // Redirect to Spotify playlist controller
+            return Redirect("/spotify/playlist");
 
             // Redirect back to playlists
-            // return Redirect("/spotify/playlist");
-
-            // Redirect back to playlists
-            return Ok("Access token granted for Spotify Auth access and stored successfully. You can now access your playlists.");
+            // return Ok("Access token granted for Spotify Auth access and stored successfully. You can now access your playlists.");
         }
 
         [HttpGet("refreshToken")] // Route: "/refresh_token"
@@ -86,10 +89,18 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             // Set refresh_token
             var refreshToken = _sessionService.GetTokenInfo("refresh_token");
 
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                _logger.LogWarning("Refresh token missing from session.");
+
+                // Return the JSON code message if not exists
+                return BadRequest("The 'refresh_token' parameter is missing.");
+            }
+
             if (string.IsNullOrEmpty(strExpiresIn))
             {
-                _logger.LogWarning("The 'expires_in' parameter is missing or invalid in the session.");
-                return BadRequest("The 'expires_in' parameter is missing or invalid in the session.");
+                _logger.LogWarning("The 'expires_in' parameter is missing.");
+                return BadRequest("The 'expires_in' parameter is missing.");
             }
 
             long expiresIn = _tokenHelper.ParseToLong(strExpiresIn);
@@ -106,29 +117,35 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             // Check If the access_token is expired
             if (_tokenHelper.IsExpired(expiresIn))
             {
-                // Check if refresh token does not exist or invalid in the session
                 if (string.IsNullOrEmpty(refreshToken))
                 {
                     _logger.LogWarning("Refresh token missing from session.");
 
                     // Return the JSON code message if not exists
-                    return BadRequest("The 'refresh_token' parameter is missing or invalid in the session.");
+                    return BadRequest("The 'refresh_token' parameter is missing.");
                 }
 
-                // Receive the new access token Info
-                var newAccessToken = await _spotifyService.GetNewTokenAsync(refreshToken);
-
-                if (newAccessToken.ValueKind == JsonValueKind.Undefined)
+                try
                 {
-                    _logger.LogError("Failed to get new token using refresh token.");
+                    // Receive the new access token Info
+                    var newAccessToken = await _spotifyService.GetNewTokenAsync(refreshToken);
 
-                    return BadRequest("Failed to get new token");
+                    if (newAccessToken is null)
+                    {
+                        _logger.LogError("Failed to get new token using refresh token.");
+
+                        return BadRequest("Failed to get new token");
+                    }
+
+                    // Store the new token in session
+                    _sessionService.Store(newAccessToken);
+
+                    _logger.LogInformation("Token successfully refreshed and stored in session. Redirecting...");
                 }
-
-                // Store the new token in session
-                _sessionService.Store(newAccessToken);
-
-                _logger.LogInformation("Token successfully refreshed and stored in session. Redirecting...");
+                catch (JsonException)
+                {
+                    throw new JsonException("Failed to receive Spotify new access token");
+                }
 
                 // Successfully refreshed token, redirect back to playlists
                 // return Redirect("/spotify/playlist");
@@ -155,10 +172,8 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
                 return BadRequest("Missing 'State' parameter in callback request.");
             }
 
-            if (string.IsNullOrEmpty(request.Scope))
-            {
-                _logger.LogWarning("Missing 'Scope' parameter in callback request.");
-            }
+            _logger.LogInformation("No scope returned; assuming all requested scopes were granted.");
+
 
             if (!string.IsNullOrEmpty(request.Error))
             {
