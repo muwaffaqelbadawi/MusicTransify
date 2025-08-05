@@ -9,7 +9,7 @@ using MusicTransify.src.Contracts.DTOs.Request.Shared;
 namespace MusicTransify.src.Controllers.Auth.Spotify
 {
     [ApiController]
-    [Route("spotify")] // Route "/spotify"
+    [Route("api/spotify")]
 
     public class SpotifyController : Controller
     {
@@ -31,7 +31,7 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             _logger = logger;
         }
 
-        [HttpGet("login")] // Route "/spotify/login"
+        [HttpGet("login")]
         public IActionResult Login()
         {
             // Set redirect URI
@@ -42,7 +42,7 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             return Redirect(redirectUri);
         }
 
-        [HttpGet("callback")] // Route: "/spotify/callback"
+        [HttpGet("callback")]
         public async Task<IActionResult> CallbackAsync([FromQuery] CallbackRequest request)
         {
             _logger.LogInformation("This is the callback route");
@@ -69,13 +69,13 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
 
 
             // Redirect to Spotify playlist controller
-            return Redirect("/spotify/playlist");
+            return Redirect("/api/spotify/playlist");
 
             // Redirect back to playlists
             // return Ok("Access token granted for Spotify Auth access and stored successfully. You can now access your playlists.");
         }
 
-        [HttpGet("refreshToken")] // Route: "/refresh_token"
+        [HttpGet("refreshToken")]
         public async Task<IActionResult> RefreshTokenAsync()
         {
             _logger.LogInformation("This is the refreshToken route");
@@ -86,15 +86,15 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             // Set expiresIn
             var strExpiresIn = _sessionService.GetTokenInfo("expires_in");
 
-            // Set refresh_token
-            var refreshToken = _sessionService.GetTokenInfo("refresh_token");
+            // Set refreshToken
+            var refreshToken = _sessionService.GetTokenInfo("refreshToken");
 
             if (string.IsNullOrEmpty(refreshToken))
             {
                 _logger.LogWarning("Refresh token missing from session.");
 
                 // Return the JSON code message if not exists
-                return BadRequest("The 'refresh_token' parameter is missing.");
+                return BadRequest("The 'refreshToken' parameter is missing.");
             }
 
             if (string.IsNullOrEmpty(strExpiresIn))
@@ -111,7 +111,7 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
                 _logger.LogWarning("Access token missing from session; redirecting to login.");
 
                 // Redirect back to login route
-                return Redirect("/spotify/login");
+                return Redirect("/api/spotify/login");
             }
 
             // Check If the access_token is expired
@@ -119,10 +119,10 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             {
                 if (string.IsNullOrEmpty(refreshToken))
                 {
-                    _logger.LogWarning("Refresh token missing from session.");
+                    _logger.LogWarning("refreshToken value missing from session.");
 
                     // Return the JSON code message if not exists
-                    return BadRequest("The 'refresh_token' parameter is missing.");
+                    return BadRequest("The 'refreshToken' parameter is missing.");
                 }
 
                 try
@@ -147,8 +147,6 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
                     throw new JsonException("Failed to receive Spotify new access token");
                 }
 
-                // Successfully refreshed token, redirect back to playlists
-                // return Redirect("/spotify/playlist");
                 return Ok("Access token granted for Spotify Auth access and stored successfully. You can now access your playlists.");
             }
 

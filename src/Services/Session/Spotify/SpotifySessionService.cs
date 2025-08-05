@@ -104,7 +104,7 @@ namespace MusicTransify.src.Services.Session.Spotify
 
             if (!string.IsNullOrEmpty(refreshToken))
             {
-                session.SetString("refresh_token", _protector.Protect(refreshToken));
+                session.SetString("refreshToken", _protector.Protect(refreshToken));
             }
 
             session.SetString("expires_in", newExpiresIn);
@@ -153,7 +153,7 @@ namespace MusicTransify.src.Services.Session.Spotify
         public string? GetAccessToken() => GetProtectedToken("access_token");
 
         // 9
-        public string? GetRefreshToken() => GetProtectedToken("refresh_token");
+        public string? GetRefreshToken() => GetProtectedToken("refreshToken");
 
         // 10
         public DateTime? GetExpiration()
@@ -181,7 +181,7 @@ namespace MusicTransify.src.Services.Session.Spotify
 
                 "token_type" => session.GetString("token_type"),
 
-                "refresh_token" => session.GetString("refresh_token"),
+                "refreshToken" => session.GetString("refreshToken"),
 
                 "expires_in" => session.GetString("expires_in"),
 

@@ -3,42 +3,43 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using MusicTransify.src.Utilities.Token;
 using MusicTransify.src.Services.Cache;
-using MusicTransify.src.Contracts.Services.Playlist.Spotify;
-using MusicTransify.src.Contracts.DTOs.Response.Playlist.Spotify;
-using MusicTransify.src.Services.Session.Spotify;
+using MusicTransify.src.Contracts.Services.Playlist.YouTubeMusic;
+using MusicTransify.src.Contracts.DTOs.Response.Playlist.YouTubeMusic;
+using MusicTransify.src.Contracts.Session.YouTubeMusic;
 
-namespace MusicTransify.src.Controllers.Playlists.Spotify
+namespace MusicTransify.src.Controllers.Playlists.YouTubeMusic
 {
     [ApiController]
-    [Route("/spotify/playlist")] // Route: "/spotify/playlist"
-    public class SpotifyPlaylistController : Controller
+    [Route("api/youtube/[controller]")]
+    public class PlaylistController : Controller
     {
-        private readonly ISpotifyPlaylistService _spotifyPlaylistService;
-        private readonly SpotifySessionService _sessionService;
+        private readonly IYouTubeMusicPlaylistService _playlistService;
+        private readonly IYouTubeMusicSessionService _sessionService;
         private readonly TokenHelper _tokenHelper;
         private readonly ICacheService _cacheService;
-        private readonly ILogger<SpotifyPlaylistController> _logger;
+        private readonly ILogger<PlaylistController> _logger;
 
-        public SpotifyPlaylistController(
-            ISpotifyPlaylistService spotifyPlaylistService,
-            SpotifySessionService sessionService,
+        public PlaylistController
+        (
+            IYouTubeMusicPlaylistService playlistService,
+            IYouTubeMusicSessionService sessionService,
             TokenHelper token,
             ICacheService cacheService,
-            ILogger<SpotifyPlaylistController> logger
+            ILogger<PlaylistController> logger
+
         )
         {
-            _spotifyPlaylistService = spotifyPlaylistService;
+            _playlistService = playlistService;
             _sessionService = sessionService;
             _tokenHelper = token;
             _cacheService = cacheService;
             _logger = logger;
         }
 
-        [HttpGet("")] // Route: "/spotify/playlist"
+        [HttpGet("")]
         public async Task<IActionResult> GetPlaylistsAsync()
         {
-            // Use the log information
-            _logger.LogInformation("Playlist controller accessed");
+            _logger.LogInformation("YouTubeMusic PlaylistController hit ✅");
 
             // Get access token
             string accessToken = _sessionService.GetTokenInfo("access_token") ?? string.Empty;
@@ -48,8 +49,8 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
             {
                 _logger.LogWarning("Missing 'accessToken' parameter from the session.");
 
-                // Redirect back to Spotify login page
-                return Redirect("/spotify/login");
+                // Redirect back to YouTube Music login page
+                return Redirect("/youtube/login");
             }
 
             // Get token expiration time
@@ -70,11 +71,11 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
                 _logger.LogWarning("Token expired, need to refresh.");
 
                 // Redirect to refresh token
-                return Redirect("/spotify/refresh_token"); // route "/spotify/refresh_token"
+                return Redirect("/youtube/refreshToken");
             }
 
             // Caching
-            var cacheKey = $"Spotify:User:{accessToken}:Playlists";
+            var cacheKey = $"YouTubeMusic:User:{accessToken}:Playlists";
             var cachedPlaylists = await _cacheService.GetAsync<JsonElement>(cacheKey);
 
             if (cachedPlaylists.ValueKind != JsonValueKind.Undefined)
@@ -86,35 +87,25 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
             try
             {
                 // Deserialize playlist
-                var playlist = await _spotifyPlaylistService.GetPlaylistAsync<SpotifyPlaylistsResponseWrapper>();
+                var playlist = await _playlistService.GetPlaylistAsync<YouTubeMusicPlaylistResponseWrapper>();
 
-                if (playlist is null)
+                if (playlist?.Items is null)
                 {
-                    _logger.LogError("Failed to deserialize playlist response.");
+                    _logger.LogError("No playlists found.");
                     return StatusCode(500, "Playlist not found");
                 }
 
-                if (playlist is null || playlist.Items is null)
-                {
-                    _logger.LogError("Failed to fetch playlists or received empty result.");
-                    return StatusCode(500, "Internal server error");
-                }
-
-                // Otherwise, return the actual playlists
-                _logger.LogInformation("Playlists fetched successfully. Caching result...");
-                await _cacheService.SetAsync(cacheKey, playlist, TimeSpan.FromMinutes(10));
-
-                _logger.LogInformation("Playlists response cached successfully.");
-                
                 // Cache the response for 10 minutes
                 await _cacheService.SetAsync(cacheKey, playlist, TimeSpan.FromMinutes(10));
+
+                _logger.LogInformation("Playlists cached and returned.");
 
                 // Returning the playlists
                 return Ok(playlist);
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex, "An error occurred while fetching playlists from Spotify.");
+                _logger.LogError(ex, "An error occurred while fetching playlists from YouTubeMusic.");
                 return StatusCode(500, "Internal server error while fetching playlists.");
             }
         }

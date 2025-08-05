@@ -1,24 +1,23 @@
 using System;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using MusicTransify.src.Contracts.DTOs.Request.Shared;
+using MusicTransify.src.Contracts.Session.YouTubeMusic;
 using MusicTransify.src.Services.Auth.YouTubeMusic;
-using MusicTransify.src.Services.Session.YouTubeMusic;
 using MusicTransify.src.Utilities.Token;
 
 namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
 {
     [ApiController]
-    [Route("youtube")] // Route /youtube
+    [Route("api/youtube")]
     public class YouTubeMusicController : Controller
     {
         private readonly YouTubeMusicService _youTubeMusicService;
-        private readonly YouTubeMusicSessionService _sessionService;
+        private readonly IYouTubeMusicSessionService _sessionService;
         private readonly TokenHelper _tokenHelper;
         private readonly ILogger<YouTubeMusicController> _logger;
         public YouTubeMusicController(
             YouTubeMusicService youTubeMusicService,
-            YouTubeMusicSessionService sessionService,
+            IYouTubeMusicSessionService sessionService,
             TokenHelper tokenHelper,
             ILogger<YouTubeMusicController> logger
         )
@@ -29,7 +28,7 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
             _logger = logger;
         }
 
-        [HttpGet("login")] // Route: "/youtube/login"
+        [HttpGet("login")]
         public IActionResult Login()
         {
             _logger.LogInformation("This is YouTube Music Login route");
@@ -42,7 +41,7 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
             return Redirect(redirectUri);
         }
 
-        [HttpGet("callback")] // Route: "/youtube/callback"
+        [HttpGet("callback")]
         public async Task<IActionResult> CallbackAsync([FromQuery] CallbackRequest request)
         {
             _logger.LogInformation("This is the callback route");
@@ -66,13 +65,10 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
             _logger.LogInformation("accessToken successfully stored in session redirecting...");
 
             // Redirect back to playlists
-            // return Redirect("/youtube/playlist");
-
-            // Redirect back to playlists
             return Ok("Access token granted for YouTube Auth access and stored successfully. You can now access your playlists.");
         }
 
-        [HttpGet("refreshToken")] // Route: "/refresh_token"
+        [HttpGet("refreshToken")]
         public async Task<IActionResult> RefreshTokenAsync()
         {
             _logger.LogInformation("This is the refreshToken route");
@@ -83,8 +79,8 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
             // Set expiresIn
             var strExpiresIn = _sessionService.GetTokenInfo("expires_in");
 
-            // Set refresh_token
-            var refreshToken = _sessionService.GetTokenInfo("refresh_token");
+            // Set refreshToken
+            var refreshToken = _sessionService.GetTokenInfo("refreshToken");
 
             if (string.IsNullOrEmpty(strExpiresIn))
             {
@@ -100,7 +96,7 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
                 _logger.LogWarning("Access token missing from session; redirecting to login.");
 
                 // Redirect back to login route
-                return Redirect("login");
+                return Redirect("/api/youtube/login");
             }
 
             // Check If the access_token is expired
@@ -112,7 +108,7 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
                     _logger.LogWarning("Refresh token missing from session.");
 
                     // Return the JSON code message if not exists
-                    return BadRequest("The 'refresh_token' parameter is missing or invalid in the session.");
+                    return BadRequest("The 'refreshToken' parameter is missing or invalid in the session.");
                 }
 
                 // Receive the new access token Info
@@ -130,14 +126,11 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
 
                 _logger.LogInformation("Token successfully refreshed and stored in session. Redirecting...");
 
-                // Successfully refreshed token, redirect back to playlists
-                // return Redirect("/youtube/playlist");
                 return Ok("Access token granted for YouTube Auth access and stored successfully. You can now access your playlists.");
             }
 
             _logger.LogInformation("Token is still valid, no refresh needed.");
 
-            // Redirect
             return Ok("Token is still valid, no refresh needed.");
         }
 

@@ -29,9 +29,7 @@ namespace MusicTransify.src.Configurations.Spotify
         public string ResponseType { get; set; } = string.Empty;
         [JsonPropertyName("show_dialog")]
         public string ShowDialog { get; set; } = string.Empty;
-        [JsonPropertyName("playlist_endpoint")]
-        public string PlaylistEndpoint { get; set; } = string.Empty;
-        [JsonPropertyName("playlist_url")]
+        [JsonPropertyName("playlist_uri")]
         public string PlaylistUri { get; set; } = string.Empty;
         [JsonPropertyName("scope")]
         public string[] Scope { get; set; } = Array.Empty<string>();

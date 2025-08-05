@@ -96,7 +96,7 @@ namespace MusicTransify.src.Services.Session.YouTubeMusic
 
             if (!string.IsNullOrEmpty(refreshToken))
             {
-                session.SetString("refresh_token", _protector.Protect(refreshToken));
+                session.SetString("refreshToken", _protector.Protect(refreshToken));
             }
 
             session.SetString("expires_in", newExpiresIn);
@@ -138,7 +138,7 @@ namespace MusicTransify.src.Services.Session.YouTubeMusic
         }
 
         public string? GetAccessToken() => GetProtectedToken("access_token");
-        public string? GetRefreshToken() => GetProtectedToken("refresh_token");
+        public string? GetRefreshToken() => GetProtectedToken("refreshToken");
         public DateTime? GetExpiration()
         {
             var expiresAt = _httpContextAccessor.HttpContext?.Session.GetString("expires_at");
@@ -163,7 +163,7 @@ namespace MusicTransify.src.Services.Session.YouTubeMusic
 
                 "token_type" => session.GetString("token_type"),
 
-                "refresh_token" => session.GetString("refresh_token"),
+                "refreshToken" => session.GetString("refreshToken"),
 
                 "expires_in" => session.GetString("expires_in"),
 

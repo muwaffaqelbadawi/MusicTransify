@@ -55,6 +55,12 @@ namespace MusicTransify.src
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // ========== Kestrel configured by default ========== //
+            // Modern systems reject HTTP by default
+            // You must use HTTPS in launchSettings.json
+            // You should accept the HTTPS certificate for the dev environment
+
+
             // ========== Configuration Urls ========== //
             // Frontend URL
             var frontendUrl = builder.Configuration.GetSection("Application:Frontend").Value ?? "";

@@ -24,8 +24,8 @@ namespace MusicTransify.src.Controllers.Home
                 <body>
                     <h1>Welcome to MusicTransify</h1>
                     <div>
-                        <a href='/spotify/login' style='padding: 10px; background: green; color: white;'>Login with Spotify</a>
-                        <a href='/youtube/login' style='padding: 10px; background: red; color: white;'>Login with YouTube</a>
+                        <a href='api/spotify/login' style='padding: 10px; background: green; color: white;'>Login with Spotify</a>
+                        <a href='api/youtube/login' style='padding: 10px; background: red; color: white;'>Login with YouTube</a>
                     </div>
                 </body>
                 </html>",

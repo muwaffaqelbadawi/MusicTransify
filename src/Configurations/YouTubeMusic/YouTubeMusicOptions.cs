@@ -36,10 +36,7 @@ namespace MusicTransify.src.Configurations.YouTubeMusic
         [JsonPropertyName("prompt")]
         public string Prompt { get; set; } = string.Empty;
         [JsonPropertyName("playlist_endpoint")]
-        public string PlaylistEndpoint { get; set; } = string.Empty;
-        [JsonPropertyName("playlist_url")]
-        public string PlaylistUrl { get; set; } = string.Empty;
-        
+        public string PlaylistUri { get; set; } = string.Empty;
         [JsonPropertyName("scope")]
         public string[] Scope { get; set; } = Array.Empty<string>();
         [JsonPropertyName("include_granted_scopes")]
