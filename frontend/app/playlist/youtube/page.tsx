@@ -1,30 +1,26 @@
+// app/playlist/youtube/page.tsx
+
 "use client";
 
-import {
-  SpotifyPlaylistResponse,
-  SpotifyPlaylistsResponseWrapper,
-} from "@/types/spotify";
 import { useEffect, useState } from "react";
 
-export default function SpotifyPlaylists() {
-  const [playlists, setPlaylists] = useState<SpotifyPlaylistResponse[]>([]);
+import {
+  YouTubeMusicPlaylistResponse,
+  YouTubeMusicPlaylistsResponseWrapper
+} from "@/types/youtube"; // Adjust path as needed
+
+export default function YouTubeMusicPlaylists() {
+  const [playlists, setPlaylists] = useState<YouTubeMusicPlaylistResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchlaylists = async () => {
       try {
-
         const response = await fetch(
-          "http://localhost:5543/api/spotify/playlist",
-          {
-            method: "GET",
-            credentials: "include",
-          }
+          "http://localhost:5543/api/youtube/playlist"
         );
-        
-        const data: SpotifyPlaylistsResponseWrapper = await response.json();
-        setPlaylists(data.items);
-
+        const data = await response.json();
+        setPlaylists(data);
       } catch (error) {
         console.error("Error fetching playlists:", error);
       } finally {
@@ -35,11 +31,11 @@ export default function SpotifyPlaylists() {
     fetchlaylists();
   }, []);
 
-  if (loading) return <p>Loading Spotify playlists...</p>;
+  if (loading) return <p>Loading YouTubeMusic playlists...</p>;
 
   return (
     <div>
-      <h1>🎧 Spotify Playlists</h1>
+      <h1>🎧 YouTubeMusic Playlists</h1>
       <ul>
         {playlists.map((playlist) => (
           <li key={playlist.id}>

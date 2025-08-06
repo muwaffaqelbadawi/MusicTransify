@@ -39,6 +39,7 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
         {
             _logger.LogInformation("Spotify PlaylistController hit ✅");
 
+
             // Get access token
             string accessToken = _sessionService.GetTokenInfo("access_token") ?? string.Empty;
 
@@ -48,7 +49,7 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
                 _logger.LogWarning("Missing 'accessToken' parameter from the session.");
 
                 // Redirect back to Spotify login page
-                return Redirect("/spotify/login");
+                return Redirect("/api/spotify/login");
             }
 
             // Get token expiration time
@@ -69,7 +70,7 @@ namespace MusicTransify.src.Controllers.Playlists.Spotify
                 _logger.LogWarning("Token expired, need to refresh.");
 
                 // Redirect to refresh token
-                return Redirect("/spotify/refreshToken");
+                return Redirect("/api/spotify/refreshToken");
             }
 
             // Caching

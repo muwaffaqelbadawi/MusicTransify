@@ -1,10 +1,10 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Services.Session.Spotify;
 using MusicTransify.src.Services.Auth.Spotify;
 using MusicTransify.src.Utilities.Token;
 using MusicTransify.src.Contracts.DTOs.Request.Shared;
+using MusicTransify.src.Contracts.Session.Spotify;
 
 namespace MusicTransify.src.Controllers.Auth.Spotify
 {
@@ -14,13 +14,13 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
     public class SpotifyController : Controller
     {
         private readonly SpotifyService _spotifyService;
-        private readonly SpotifySessionService _sessionService;
+        private readonly ISpotifySessionService _sessionService;
         private readonly TokenHelper _tokenHelper;
         private readonly ILogger<SpotifyController> _logger;
 
         public SpotifyController(
             SpotifyService spotifyService,
-            SpotifySessionService sessionService,
+            ISpotifySessionService sessionService,
             TokenHelper tokenHelper,
             ILogger<SpotifyController> logger
         )
@@ -67,9 +67,12 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
 
             _logger.LogInformation("Token stored: {accessToken}", accessToken?.AccessToken);
 
-
             // Redirect to Spotify playlist controller
-            return Redirect("/api/spotify/playlist");
+            // You need to redirect to the frontend
+            // To render the playlist
+            return Redirect("http://localhost:3000/playlist/spotify");
+
+            // return Redirect("/api/spotify/playlist");
 
             // Redirect back to playlists
             // return Ok("Access token granted for Spotify Auth access and stored successfully. You can now access your playlists.");
