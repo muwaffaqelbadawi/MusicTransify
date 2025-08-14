@@ -1,5 +1,5 @@
 using System;
-using MusicTransify.src.Api.Endpoints.DTOs.Responses.Playlists.YouTubeMusic;
+using MusicTransify.src.Api.YouTubeMusic.Playlists.Responses;
 using MusicTransify.src.Contracts.Services.Http.YouTubeMusic;
 using MusicTransify.src.Contracts.Services.Playlists.YouTubeMusic;
 using MusicTransify.src.Contracts.Utilities.YouTubeMusic;

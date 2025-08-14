@@ -1,5 +1,6 @@
 using System;
-using MusicTransify.src.Api.Endpoints.DTOs.Requests.Auth.Spotify;
+using MusicTransify.src.Api.Spotify.Login.Requests;
+using MusicTransify.src.Api.Spotify.Token.Requests;
 using MusicTransify.src.Contracts.Utilities.Spotify;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Utilities.Auth.Common;
@@ -91,7 +92,7 @@ namespace MusicTransify.src.Utilities.Auth.Spotify
             // Set Client Secret
             string clientSecret = _options.ClientSecret;
 
-            SpotifyTokenExchangeRequestDto CodeExchangeRequest = new()
+            SpotifyTokenRequestDto CodeExchangeRequest = new()
             {
                 Code = code,
                 GrantType = grantType,
@@ -116,7 +117,7 @@ namespace MusicTransify.src.Utilities.Auth.Spotify
             // Set Client Secret
             string clientSecret = _options.ClientSecret;
 
-            SpotifyRefreshTokenRequestDto refreshTokenRequest = new()
+            SpotifyNewTokenRequestDto refreshTokenRequest = new()
             {
                 GrantType = refreshTokenGrantType,
                 RefreshToken = refreshToken,

@@ -1,5 +1,5 @@
 using System;
-using MusicTransify.src.Api.Endpoints.DTOs.Responses.Token.YouTubeMusic;
+using MusicTransify.src.Api.YouTubeMusic.Token.Responses;
 
 namespace MusicTransify.src.Contracts.Services.Auth.YouTubeMusic
 {

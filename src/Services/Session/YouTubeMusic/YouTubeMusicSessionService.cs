@@ -1,7 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
-using MusicTransify.src.Api.Endpoints.DTOs.Responses.Token.YouTubeMusic;
+using MusicTransify.src.Api.YouTubeMusic.Token.Responses;
 using MusicTransify.src.Contracts.Session.YouTubeMusic;
 using MusicTransify.src.Utilities.Token;
 

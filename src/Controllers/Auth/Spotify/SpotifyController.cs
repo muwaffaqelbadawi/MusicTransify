@@ -3,8 +3,8 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using MusicTransify.src.Utilities.Token;
 using MusicTransify.src.Contracts.Session.Spotify;
-using MusicTransify.src.Api.Endpoints.DTOs.Responses.Callback.Spotify;
 using MusicTransify.src.Contracts.Services.Auth.Spotify;
+using MusicTransify.src.Api.Spotify.Callback.Responses;
 
 namespace MusicTransify.src.Controllers.Auth.Spotify
 {

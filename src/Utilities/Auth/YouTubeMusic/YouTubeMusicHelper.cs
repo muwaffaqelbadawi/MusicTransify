@@ -1,5 +1,6 @@
 using System;
-using MusicTransify.src.Api.Endpoints.DTOs.Requests.Auth.YouTubeMusic;
+using MusicTransify.src.Api.YouTubeMusic.Login.Requests;
+using MusicTransify.src.Api.YouTubeMusic.Token.Requests;
 using MusicTransify.src.Contracts.Utilities.YouTubeMusic;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Utilities.Auth.Common;
@@ -99,7 +100,7 @@ namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
             // Set the Grant Type
             string grantType = _options.GrantType;
 
-            YouTubeMusicTokenExchangeRequestDto CodeExchangeRequest = new()
+            YouTubeMusicTokenRequestDto CodeExchangeRequest = new()
             {
                 Code = code,
                 ClientId = clientId,
@@ -124,7 +125,7 @@ namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
             // Set grant type for refresh token
             string refreshTokenGrantType = _options.RefreshTokenGrantType;
 
-            YouTubeMusicRefreshTokenRequestDto refreshTokenRequest = new()
+            YouTubeMusicNewTokenRequestDto refreshTokenRequest = new()
             {
                 RefreshToken = refreshToken,
                 ClientId = clientId,

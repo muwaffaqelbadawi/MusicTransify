@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Api.Endpoints.DTOs.Responses.Playlists.Spotify;
+using MusicTransify.src.Api.Spotify.Playlists.Responses;
 using MusicTransify.src.Contracts.Services.Playlists.Spotify;
 using MusicTransify.src.Services.Cache;
 using MusicTransify.src.Utilities.Session.Spotify;

@@ -4,7 +4,7 @@ using MusicTransify.src.Contracts.Services.Http.YouTubeMusic;
 using MusicTransify.src.Contracts.Utilities.YouTubeMusic;
 using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Options.YouTubeMusic;
-using MusicTransify.src.Api.Endpoints.DTOs.Responses.Token.YouTubeMusic;
+using MusicTransify.src.Api.YouTubeMusic.Token.Responses;
 
 namespace MusicTransify.src.Services.Auth.YouTubeMusic
 {

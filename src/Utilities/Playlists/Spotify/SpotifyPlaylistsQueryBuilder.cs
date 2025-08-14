@@ -1,5 +1,5 @@
 using System;
-using MusicTransify.src.Api.Endpoints.Dtos.Requests.Playlists.Spotify;
+using MusicTransify.src.Api.Spotify.Playlists.Requests;
 using MusicTransify.src.Utilities.Auth.Common;
 
 namespace MusicTransify.src.Utilities.Playlists.Spotify
@@ -21,7 +21,7 @@ namespace MusicTransify.src.Utilities.Playlists.Spotify
         {
             _logger.LogInformation("Building YouTube Music Playlist request...");
 
-            SpotifyPlaylistsRequestDto parameter = new()
+            SpotifyPublicPlaylistsRequestDto parameter = new()
             {
                 
             };

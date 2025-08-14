@@ -1,6 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Api.Endpoints.DTOs.Responses.Callback.YouTubeMusic;
+using MusicTransify.src.Api.YouTubeMusic.Callback.Responses;
 using MusicTransify.src.Contracts.Services.Auth.YouTubeMusic;
 using MusicTransify.src.Contracts.Session.YouTubeMusic;
 using MusicTransify.src.Utilities.Session.YouTubeMusic;

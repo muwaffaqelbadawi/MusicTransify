@@ -1,9 +1,9 @@
 using System;
-using MusicTransify.src.Api.Endpoints.DTOs.Responses.Playlists.YouTubeMusic;
+using MusicTransify.src.Api.YouTubeMusic.Playlists.Responses;
 
 namespace MusicTransify.src.Utilities.DTO.YouTubeMusic
 {
-    public static class YouTubeMusicDtoFactoryHelper
+    public static class YouTubeMusicPlaylistsResponseHelper
     {
         public static (YouTubeMusicSnippet Snippet, bool HadMissingFields) FillSnippets(YouTubeMusicSnippet? snippet)
         {
@@ -61,7 +61,7 @@ namespace MusicTransify.src.Utilities.DTO.YouTubeMusic
 
             contentDetails.VideoId ??= "unknown";
             contentDetails.VideoPublishedAt ??= DateTime.MinValue;
-            
+
             return contentDetails;
         }
 

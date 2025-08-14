@@ -1,7 +1,7 @@
 using System;
-using MusicTransify.src.Api.Endpoints.Dtos.Requests.Playlists.YouTubeMusic;
 using MusicTransify.src.Utilities.Auth.Common;
 using MusicTransify.src.Utilities.Options.YouTubeMusic;
+using MusicTransify.src.Api.YouTubeMusic.Playlists.Requests;
 
 namespace MusicTransify.src.Utilities.Playlists.YouTubeMusic
 {
@@ -26,7 +26,7 @@ namespace MusicTransify.src.Utilities.Playlists.YouTubeMusic
         {
             _logger.LogInformation("Building YouTube Music Playlist request...");
 
-            YouTubeMusicPlaylistsRequestDto parameters = new()
+            YouTubeMusicPublicPlaylistsRequestDto parameters = new()
             {
                 PlaylistParameters = new YouTubeMusicPlaylistParameters
                 {
