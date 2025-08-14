@@ -1,8 +1,9 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Contracts.DTOs.Request.Shared;
+using MusicTransify.src.Api.Endpoints.DTOs.Responses.Callback.YouTubeMusic;
+using MusicTransify.src.Contracts.Services.Auth.YouTubeMusic;
 using MusicTransify.src.Contracts.Session.YouTubeMusic;
-using MusicTransify.src.Services.Auth.YouTubeMusic;
+using MusicTransify.src.Utilities.Session.YouTubeMusic;
 using MusicTransify.src.Utilities.Token;
 
 namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
@@ -11,18 +12,21 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
     [Route("api/youtube")]
     public class YouTubeMusicController : Controller
     {
-        private readonly YouTubeMusicService _youTubeMusicService;
+        private readonly IYouTubeMusicService _youTubeMusicService;
         private readonly IYouTubeMusicSessionService _sessionService;
+        private readonly YouTubeMusicTokenInfoHelper _tokenInfo;
         private readonly TokenHelper _tokenHelper;
         private readonly ILogger<YouTubeMusicController> _logger;
         public YouTubeMusicController(
-            YouTubeMusicService youTubeMusicService,
+            IYouTubeMusicService youTubeMusicService,
+            YouTubeMusicTokenInfoHelper tokenInfo,
             IYouTubeMusicSessionService sessionService,
             TokenHelper tokenHelper,
             ILogger<YouTubeMusicController> logger
         )
         {
             _youTubeMusicService = youTubeMusicService;
+            _tokenInfo = tokenInfo;
             _sessionService = sessionService;
             _tokenHelper = tokenHelper;
             _logger = logger;
@@ -42,30 +46,40 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
         }
 
         [HttpGet("callback")]
-        public async Task<IActionResult> CallbackAsync([FromQuery] CallbackRequest request)
+        public async Task<IActionResult> CallbackAsync([FromQuery] YouTubeMusicCallbackResponseDto response)
         {
             _logger.LogInformation("This is the callback route");
 
-            var validationResult = ValidateCallbackRequest(request);
+            var validationResult = ValidateCallbackResponse(response);
             if (validationResult is not null) return validationResult;
 
-            // Receive the the access token
-            var accessToken = await _youTubeMusicService.ExchangeAuthorizationCodeAsync(request.Code ?? string.Empty);
-
-            if (accessToken is null)
+            if (string.IsNullOrEmpty(response.Code))
             {
-                _logger.LogError("Failed to exchange authorization code for token.");
-
-                return BadRequest("Failed to exchange authorization code.");
+                _logger.LogWarning("Authorization code is missing.");
+                return BadRequest("Authorization code is missing.");
             }
 
-            // Store token assets in session
-            _sessionService.Store(accessToken);
+            var tokenInfo = await _youTubeMusicService.ExchangeAuthorizationCodeAsync(response.Code);
 
-            _logger.LogInformation("accessToken successfully stored in session redirecting...");
+            _logger.LogInformation("Receiving the token info");
+            _logger.LogInformation("Access Token: {AccessToken}", tokenInfo.AccessToken);
+            
+            if (tokenInfo is null)
+            {
+                _logger.LogError("Failed to exchange authorization code and getting the token info.");
 
-            // Redirect back to playlists
-            return Ok("Access token granted for YouTube Auth access and stored successfully. You can now access your playlists.");
+                return BadRequest("Failed to exchange authorization code and getting the token info.");
+            }
+
+            _logger.LogInformation("Token info successfully received.");
+            
+            // Store the token info in session
+            _sessionService.Store(tokenInfo);
+
+            _logger.LogInformation("Token info successfully stored in session redirecting to playlist route...");
+
+            // return Redirect("http://localhost:3000/playlists/youtube");
+            return Redirect("/api/youtube/playlists");
         }
 
         [HttpGet("refreshToken")]
@@ -74,13 +88,9 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
             _logger.LogInformation("This is the refreshToken route");
 
             // Set access token
-            var accessToken = _sessionService.GetTokenInfo("access_token");
-
-            // Set expiresIn
-            var strExpiresIn = _sessionService.GetTokenInfo("expires_in");
-
-            // Set refreshToken
-            var refreshToken = _sessionService.GetTokenInfo("refreshToken");
+            string accessToken = _tokenInfo.AccessToken;
+            string strExpiresIn = _tokenInfo.ExpiresIn;
+            string refreshToken = _tokenInfo.RefreshToken;
 
             if (string.IsNullOrEmpty(strExpiresIn))
             {
@@ -90,28 +100,23 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
 
             long expiresIn = _tokenHelper.ParseToLong(strExpiresIn);
 
-            // Check if access_token exists in the session and is not null
             if (string.IsNullOrEmpty(accessToken))
             {
-                _logger.LogWarning("Access token missing from session; redirecting to login.");
+                _logger.LogWarning("Missing accessToken parameter from session. Redirecting to login from YouTubeMusicController...");
 
-                // Redirect back to login route
+                // This must be changed to a resolved URL
                 return Redirect("/api/youtube/login");
             }
 
-            // Check If the access_token is expired
             if (_tokenHelper.IsExpired(expiresIn))
             {
-                // Check if refresh token does not exist or invalid in the session
                 if (string.IsNullOrEmpty(refreshToken))
                 {
                     _logger.LogWarning("Refresh token missing from session.");
 
-                    // Return the JSON code message if not exists
                     return BadRequest("The 'refreshToken' parameter is missing or invalid in the session.");
                 }
 
-                // Receive the new access token Info
                 var newAccessToken = await _youTubeMusicService.GetNewTokenAsync(refreshToken);
 
                 if (newAccessToken is null)
@@ -134,29 +139,29 @@ namespace MusicTransify.src.Controllers.Auth.YouTubeMusic
             return Ok("Token is still valid, no refresh needed.");
         }
 
-        private BadRequestObjectResult? ValidateCallbackRequest(CallbackRequest request)
+        private BadRequestObjectResult? ValidateCallbackResponse(YouTubeMusicCallbackResponseDto response)
         {
-            if (string.IsNullOrEmpty(request.Code))
+            if (string.IsNullOrEmpty(response.Code))
             {
                 _logger.LogWarning("Missing 'Code' parameter in callback request.");
                 return BadRequest("Missing 'Code' parameter in callback request.");
             }
 
-            if (string.IsNullOrEmpty(request.State))
+            if (string.IsNullOrEmpty(response.State))
             {
                 _logger.LogWarning("Missing 'State' parameter in callback (optional).");
                 return BadRequest("Missing 'State' parameter in callback request.");
             }
 
-            if (string.IsNullOrEmpty(request.Scope))
+            if (string.IsNullOrEmpty(response.Scope))
             {
                 _logger.LogWarning("Missing 'Scope' parameter in callback request.");
                 return BadRequest("Missing 'Scope' parameter in callback request.");
             }
 
-            if (!string.IsNullOrEmpty(request.Error))
+            if (!string.IsNullOrEmpty(response.Error))
             {
-                _logger.LogWarning("OAuth error in callback: {Error}", request.Error);
+                _logger.LogWarning("OAuth error in callback: {Error}", response.Error);
             }
 
             return null!;

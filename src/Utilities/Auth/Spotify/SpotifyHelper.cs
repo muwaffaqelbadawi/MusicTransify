@@ -1,30 +1,29 @@
 using System;
-using Microsoft.Extensions.Options;
-using MusicTransify.src.Configurations.Spotify;
-using MusicTransify.src.Contracts.DTOs.Request.Spotify;
-using MusicTransify.src.Contracts.Helper.Spotify;
+using MusicTransify.src.Api.Endpoints.DTOs.Requests.Auth.Spotify;
+using MusicTransify.src.Contracts.Utilities.Spotify;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Utilities.Auth.Common;
+using MusicTransify.src.Utilities.Options.Spotify;
 using MusicTransify.src.Utilities.Security;
 
 namespace MusicTransify.src.Utilities.Auth.Spotify
 {
     public class SpotifyHelper : ISpotifyHelper
     {
-        private readonly SpotifyOptions _options;
+        private readonly SpotifyOptionsHelper _options;
         private readonly StateHelper _stateHelper;
         private readonly CookiesService _cookiesService;
         private readonly AuthHelper _authHelper;
         private readonly ILogger<SpotifyHelper> _logger;
         public SpotifyHelper(
-            IOptions<SpotifyOptions> options,
+            SpotifyOptionsHelper options,
             StateHelper stateHelper,
             CookiesService cookiesService,
             AuthHelper authHelper,
             ILogger<SpotifyHelper> logger
         )
         {
-            _options = options.Value;
+            _options = options;
             _stateHelper = stateHelper;
             _cookiesService = cookiesService;
             _authHelper = authHelper;
@@ -63,7 +62,7 @@ namespace MusicTransify.src.Utilities.Auth.Spotify
             // Add cookies
             _cookiesService.AppendCookies(state);
 
-            LoginRequestDto loginRequest = new()
+            SpotifyLoginRequestDto loginRequest = new()
             {
                 ResponseType = responseType,
                 ClientId = clientID,
@@ -92,7 +91,7 @@ namespace MusicTransify.src.Utilities.Auth.Spotify
             // Set Client Secret
             string clientSecret = _options.ClientSecret;
 
-            TokenExchangeRequestDto CodeExchangeRequest = new()
+            SpotifyTokenExchangeRequestDto CodeExchangeRequest = new()
             {
                 Code = code,
                 GrantType = grantType,
@@ -117,10 +116,7 @@ namespace MusicTransify.src.Utilities.Auth.Spotify
             // Set Client Secret
             string clientSecret = _options.ClientSecret;
 
-            // Set Token URL
-            string tokenURL = _options.TokenUri;
-
-            RefreshTokenRequestDto refreshTokenRequest = new()
+            SpotifyRefreshTokenRequestDto refreshTokenRequest = new()
             {
                 GrantType = refreshTokenGrantType,
                 RefreshToken = refreshToken,
@@ -130,9 +126,5 @@ namespace MusicTransify.src.Utilities.Auth.Spotify
 
             return refreshTokenRequest.ToMap();
         }
-
-        public string ClientName => _options.ClientName;
-        public string AuthUri => _options.AuthUri;
-        public string TokenUri => _options.TokenUri;
     }
 }

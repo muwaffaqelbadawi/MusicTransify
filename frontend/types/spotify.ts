@@ -1,8 +1,8 @@
-export interface SpotifyPlaylistsResponseWrapper {
-  items: SpotifyPlaylistResponse[];
+export interface SpotifyPlaylistsResponseWrapperDto {
+  items: SpotifyPlaylistsResponseDto[];
 }
 
-export interface SpotifyPlaylistResponse {
+export interface SpotifyPlaylistsResponseDto {
   id: string;
   name: string;
   images: SpotifyImage[];

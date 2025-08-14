@@ -1,10 +1,10 @@
 using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using MusicTransify.src.Services.Auth.Spotify;
 using MusicTransify.src.Utilities.Token;
-using MusicTransify.src.Contracts.DTOs.Request.Shared;
 using MusicTransify.src.Contracts.Session.Spotify;
+using MusicTransify.src.Api.Endpoints.DTOs.Responses.Callback.Spotify;
+using MusicTransify.src.Contracts.Services.Auth.Spotify;
 
 namespace MusicTransify.src.Controllers.Auth.Spotify
 {
@@ -13,13 +13,13 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
 
     public class SpotifyController : Controller
     {
-        private readonly SpotifyService _spotifyService;
+        private readonly ISpotifyService _spotifyService;
         private readonly ISpotifySessionService _sessionService;
         private readonly TokenHelper _tokenHelper;
         private readonly ILogger<SpotifyController> _logger;
 
         public SpotifyController(
-            SpotifyService spotifyService,
+            ISpotifyService spotifyService,
             ISpotifySessionService sessionService,
             TokenHelper tokenHelper,
             ILogger<SpotifyController> logger
@@ -43,39 +43,42 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
         }
 
         [HttpGet("callback")]
-        public async Task<IActionResult> CallbackAsync([FromQuery] CallbackRequest request)
+        public async Task<IActionResult> CallbackAsync([FromQuery] SpotifyCallbackResponseDto response)
         {
             _logger.LogInformation("This is the callback route");
 
-            var validationResult = ValidateCallbackRequest(request);
+            var validationResult = ValidateCallbackRequest(response);
             if (validationResult is not null) return validationResult;
 
-            // Receive the access token
-            var accessToken = await _spotifyService.ExchangeAuthorizationCodeAsync(request.Code ?? string.Empty);
-
-            if (accessToken is null)
+            if (string.IsNullOrEmpty(response.Code))
             {
-                _logger.LogError("Failed to exchange authorization code for token.");
-
-                return BadRequest("Failed to exchange authorization code.");
+                _logger.LogWarning("Authorization code is missing.");
+                return BadRequest("Authorization code is missing.");
             }
 
-            // Store token assets in session
-            _sessionService.Store(accessToken);
+            // Receive the token info
+            var tokenInfo = await _spotifyService.ExchangeAuthorizationCodeAsync(response.Code);
+
+            // Logging the received access token for debugging purposes
+            _logger.LogInformation("Token info received successfully");
+
+            if (tokenInfo is null)
+            {
+                _logger.LogError("Failed to exchange authorization code and getting the token info.");
+
+                return BadRequest("Failed to exchange authorization code and getting the token info.");
+            }
+
+            _logger.LogInformation("Token info successfully received.");
+
+            // Store token info in session
+            _sessionService.Store(tokenInfo);
 
             _logger.LogInformation("accessToken successfully stored in session redirecting to playlist route...");
 
-            _logger.LogInformation("Token stored: {accessToken}", accessToken?.AccessToken);
-
-            // Redirect to Spotify playlist controller
-            // You need to redirect to the frontend
-            // To render the playlist
-            return Redirect("http://localhost:3000/playlist/spotify");
-
-            // return Redirect("/api/spotify/playlist");
-
-            // Redirect back to playlists
-            // return Ok("Access token granted for Spotify Auth access and stored successfully. You can now access your playlists.");
+            // This must be changed to a resolved URL
+            return Redirect("http://localhost:3000/playlists/spotify");
+            // return Redirect("/api/spotify/login");
         }
 
         [HttpGet("refreshToken")]
@@ -111,7 +114,8 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             // Check if access_token exists in the session and is not null
             if (string.IsNullOrEmpty(accessToken))
             {
-                _logger.LogWarning("Access token missing from session; redirecting to login.");
+                // Here's the problem (SpotifyController)
+                _logger.LogWarning("Missing 'accessToken' parameter from the session. Redirecting to login from SpotifyController...");
 
                 // Redirect back to login route
                 return Redirect("/api/spotify/login");
@@ -159,15 +163,15 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
             return Ok("Token is still valid, no refresh needed.");
         }
 
-        private BadRequestObjectResult? ValidateCallbackRequest(CallbackRequest request)
+        private BadRequestObjectResult? ValidateCallbackRequest(SpotifyCallbackResponseDto response)
         {
-            if (string.IsNullOrEmpty(request.Code))
+            if (string.IsNullOrEmpty(response.Code))
             {
                 _logger.LogWarning("Missing 'Code' parameter in callback request.");
                 return BadRequest("Missing 'Code' parameter in callback request.");
             }
 
-            if (string.IsNullOrEmpty(request.State))
+            if (string.IsNullOrEmpty(response.State))
             {
                 _logger.LogWarning("Missing 'State' parameter in callback (optional).");
                 return BadRequest("Missing 'State' parameter in callback request.");
@@ -175,10 +179,9 @@ namespace MusicTransify.src.Controllers.Auth.Spotify
 
             _logger.LogInformation("No scope returned; assuming all requested scopes were granted.");
 
-
-            if (!string.IsNullOrEmpty(request.Error))
+            if (!string.IsNullOrEmpty(response.Error))
             {
-                _logger.LogWarning("OAuth error in callback: {Error}", request.Error);
+                _logger.LogWarning("OAuth error in callback: {Error}", response.Error);
             }
 
             return null!;

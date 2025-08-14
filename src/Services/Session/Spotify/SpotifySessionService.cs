@@ -1,7 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
-using MusicTransify.src.Contracts.DTOs.Response.Token.Spotify;
+using MusicTransify.src.Api.Endpoints.DTOs.Responses.Token.Spotify;
 using MusicTransify.src.Contracts.Session.Spotify;
 using MusicTransify.src.Utilities.Token;
 
@@ -28,31 +28,35 @@ namespace MusicTransify.src.Services.Session.Spotify
         }
 
         #region State Management
-        // 1
         public void StoreState(string state)
         {
             var httpContext = _httpContextAccessor.HttpContext;
             httpContext?.Response.Cookies.Append("SpotifyState", state, new CookieOptions
             {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTimeOffset.UtcNow.AddMinutes(5)
+                // These have the same config settings as in the Program.cs
+
+                HttpOnly = true, // Cookie is not accessible via JavaScript
+                Secure = false, // Set to true if using HTTPS
+                SameSite = SameSiteMode.None, // SameSite policy
+                Expires = DateTimeOffset.UtcNow.AddMinutes(10)
             });
         }
 
-        // 2
         public bool ValidateState(string state)
         {
             var httpContext = GetValidHttpContext();
             var storedState = httpContext?.Request.Cookies["SpotifyState"];
-            return storedState == state;
+            if (storedState == state)
+            {
+                httpContext?.Response.Cookies.Delete("SpotifyState");
+                return true;
+            }
+            return false;
         }
         #endregion
 
         #region Token Management
 
-        // 3
         public (
             string accessToken,
             string tokenType,
@@ -60,15 +64,40 @@ namespace MusicTransify.src.Services.Session.Spotify
             string refreshToken,
             string scope
         )
-        ExtractTokenData(SpotifyTokenResponse tokenInfo)
+        ExtractTokenData(SpotifyTokenResponseDto tokenInfo)
         {
             if (tokenInfo is null)
             {
-                throw new ArgumentNullException(nameof(tokenInfo), "Missing required 'access_token' in response");
+                _logger.LogError("Token information is missing from response");
+                throw new ArgumentNullException(nameof(tokenInfo), "Token information is missing from response");
+            }
+
+            if (string.IsNullOrEmpty(tokenInfo.AccessToken))
+            {
+                _logger.LogError("Access token is missing from response");
+                throw new ArgumentNullException(nameof(tokenInfo.AccessToken), "Access token is missing from response");
+            }
+
+            if (string.IsNullOrEmpty(tokenInfo.TokenType))
+            {
+                _logger.LogError("Token type is missing from response");
+                throw new ArgumentNullException(nameof(tokenInfo.TokenType), "Token type is missing from response");
+            }
+
+            if (string.IsNullOrEmpty(tokenInfo.RefreshToken))
+            {
+                _logger.LogError("Refresh token is missing from response");
+                throw new ArgumentNullException(nameof(tokenInfo.RefreshToken), "Refresh token is missing from response");
+            }
+
+            if (string.IsNullOrEmpty(tokenInfo.Scope))
+            {
+                _logger.LogError("Scope is missing from response");
+                throw new ArgumentNullException(nameof(tokenInfo.Scope), "Scope is missing from response");
             }
 
             string accessToken = tokenInfo.AccessToken;
-            string tokenType = tokenInfo.TokenType ?? "Bearer";
+            string tokenType = tokenInfo.TokenType;
             int expiresIn = tokenInfo.ExpiresIn;
             string refreshToken = tokenInfo.RefreshToken;
             string scope = tokenInfo.Scope;
@@ -76,8 +105,7 @@ namespace MusicTransify.src.Services.Session.Spotify
             return (accessToken, tokenType, expiresIn, refreshToken, scope);
         }
 
-        // 4
-        public void Store(SpotifyTokenResponse tokenInfo)
+        public void Store(SpotifyTokenResponseDto tokenInfo)
         {
             // ExtractTokenData existence of token assets
             var (accessToken, tokenType, expiresIn, refreshToken, scope) = ExtractTokenData(tokenInfo);
@@ -99,6 +127,8 @@ namespace MusicTransify.src.Services.Session.Spotify
             _logger.LogInformation("AccessToken length: {Length}, Scope: {Scope}, Expires in: {ExpiresIn}s",
             accessToken.Length, scope, expiresIn);
 
+
+
             session.SetString("access_token", accessToken);
             session.SetString("token_type", tokenType);
 
@@ -107,20 +137,14 @@ namespace MusicTransify.src.Services.Session.Spotify
                 session.SetString("refreshToken", _protector.Protect(refreshToken));
             }
 
+
             session.SetString("expires_in", newExpiresIn);
             session.SetString("scope", scope);
             _logger.LogInformation("Successfully stored token info in session");
+
+            
         }
 
-        // 5
-        public void RegenerateSession()
-        {
-            var session = GetValidSession();
-            session.Clear();
-            session.CommitAsync().Wait();
-        }
-
-        // 6
         public bool IsSessionValid()
         {
             try
@@ -137,7 +161,6 @@ namespace MusicTransify.src.Services.Session.Spotify
 
         #region Private Helpers
 
-        // 7
         public string? GetProtectedToken(string tokenKey)
         {
             var session = _httpContextAccessor.HttpContext?.Session
@@ -149,13 +172,10 @@ namespace MusicTransify.src.Services.Session.Spotify
                 : null;
         }
 
-        // 8
         public string? GetAccessToken() => GetProtectedToken("access_token");
 
-        // 9
         public string? GetRefreshToken() => GetProtectedToken("refreshToken");
 
-        // 10
         public DateTime? GetExpiration()
         {
             var expiresAt = _httpContextAccessor.HttpContext?.Session.GetString("expires_at");
@@ -164,7 +184,6 @@ namespace MusicTransify.src.Services.Session.Spotify
             : null;
         }
 
-        // 11
         public string? GetTokenInfo(string tokenInfo)
         {
             var session = GetValidHttpContext().Session;

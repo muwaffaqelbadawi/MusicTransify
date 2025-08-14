@@ -1,12 +1,11 @@
 using System;
-using MusicTransify.src.Contracts.DTOs.Response.Token.Spotify;
-
+using MusicTransify.src.Api.Endpoints.DTOs.Responses.Token.Spotify;
 namespace MusicTransify.src.Contracts.Services.Auth.Spotify
 {
     public interface ISpotifyService
     {
         string GetLoginUri();
-        Task<SpotifyTokenResponse> ExchangeAuthorizationCodeAsync(string code);
-        Task<SpotifyTokenResponse> GetNewTokenAsync(string refreshToken);
+        Task<SpotifyTokenResponseDto> ExchangeAuthorizationCodeAsync(string code);
+        Task<SpotifyTokenResponseDto> GetNewTokenAsync(string refreshToken);
     }
 }

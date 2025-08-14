@@ -1,31 +1,40 @@
-// types/YouTubeMusic.ts (create this file for cleaner code separation)
-
-export interface YouTubeMusicPlaylistsResponseWrapper {
-  items: YouTubeMusicPlaylistResponse[];
+export interface YouTubeMusicPlaylistsResponseWrapperDto {
+  items: YouTubeMusicPlaylistsResponseDto[];
 }
 
-export interface YouTubeMusicPlaylistResponse {
+export interface YouTubeMusicPlaylistsResponseDto {
+  kind: string;
+  etag: string;
   id: string;
-  name: string;
-  images: YouTubeMusicImage[];
-  owner: YouTubeMusicOwner;
-  public: boolean;
-  tracks: YouTubeMusicTrackLink;
-  type: string;
-  uri: string;
+  snippet: YouTubeMusicSnippet;
+  ContentDetails: YouTubeMusicContentDetails;
+  PageInfo: YouTubeMusicPageInfo;
 }
 
-export interface YouTubeMusicImage {
+export interface YouTubeMusicContentDetails {
+  videoId?: string;
+  VideoPublishedAt?: string;
+}
+
+export interface YouTubeMusicPageInfo {
+  TotalResults: number;
+  ResultsPerPage: number;
+}
+
+export interface YouTubeMusicSnippet {
+  title: string;
+  description: string;
+  thumbnails: YouTubeMusicThumbnails;
+}
+
+export interface YouTubeMusicThumbnails {
+  default: YouTubeMusicThumbnailDetail;
+  medium: YouTubeMusicThumbnailDetail;
+  high: YouTubeMusicThumbnailDetail;
+}
+
+export interface YouTubeMusicThumbnailDetail {
   url: string;
-  height?: number;
-  width?: number;
-}
-
-export interface YouTubeMusicOwner {
-  display_name: string;
-}
-
-export interface YouTubeMusicTrackLink {
-  href: string;
-  total: number;
+  width: number;
+  height: number;
 }

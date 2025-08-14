@@ -1,31 +1,30 @@
 using System;
-using Microsoft.Extensions.Options;
-using MusicTransify.src.Configurations.YouTubeMusic;
-using MusicTransify.src.Contracts.DTOs.Request.YouTubeMusic;
-using MusicTransify.src.Contracts.Helper.YouTubeMusic;
+using MusicTransify.src.Api.Endpoints.DTOs.Requests.Auth.YouTubeMusic;
+using MusicTransify.src.Contracts.Utilities.YouTubeMusic;
 using MusicTransify.src.Services.Cookies;
 using MusicTransify.src.Utilities.Auth.Common;
+using MusicTransify.src.Utilities.Options.YouTubeMusic;
 using MusicTransify.src.Utilities.Security;
 
 namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
 {
     public class YouTubeMusicHelper : IYouTubeMusicHelper
     {
-        private readonly YouTubeMusicOptions _options;
+        private readonly YouTubeMusicOptionsHelper _options;
         private readonly StateHelper _stateHelper;
         private readonly CookiesService _cookiesService;
         private readonly AuthHelper _authHelper;
         private readonly ILogger<YouTubeMusicHelper> _logger;
 
         public YouTubeMusicHelper(
-            IOptions<YouTubeMusicOptions> options,
+            YouTubeMusicOptionsHelper options,
             StateHelper stateHelper,
             CookiesService cookiesService,
             AuthHelper authHelper,
             ILogger<YouTubeMusicHelper> logger
         )
         {
-            _options = options.Value;
+            _options = options;
             _stateHelper = stateHelper;
             _cookiesService = cookiesService;
             _authHelper = authHelper;
@@ -70,7 +69,7 @@ namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
             // set cookies
             _cookiesService.AppendCookies(state);
 
-            LoginRequestDto loginRequest = new()
+            YouTubeMusicLoginRequestDto loginRequest = new()
             {
                 ClientId = clientID,
                 RedirectUri = redirectUri,
@@ -100,7 +99,7 @@ namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
             // Set the Grant Type
             string grantType = _options.GrantType;
 
-            TokenExchangeRequestDto CodeExchangeRequest = new()
+            YouTubeMusicTokenExchangeRequestDto CodeExchangeRequest = new()
             {
                 Code = code,
                 ClientId = clientId,
@@ -125,7 +124,7 @@ namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
             // Set grant type for refresh token
             string refreshTokenGrantType = _options.RefreshTokenGrantType;
 
-            RefreshTokenRequestDto refreshTokenRequest = new()
+            YouTubeMusicRefreshTokenRequestDto refreshTokenRequest = new()
             {
                 RefreshToken = refreshToken,
                 ClientId = clientId,
@@ -135,9 +134,5 @@ namespace MusicTransify.src.Utilities.Auth.YouTubeMusic
 
             return refreshTokenRequest.ToMap();
         }
-
-        public string ClientName => _options.ClientName;
-        public string AuthUri => _options.AuthUri;
-        public string TokenUri => _options.TokenUri;
     }
 }

@@ -10,8 +10,8 @@ namespace MusicTransify.src.Utilities.Auth.Common
 
             return string.Join("&", queryParameters
                 .Where(kvp => !string.IsNullOrEmpty(kvp.Value))
-                .Select(kvp =>
-                    $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"
+                    .Select(kvp =>
+                        $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"
             ));
         }
 
@@ -24,7 +24,7 @@ namespace MusicTransify.src.Utilities.Auth.Common
             return string.Join(" ", distinctScopes);
         }
 
-        public string FormRedirectUrl(string authUri, string queryString)
+        public string BuildRedirectUri(string authUri, string queryString)
         {
             if (string.IsNullOrEmpty(authUri))
             {
@@ -36,7 +36,35 @@ namespace MusicTransify.src.Utilities.Auth.Common
                 throw new ArgumentNullException(nameof(queryString));
             }
 
+            // Structure: https://{apiBaseUri}?{queryString}
+            // Structure: https://accounts.spotify.com/authorize?{queryString}
             return $"{authUri}?{queryString}";
+        }
+
+        public string BuildApiUri(
+            string apiBaseUri,
+            string endpoint,
+            string queryString
+        )
+        {
+            if (string.IsNullOrEmpty(apiBaseUri))
+            {
+                throw new InvalidOperationException($"apiBaseUri is not configured. {nameof(apiBaseUri)}");
+            }
+
+            if (string.IsNullOrEmpty(endpoint))
+            {
+                throw new InvalidOperationException($"endpoint is not configured. {nameof(endpoint)}");
+            }
+
+            if (string.IsNullOrEmpty(queryString))
+            {
+                throw new ArgumentNullException($"endpoint is not configured. {nameof(queryString)}");
+            }
+
+            // Structure: https://{apiBaseUri}/{endpoint}?{queryString}
+            // Structure: https://https://api.spotify.com/v1/{endpoint}?{queryString}
+            return $"{apiBaseUri}/{endpoint}?{queryString}";
         }
     }
 }

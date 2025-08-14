@@ -1,13 +1,13 @@
-name: Deploy .NET 8 App to Azure
+name: MusicTransify CI/CD
 
 on:
     push:
         branches: ["main"]
-    workflow_dispatch: # Allow manual trigger
+    workflow_dispatch:
 
 env:
-    AZURE_WEBAPP_NAME: "your-app-name" # Replace with your Azure Web App name
-    DOTNET_VERSION: "8.0.x"
+    AZURE_WEBAPP_NAME: "MusicTransify"
+    DOTNET_VERSION: "8.0.413"
     PUBLISH_PATH: "./publish"
 
 jobs:

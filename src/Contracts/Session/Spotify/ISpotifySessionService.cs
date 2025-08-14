@@ -1,5 +1,5 @@
 using System;
-using MusicTransify.src.Contracts.DTOs.Response.Token.Spotify;
+using MusicTransify.src.Api.Endpoints.DTOs.Responses.Token.Spotify;
 
 namespace MusicTransify.src.Contracts.Session.Spotify
 {
@@ -15,11 +15,9 @@ namespace MusicTransify.src.Contracts.Session.Spotify
             int expiresIn,
             string refreshToken,
             string scope
-        ) ExtractTokenData(SpotifyTokenResponse tokenInfo);
+        ) ExtractTokenData(SpotifyTokenResponseDto tokenInfo);
 
-        public void Store(SpotifyTokenResponse tokenInfo);
-
-        public void RegenerateSession();
+        public void Store(SpotifyTokenResponseDto tokenInfo);
 
         public bool IsSessionValid();
 

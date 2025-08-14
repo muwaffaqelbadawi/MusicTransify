@@ -1,26 +1,24 @@
 using System;
-using System.Net;
 using System.Text.Json;
 using System.Net.Http.Headers;
-using Microsoft.Extensions.Options;
 using MusicTransify.src.Contracts.Services.Http.Spotify;
-using MusicTransify.src.Configurations.Spotify;
+using MusicTransify.src.Utilities.Auth.Common;
 
 namespace MusicTransify.src.Services.Http.Spotify
 {
     public class SpotifyHttpService : ISpotifyHttpService
     {
         private readonly HttpClient _client;
-        private readonly SpotifyOptions _options;
+        private readonly AuthHelper _authHelper;
         private readonly ILogger<SpotifyHttpService> _logger;
         public SpotifyHttpService(
             HttpClient client,
-            IOptions<SpotifyOptions> options,
+            AuthHelper authHelper,
             ILogger<SpotifyHttpService> logger
         )
         {
             _client = client;
-            _options = options.Value;
+            _authHelper = authHelper;
             _logger = logger;
         }
 
@@ -33,11 +31,8 @@ namespace MusicTransify.src.Services.Http.Spotify
             HttpRequestMessage request
         )
         {
-            string clientName = _options.ClientName;
-
             _logger?.LogInformation(
-                "Sending HTTP request to {clientName} with {method} {url}",
-                clientName,
+                "Sending HTTP request to Spotify with {method} {url}",
                 request.Method,
                 request.RequestUri
             );
@@ -47,12 +42,13 @@ namespace MusicTransify.src.Services.Http.Spotify
             if (!response.IsSuccessStatusCode)
             {
                 string error = await response.Content.ReadAsStringAsync();
+
                 _logger?.LogError(
-                    "HTTP request to {clientName} failed with status code {statusCode} and message: {error}",
-                    clientName,
+                    "HTTP request to Spotify failed with status code {statusCode} and message: {error}",
                     response.StatusCode,
                     error
                 );
+
                 throw new HttpRequestException($"Request failed: {response.StatusCode}");
             }
 
@@ -65,10 +61,10 @@ namespace MusicTransify.src.Services.Http.Spotify
                 if (result is null)
                 {
                     _logger?.LogError(
-                        "Failed to deserialize response from {clientName}. Content: {content}",
-                        clientName,
+                        "Failed to deserialize response from Spotify. Content: {content}",
                         content
                     );
+
                     throw new JsonException("Deserialized result is null.");
                 }
 
@@ -77,11 +73,11 @@ namespace MusicTransify.src.Services.Http.Spotify
             catch (JsonException ex)
             {
                 _logger?.LogError(ex,
-                "JSON deserialization failed for {clientName}. Content: {content}",
-                clientName,
-                content
+                    "JSON deserialization failed for Spotify. Content: {content}",
+                    content
                 );
-                throw new JsonException("Failed to deserialize response from Spotify.", ex);
+
+                throw new JsonException("Failed to deserialize response from Spotify", ex);
             }
         }
 
@@ -94,81 +90,112 @@ namespace MusicTransify.src.Services.Http.Spotify
             {
                 try
                 {
-                    // Form content
                     var formContent = new FormUrlEncodedContent(requestBody);
 
-                    // Post Form Url Encoded Content
-                    using (var response = await _client.PostAsync(tokenUri, formContent))
+                    var response = await _client.PostAsync(tokenUri, formContent);
+
+                    if (response is null)
                     {
-                        if (response is null)
-                        {
-                            _logger?.LogError("No response received from Spotify for POST {tokenUri}", tokenUri);
-                            throw new HttpRequestException("No response received from Spotify");
-                        }
+                        _logger?.LogError(
+                            "No response received from Spotify for POST {tokenUri}",
+                            tokenUri
+                        );
+                        throw new HttpRequestException("No response received from Spotify");
+                    }
 
-                        // Read the response
-                        var content = await response.Content.ReadAsStringAsync();
+                    var content = await response.Content.ReadAsStringAsync();
 
-                        // Handling response error
-                        if (!response.StatusCode.Equals(HttpStatusCode.OK))
-                        {
-                            _logger?.LogWarning("POST {TokenUri} failed: {StatusCode} {Content}",
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger?.LogWarning(
+                            "POST {tokenUri} failed: {StatusCode} {Content}",
                             tokenUri,
                             response.StatusCode,
                             content
                         );
+                        throw new HttpRequestException(
+                            $"HTTP Request failed with status: {response.StatusCode}"
+                        );
+                    }
 
-                            throw new HttpRequestException(
-                                $"HTTP Request failed with status: {response.StatusCode}"
+                    try
+                    {
+                        var result = JsonSerializer.Deserialize<T>(content, _serializerOptions);
+
+                        if (result is null)
+                        {
+                            _logger?.LogError(
+                                "Failed to deserialize response from Spotify. Content: {Content}",
+                                content
                             );
+                            throw new JsonException("Deserialized result is null.");
                         }
 
-                        try
-                        {
-                            // return Token Info
-                            return JsonSerializer.Deserialize<T>(content) ??
-                                throw new JsonException(nameof(content));
-                        }
+                        return result;
+                    }
+                    catch (JsonException ex)
+                    {
+                        _logger?.LogError(ex,
+                            "Failed to deserialize response: {Content}",
+                            content
+                        );
 
-                        catch (JsonException ex)
-                        {
-                            _logger?.LogError(ex, "Failed to deserialize response: {Content}", content);
-                            throw new JsonException($"Failed to parse Spotify response, {nameof(content)}", ex);
-                        }
+                        throw new JsonException(
+                            $"Failed to parse Spotify response, {nameof(content)}",
+                            ex
+                        );
                     }
                 }
-
                 catch (Exception ex) when (ex is not HttpRequestException && ex is not JsonException)
                 {
-                    _logger?.LogError(ex, "Unexpected error during POST to {tokenUri}", tokenUri);
-                    throw;
+                    _logger?.LogError(
+                        ex,
+                        "Unexpected error during POST to {tokenUri}",
+                        tokenUri
+                    );
+
+                    throw new InvalidOperationException(
+                        $"Unexpected error during POST to {nameof(tokenUri)}"
+                    );
                 }
             }
 
-            throw new InvalidOperationException(nameof(tokenUri));
+            throw new InvalidOperationException(
+                $"Unexpected error during POST to {nameof(tokenUri)}"
+            );
         }
 
+        // This method creates a GET request message to the Spotify API for different endpoints.
+        // Structure: https://{apiBaseUri}/{endpoint}?{queryString}
+        // Structure: https://https://api.spotify.com/v1/{endpoint}?{queryString}
         public HttpRequestMessage GetRequest(
             string accessToken,
-            string Uri
+            string apiBaseUri,
+            string endpoint,
+            string queryString
         )
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{Uri}");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            try
+            {
+                _logger.LogInformation("Make a GET request message to the Spotify API");
 
-            return request;
-        }
+                var request = new HttpRequestMessage(HttpMethod.Get,
+                    _authHelper.BuildApiUri(apiBaseUri, endpoint, queryString)
+                );
 
-        public HttpRequestMessage GetRequestWithId(
-            string accessToken,
-            string Uri,
-            string Id
-        )
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{Uri}/{Id}");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            return request;
+                return request;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(
+                    ex, "Failed to create GET request for YouTube API");
+
+                throw new HttpRequestException(
+                    $"{ex} Failed to create GET request for YouTube API"
+                );
+            }
         }
     }
 }

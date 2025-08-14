@@ -1,10 +1,10 @@
-// app/layout.tsx
 import React from "react";
-import "../styles/globals.css"; // Optional if you have global CSS
+import "../styles/globals.css";
 
 export const metadata = {
   title: "MusicTransify",
-  description: "Transfer your music seamlessly across platforms",
+  description:
+    "MusicTransify is an open-source web app designed to sync your favorite playlists between Spotify and YouTube Music",
 };
 
 export default function RootLayout({

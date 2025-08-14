@@ -15,13 +15,9 @@ namespace MusicTransify.src.Contracts.Services.Http.Spotify
 
         public HttpRequestMessage GetRequest(
             string accessToken,
-            string Uri
-        );
-
-        public HttpRequestMessage GetRequestWithId(
-            string accessToken,
-            string Uri,
-            string Id
+            string apiBaseUri,
+            string endpoint,
+            string queryString
         );
     }
 }
